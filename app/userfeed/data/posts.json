@@ -1,0 +1,22 @@
+[
+  {
+    "id": "1",
+    "author": "John Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "First Post",
+    "caption": "This is my first post!",
+    "image": "/fan.webp",
+    "hashtags": ["#welcome", "#firstpost"]
+  },
+  {
+    "id": "2",
+    "author": "Jane Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "Second Post",
+    "caption": "Another exciting update",
+    "image": "/hudson.webp",
+    "hashtags": ["#update", "#news"]
+  }
+]

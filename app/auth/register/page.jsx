@@ -1,8 +1,22 @@
 'use client';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { handleGoogleSuccess } from "../googleAuth";
+import { GoogleLogin } from "@react-oauth/google";
+import { FcGoogle } from "react-icons/fc";
+import { FaApple } from "react-icons/fa";
 import { Eye, EyeOff } from "lucide-react"; // 👈 import icons
+import { postRequest } from "@/app/api";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 const Page = () => {
   const [formData, setFormData] = useState({
@@ -11,14 +25,51 @@ const Page = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "",
   });
 
   const [showPassword, setShowPassword] = useState(false); 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const[ users, setUser ] = useState([]);
 
+    const router = useRouter();
+
+  useEffect(()=>{
+    const storedUsers = JSON.parse(localStorage.getItem("users"));
+    if(storedUsers){
+        setUser(storedUsers);
+    }
+  },[])
+  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const data = await postRequest('https://jsonplaceholder.typicode.com/posts', { username: "testuser", password: "123456" });
+
+      if (data) {
+            setOpen(true);
+          }
+    
+          // if (data.token) {
+          //   localStorage.setItem('token', data.token);
+          //   console.log('Account created successfully');
+          // } else {
+          //   console.log('Failed to create account');
+          // }
+        }
+         catch (error) {
+          console.error('Error:', error);
+          setErrorMsg("Registration failed. Please try again.");
+        }
   };
 
   return (
@@ -53,7 +104,7 @@ const Page = () => {
             Create an account
           </h2>
 
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
           
             <div className="flex flex-col sm:flex-row gap-4 w-full">
               <div className="w-full">
@@ -135,45 +186,52 @@ const Page = () => {
             </div>
 
           
-            <div>
-              <label className="block text-sm font-medium mb-2">Role</label>
-              <div className="flex gap-3 flex-wrap">
-                {["Scout", "Player"].map((role) => (
-                  <button
-                    key={role}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, role })}
-                    className={`px-4 py-2 border rounded-md ${
-                      formData.role === role
-                        ? "bg-emerald-500 text-white"
-                        : "border-gray-300 text-gray-700"
-                    }`}
-                  >
-                    {role}
-                  </button>
-                ))}
-              </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Select your role in football.
-              </p>
-            </div>
+            
 
             
+            <Link href="">
             <button
               type="submit"
+              disabled={loading}
               className="w-full bg-teal-900 text-white py-2 px-4 rounded-md hover:bg-green-800 transition"
             >
-              Create an account
+              {loading ? "Creating Account..." : "Create Account"}
             </button>
+            </Link>
+           {errorMsg && (
+              <p className="text-red-500 text-sm mt-2 text-center">{errorMsg}</p>
+            )}
           </form>
 
+          <div className="flex items-center my-6">
+            <hr className="flex-grow border-gray-300" />
+            <span className="px-3 text-gray-500 text-sm">or</span>
+            <hr className="flex-grow border-gray-300" />
+          </div>
+
           
-          <p className="mt-6 text-sm text-center text-gray-600">
-            Already have an account?{" "}
-            <Link href="/auth/login" className="text-teal-700 font-medium">
-              Login
-            </Link>
-          </p>
+          
+         
+            <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, users, setUser, router)}
+            onError={() => console.log('Login Failed')}
+            className = "w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition">
+            <FcGoogle className="mr-2" /> Continue with Google
+            </GoogleLogin>
+          
+
+          <AlertDialog open={open} onOpenChange={setOpen}>
+            <AlertDialogTrigger></AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Almost Done</AlertDialogTitle>
+                <AlertDialogDescription>
+                  An email has been sent to your address. Please verify your email to complete the registration process.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              
+            </AlertDialogContent>
+          </AlertDialog>
+          
         </div>
       </div>
     </div>

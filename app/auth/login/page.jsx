@@ -4,19 +4,62 @@ import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
 import { FaApple } from "react-icons/fa";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
+import { postRequest } from "@/app/api";
+import { GoogleLogin } from "@react-oauth/google";
+import { handleGoogleSuccess } from "../googleAuth";
+import { useEffect } from "react";
 
 const Page = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+ const[ users, setUser ] = useState([]);
+ 
+     const router = useRouter();
+ 
+   useEffect(()=>{
+     const storedUsers = JSON.parse(localStorage.getItem("users"));
+     if(storedUsers){
+         setUser(storedUsers);
+     }
+   },[])
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formData);
+    setLoading(true);
+    setErrorMsg("");
+
+    try {
+      const data = await postRequest('https://jsonplaceholder.typicode.com/posts', { username: "testuser", password: "123456" });
+      console.log(data);
+
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+        console.log('Login successful');
+      } else {
+        console.log('Login failed');
+      }
+
+      router.push('/userfeed/feed');
+
+    } catch (error) {
+      console.error('Error:', error);
+      setErrorMsg("Login failed. Please try again.");
+
+    } finally {
+      setLoading(false);
+    }
+      
+    
+    
+    
+    
   };
 
   return (
@@ -105,13 +148,20 @@ const Page = () => {
                 </a>
               </div>
             </div>
-
+            
+            <Link href="/userfeed/feed">
             <button
               type="submit"
+              disabled={loading}
               className="w-full bg-teal-900 text-white py-2 px-4 rounded-md hover:bg-green-800 transition"
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </button>
+            </Link>
+            {errorMsg && (
+              <p className="text-red-500 text-sm mt-2 text-center">{errorMsg}</p>
+            )}
+          
           </form>
 
           
@@ -122,13 +172,13 @@ const Page = () => {
           </div>
 
           
-          <button className="w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition">
+           <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, users, setUser, router)}
+            onError={() => console.log('Login Failed')}
+            className = "w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition">
             <FcGoogle className="mr-2" /> Continue with Google
-          </button>
+            </GoogleLogin>
 
-          <button className="w-full flex items-center justify-center border border-gray-300 rounded-md py-2 mt-3 hover:bg-gray-50 transition">
-            <FaApple className="mr-2 text-black" /> Continue with Apple
-          </button>
+          
 
           
           <p className="text-sm text-center text-gray-600 mt-5">

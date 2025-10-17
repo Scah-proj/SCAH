@@ -28,7 +28,7 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-0 left-0 w-full z-50 bg-gray-50 shadow-md rounded-4xl shadow-teal-500 ">
-      <div className="flex justify-between items-center h-20 w-full px-4 font-semibold text-xl text-gray-800 ">
+      <div className="flex justify-between items-center h-20 w-full px-8 font-semibold text-xl text-gray-800">
         <Link href="/home">
           <Image
             src="/yattr.png"
@@ -40,7 +40,7 @@ const Navbar = () => {
           />
         </Link>
 
-        <ul className="hidden lg:flex pt-5">
+        <ul className="hidden lg:flex">
           {navLinks.map(({ name, to }) => (
             <li key={to} className="p-4 hover:scale-105 transition-transform">
               <Link
@@ -55,7 +55,7 @@ const Navbar = () => {
           ))}
         </ul>
 
-        <div className="hidden lg:flex gap-3 p-3 mt-4 group">
+        <div className="hidden lg:flex gap-3 p-3 group">
           <Link href="/auth/register">
             <button className="bg-teal-800 hover:bg-transparent text-white hover:text-teal-800 text-sm border in-hover:cursor-pointer border-teal-800 py-2 px-4 h-10 rounded-xl flex items-center gap-2 transition-all duration-300">
               <IoPerson size={20} className="text-white group-hover:text-teal-800" />
