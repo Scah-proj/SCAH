@@ -5,7 +5,7 @@ import { useEffect } from "react";
 
 const Page = () => {
 const params = useParams();
-const token = params.get('token');
+const token = params.token;
 const [ verifiedMsg, setVerifiedMsg ] = useState(false);
 const router = useRouter();
 
