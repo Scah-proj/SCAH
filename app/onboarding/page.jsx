@@ -183,7 +183,7 @@ export default function FormContainer() {
           },
           {
             id: 'not sure',
-            title: 'Not sure yet',
+            title: 'Not sure',
             description: '',
             icon: '',
           },
