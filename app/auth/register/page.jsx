@@ -231,7 +231,12 @@ const Page = () => {
               
             </AlertDialogContent>
           </AlertDialog>
-          
+          <p className="text-sm text-center text-gray-600 mt-5">
+                       Have an account?{" "}
+                      <Link href="/auth/login" className="text-teal-700 font-medium">
+                        Login
+                      </Link>
+                    </p>
         </div>
       </div>
     </div>
