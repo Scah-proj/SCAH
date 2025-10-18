@@ -1,7 +1,7 @@
 "use client";
 import { postRequest } from "@/app/api";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 const Page = () => {
 const params = useParams();
