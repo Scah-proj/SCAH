@@ -3,7 +3,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from 'next/image';
 import { BellPlus } from "lucide-react";
-import PostCard from "./post/page";
+import FeedComponent from "./feedComponent/page";
+
 import { useEffect } from "react";
 const Page = () => {
     const router = useRouter();
@@ -46,7 +47,7 @@ const Page = () => {
 
         {/* Main content */}
         <div className="p-4">
-            <PostCard />
+            <FeedComponent />
         </div>
     </div>
  )   

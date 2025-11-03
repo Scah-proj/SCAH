@@ -5,6 +5,11 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 
 export async function postRequest(endpoint, data, token = null ) {
+ if (typeof window !== "undefined") {
+    token = localStorage.getItem('token');
+  }
+
+  console.log("Token used:", token);
     const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -15,6 +20,7 @@ export async function postRequest(endpoint, data, token = null ) {
     });
 
     if (!res.ok) {
+        console.error("API request failed:", res.status);
         throw new Error('Network response was not ok');
     }
 

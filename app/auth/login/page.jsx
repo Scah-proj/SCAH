@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { FcGoogle } from "react-icons/fc";
-import { FaApple } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -36,21 +35,23 @@ const Page = () => {
     setErrorMsg("");
 
     try {
-      const data = await postRequest('https://jsonplaceholder.typicode.com/posts', { username: "testuser", password: "123456" });
-      console.log(data);
-
-      if (data.token) {
-        localStorage.setItem('token', data.token);
+      const data = await postRequest('/api/auth/login', formData);
+console.log("Login response:", data);
+const token = data?.data?.token
+      if (token) {
+        localStorage.setItem('token', token);
+        
         console.log('Login successful');
+        router.push('/userfeed/feed');
       } else {
-        console.log('Login failed');
+        console.log('Login failed', data);
+        
       }
 
-      router.push('/userfeed/feed');
 
     } catch (error) {
       console.error('Error:', error);
-      setErrorMsg("Login failed. Please try again.");
+      setErrorMsg("Incorrect Email or password. please try again.");
 
     } finally {
       setLoading(false);
@@ -149,7 +150,7 @@ const Page = () => {
               </div>
             </div>
             
-            <Link href="/userfeed/feed">
+            
             <button
               type="submit"
               disabled={loading}
@@ -157,7 +158,7 @@ const Page = () => {
             >
               {loading ? "Signing In..." : "Sign In"}
             </button>
-            </Link>
+           
             {errorMsg && (
               <p className="text-red-500 text-sm mt-2 text-center">{errorMsg}</p>
             )}
@@ -172,9 +173,9 @@ const Page = () => {
           </div>
 
           
-           <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, users, setUser, router)}
+           <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, router)}
             onError={() => console.log('Login Failed')}
-            className = "w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition">
+            className = "w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition cursor-pointer">
             <FcGoogle className="mr-2" /> Continue with Google
             </GoogleLogin>
 

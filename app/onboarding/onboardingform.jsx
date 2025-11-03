@@ -1,3 +1,4 @@
+
 'use client'
 
 import { AnimatePresence, motion } from 'framer-motion'
@@ -21,9 +22,15 @@ const useFormStore = create((set) => ({
   currentStep: 0,
   selections: {},
   setStep: (step) => set({ currentStep: step }),
-  setSelection: (key, selection) =>
+  setSelection: (step, selection) =>
     set((state) => ({
-      selections: { ...state.selections, [key]: selection }
+      selections: { 
+      ...state.selections, 
+      [step]: {
+        ...state.selections[step],
+        ...selection
+      }
+      }
     })),
   reset: () => set({ currentStep: 0, selections: {} }),
 }))
@@ -66,7 +73,7 @@ const FormCard = React.forwardRef(({ options}, ref) => {
   const currentStep = useFormStore((state) => state.currentStep)
   const selections = useFormStore((state) => state.selections)
   const setSelection = useFormStore((state) => state.setSelection)
-  const userType = selections[0];
+  const userType = selections[0]?.selection;
   const [showManualLocation, setShowManualLocation] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState("")
   const [selectedState, setSelectedState] = useState("")
@@ -89,11 +96,14 @@ const FormCard = React.forwardRef(({ options}, ref) => {
 
       if (data.status === "OK" && data.results.length > 0) {
             const addressComponents = data.results[0].address_components;
-            
+            let city = ""
             let state = "";
             let country = "";
             
             addressComponents.forEach(component => {
+              if (component.types.includes("locality")) {
+                city = component.long_name;
+              }
               if (component.types.includes("administrative_area_level_1")) {
                 state = component.long_name;
               }
@@ -102,9 +112,9 @@ const FormCard = React.forwardRef(({ options}, ref) => {
               }
             });
             
-            const locationString = `${state}, ${country}`;
+            const locationString = `${city}, ${state}, ${country}`;
             console.log("Resolved location:", locationString);
-            setSelection(currentStep, locationString);
+            setSelection(currentStep, { city, state, country  });
           } else {
             console.error("Geocoding failed:", data);
             alert("Could not get address");
@@ -124,15 +134,18 @@ const FormCard = React.forwardRef(({ options}, ref) => {
 
     // Toggle selection for regular options
     const currentSelection = selections[currentStep]
-    const newValue = (currentSelection === option.id) ? null : option.id
-    setSelection(currentStep, newValue)
+    const newValue = (currentSelection?.selection === option.id) ? null : option.id
+    setSelection(currentStep, {selection: newValue})
   }
   const handleManualLocationSubmit = () => {
   if (selectedCountry && selectedState && selectedCity) {
     const countryName = Country.getCountryByCode(selectedCountry)?.name || selectedCountry
     const stateName = State.getStateByCodeAndCountry(selectedState, selectedCountry)?.name || selectedState
+    const cityName = City.getCityByNameAndStateAndCountry(selectedCity, selectedState, selectedCountry)?.name || selectedCity
     
-    const manualAddress = `${selectedCity}, ${stateName}, ${countryName}`
+    const manualAddress = { city: cityName,
+      state: stateName,
+      country: countryName,}
     setSelection(currentStep, manualAddress)
     setShowManualLocation(false)
   }
@@ -144,7 +157,7 @@ const FormCard = React.forwardRef(({ options}, ref) => {
 
   const isMultiDropdownStep = filteredOptions && filteredOptions.length > 0 && filteredOptions[0].options !== undefined
   const hasLocationOption = filteredOptions.some(opt => opt.id === "current-location")
-  const locationIsSet = hasLocationOption && selections[currentStep] && typeof selections[currentStep] === 'string'
+  const locationIsSet = hasLocationOption && selections[currentStep] && typeof selections[currentStep] === 'object'
 
   return (
     <div ref={ref} className="space-y-4 max-w-md mx-auto">
@@ -155,17 +168,20 @@ const FormCard = React.forwardRef(({ options}, ref) => {
                 {dropdown.title}
               </label>
 
-             {dropdown.id === "Date of Birth" ? (
+             {dropdown.id === "dateOfBirth" ? (
   <DatePicker
     selected={
-      selections[`${currentStep}-${dropdown.id}`]
-        ? new Date(selections[`${currentStep}-${dropdown.id}`])
-        : null
-    }
+  selections[currentStep]?.dateOfBirth
+    ? new Date(selections[currentStep].dateOfBirth)
+    : null
+}
     onChange={(date) =>
       setSelection(
-        `${currentStep}-${dropdown.id}`,
-        date?.toISOString().split("T")[0]
+        currentStep, {
+          ...selections[currentStep],
+       dateOfBirth: date?.toISOString().split("T")[0]
+        }
+
       )
     }
     dateFormat="yyyy-MM-dd"
@@ -177,19 +193,20 @@ const FormCard = React.forwardRef(({ options}, ref) => {
   />
 ) : dropdown.id === "position" ? (
   <select
-    value={selections[`${currentStep}-position`] || ""}
+    value={selections[currentStep]?.[dropdown.id] || ""}
     onChange={(e) =>{
-          console.log("Saving sport to key:", `${currentStep}-${dropdown.id}`, "with value:", e.target.value);
-
-      setSelection(`${currentStep}-${dropdown.id}`, e.target.value)
+      setSelection(currentStep, {
+  ...selections[currentStep], 
+  [dropdown.id]: e.target.value          
+})
     }}
     className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all cursor-pointer hover:border-gray-400 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat pr-10"
   >
     <option  className="text-gray-900 py-2" value="">Select position...</option>
     {(() => {
-      const positions = positionsBySport[selections[`${currentStep}-sports`]] || []
-      const selectedSport = selections[`${currentStep}-sports`]
-      const displayPositions = selectedSport === "football" ? positions.slice(0, 3) : positions
+      const selectedSport = selections[currentStep]?.sport || "";
+const positions = positionsBySport[selectedSport] || [];
+      const displayPositions = selectedSport === "Football" ? positions.slice(0, 3) : positions
       
       return displayPositions.map((pos) => (
         <option key={pos.id} value={pos.id}>
@@ -204,9 +221,12 @@ const FormCard = React.forwardRef(({ options}, ref) => {
 ) : (
   
   <select
-    value={selections[`${currentStep}-${dropdown.id}`] || ""}
+    value={selections[currentStep]?.[dropdown.id] || ""}
     onChange={(e) =>
-      setSelection(`${currentStep}-${dropdown.id}`, e.target.value)
+      setSelection(currentStep, {
+  ...selections[currentStep], 
+  [dropdown.id]: e.target.value         
+})
     }
    className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all cursor-pointer hover:border-gray-400 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat pr-10"
   >
@@ -220,54 +240,7 @@ const FormCard = React.forwardRef(({ options}, ref) => {
   
 
 
-    // <Menu as="div" className="relative inline-block">
-    //   <MenuButton className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white inset-ring-1 inset-ring-white/5 hover:bg-white/20">
-    //     Select...
-    //     <ChevronDownIcon aria-hidden="true" className="-mr-1 size-5 text-gray-400" />
-    //   </MenuButton>
-
-    //   <MenuItems
-    //     transition
-    //     className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-gray-800 outline-1 -outline-offset-1 outline-white/10 transition data-closed:scale-95 data-closed:transform data-closed:opacity-0 data-enter:duration-100 data-enter:ease-out data-leave:duration-75 data-leave:ease-in"
-    //   >
-    //     <div className="py-1">
-    //       <MenuItem>
-    //         <a
-    //           href="#"
-    //           className="block px-4 py-2 text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
-    //         >
-    //           Account settings
-    //         </a>
-    //       </MenuItem>
-    //       <MenuItem>
-    //         <a
-    //           href="#"
-    //           className="block px-4 py-2 text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
-    //         >
-    //           Support
-    //         </a>
-    //       </MenuItem>
-    //       <MenuItem>
-    //         <a
-    //           href="#"
-    //           className="block px-4 py-2 text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
-    //         >
-    //           License
-    //         </a>
-    //       </MenuItem>
-    //       <form action="#" method="POST">
-    //         <MenuItem>
-    //           <button
-    //             type="submit"
-    //             className="block w-full px-4 py-2 text-left text-sm text-gray-300 data-focus:bg-white/5 data-focus:text-white data-focus:outline-hidden"
-    //           >
-    //             Sign out
-    //           </button>
-    //         </MenuItem>
-    //       </form>
-    //     </div>
-    //   </MenuItems>
-    // </Menu>
+   
   
 
 )}
@@ -275,13 +248,21 @@ const FormCard = React.forwardRef(({ options}, ref) => {
           ))
         : filteredOptions.map((option) => (
             <OptionCard
-              key={option.id}
-              title={selections[currentStep] && option.id === "current-location" ? selections[currentStep] : option.title}
-              description={option.description}
-              icon={option.icon}
-              selected={selections[currentStep] === option.id}
-              onClick={() => handleSelection(option)}
-            />
+  key={option.id}
+  title={
+    selections[currentStep] && option.id === "current-location"
+      ? `${selections[currentStep].city}, ${selections[currentStep].state}, ${selections[currentStep].country}`
+      : option.title
+  }
+  description={option.description}
+  icon={option.icon}
+  selected={
+    option.id === "current-location"
+      ? typeof selections[currentStep] === "object" && selections[currentStep]?.city
+      : selections[currentStep]?.selection === option.id
+  }
+  onClick={() => handleSelection(option)}
+/>
           ))}
           {locationIsSet && !showManualLocation && (
         <div className="flex justify-end mt-2">
@@ -399,7 +380,7 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
   const [isCompleting, setIsCompleting] = React.useState(false)
 
 
-  const selectedUserType = selections[0];
+  const selectedUserType = selections[0]?.selection;
 
   if (!formSteps || formSteps.length === 0) {
     return <p className="text-gray-500 p-8">No form steps available.</p>
@@ -423,12 +404,17 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
 
     if (currentStep < formSteps.length - 1 && !isScoutLastStep) {
       setStep(currentStep + 1)
+      console.log({ currentStep, currentStepData });
+
     } else {
       setIsCompleting(true)
       try {
         await onComplete(selections)
       } catch (error) {
         console.error(error)
+       
+      }
+      finally{
         setIsCompleting(false)
       }
     }
@@ -438,35 +424,32 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
   const isLastStep = currentStep === formSteps.length - 1
 
   // ---------- Fixed validation logic ----------
-  let hasSelection = false
-  console.log(
-    "Step:", currentStep,
-    "Items:", currentStepData?.items?.map(i => i.id),
-    "Selections:", selections,
-    "UserType:", selectedUserType
+let hasSelection = false;
+
+if (currentStepData?.items && currentStepData.items.length > 0) {
+  const filteredItems = currentStepData.items.filter(
+    (item) => !(item.id === "position" && selectedUserType === "scout")
   );
-  
-  if (currentStepData?.items && currentStepData.items.length > 0) {
-    // Filter items the same way FormCard does
-    const filteredItems = currentStepData.items.filter(
-      (item) => !(item.id === "position" && selectedUserType === "scout")
-    )
-    
-    const isMultiDropdownStep = filteredItems.length > 0 && filteredItems[0].options !== undefined
-    
-    if (isMultiDropdownStep) {
-      // Multi-dropdown step - check all dropdown selections for filtered items only
-      hasSelection = filteredItems.every((item) => {
-        const key = `${currentStep}-${item.id}`
-        const val = selections[key]
-        return val !== undefined && val !== null && val !== ""
-      })
-    } else {
-      // Simple OptionCard step - check single selection
-      const val = selections[currentStep]
-      hasSelection = val !== undefined && val !== null && val !== ""
-    }
+
+  // detect if this step uses dropdowns
+  const isMultiDropdownStep = filteredItems.some(item => item.options !== undefined);
+
+  if (isMultiDropdownStep) {
+    // multi-dropdown step — check every field
+    const stepSelections = selections[currentStep] || {};
+    hasSelection = filteredItems.every(item => {
+      const val = stepSelections[item.id];
+      return val !== undefined && val !== null && val !== "";
+    });
+  } else {
+    // single option card step
+    const val = selections[currentStep]?.selection || selections[currentStep];
+    hasSelection = val !== undefined && val !== null && val !== "";
   }
+}
+
+console.log("Step", currentStep, "Selections", selections[currentStep], "Has selection?", hasSelection);
+
 
   return (
     <div
@@ -548,7 +531,7 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
             <Button 
               onClick={handleContinue} 
               disabled={!hasSelection || isCompleting}
-              className="bg-teal-600 hover:bg-teal-700 text-white"
+              className="bg-teal-600 hover:bg-teal-700 text-white cursor-pointer"
             >
               {isCompleting ? 'Processing...' : (isLastStep ? 'Complete' : 'Continue')}
             </Button>

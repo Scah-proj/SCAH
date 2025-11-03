@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export const positionsBySport = {
-  football: [
+  Football: [
     { id: "offensive", title: "Offensive" },
     { id: "defensive", title: "Defensive" },
     { id: "special_team", title: "Special Team" },
@@ -20,14 +20,14 @@ export const positionsBySport = {
     { id: "midfielder", title: "Midfielder" },
     { id: "forward", title: "Forward" },
   ],
-  basketball: [
+  Basketball: [
     { id: "point_guard", title: "Point Guard" },
     { id: "shooting_guard", title: "Shooting Guard" },
     { id: "small_forward", title: "Small Forward" },
     { id: "power_forward", title: "Power Forward" },
     { id: "center", title: "Center" },
   ],
-  tennis: [
+  Tennis: [
     { id: "singles", title: "Singles Player" },
     { id: "doubles", title: "Doubles Player" },
   ],
@@ -41,7 +41,7 @@ export default function FormContainer() {
       description: 'Select your role to get personalized recommendations',
       items: [
         {
-          id: 'athlete',
+          id: 'Athlete',
           title: 'Athlete',
           description: '',
           icon: Trophy,
@@ -67,25 +67,25 @@ export default function FormContainer() {
             id: 'gender',
             title: 'Gender',
             options: [
-              {id: 'male', title: 'Male', description: '', icon: ''},
-              {id: 'female', title: 'Female', description: '', icon: ''},
+              {id: 'Male', title: 'Male', description: '', icon: ''},
+              {id: 'Female', title: 'Female', description: '', icon: ''},
               
             ]
           },
           {
-            id: 'Date of Birth',
+            id: 'dateOfBirth',
             title: 'Date of Birth',
             options: [
               
             ]
           },
           {
-            id: 'sports',
+            id: 'sport',
             title: 'Sport',
             options: [
-              {id: 'soccer', title: 'Soccer', description: '', icon: Zap},
-              {id: 'football', title: 'Football', description: '', icon: Zap},
-              {id: 'basketball', title: 'Basketball', description: '', icon: Mountain},
+              {id: 'Tennis', title: 'Tennis', description: '', icon: Zap},
+              {id: 'Football', title: 'Football', description: '', icon: Zap},
+              {id: 'Basketball', title: 'Basketball', description: '', icon: Mountain},
               
             ]
           },
@@ -115,37 +115,37 @@ export default function FormContainer() {
         description: '',
         items: [
           {
-            id: 'local clubs',
+            id: 'local Clubs',
             title: 'Local Clubs',
             description: '',
             icon: '',
           },
           {
-            id: 'school teams',
+            id: 'School Teams',
             title: 'School Teams',
             description: '',
             icon: '',
           },
           {
-            id: 'academy programs',
+            id: 'Academy Programs',
             title: 'Academy Programs',
             description: '',
             icon: '',
           },
           {
-            id: 'semi-professionals',
+            id: 'Semi-Professionals',
             title: 'Semi-Professionals',
             description: '',
             icon: '',
           },
           {
-            id: 'professional',
+            id: 'Professional',
             title: 'Professional',
             description: '',
             icon: '',
           },
           {
-            id: 'just starting',
+            id: 'Just starting',
             title: 'Just Starting',
             description: '',
             icon: '',
@@ -158,26 +158,26 @@ export default function FormContainer() {
         description: '',
         items: [
           {
-            id: 'active',
+            id: 'Actively seeking opportunities',
             title: 'Actively seeking opportunities',
             description: '',
             icon: '',
           },
           {
-            id: 'open',
+            id: 'Open to the right opportunities',
             title: 'Open to the right opportunities',
             description: '',
             icon: '',
           },
           {
-            id: 'building',
+            id: 'Building profile for futures',
             title: 'Building profile for futures',
             description: '',
             icon: '',
           },
           {
-            id: 'networking',
-            title: 'Just networking and Learning-',
+            id: 'Just networking and Learning',
+            title: 'Just networking and Learning',
             description: '',
             icon: '',
           },
@@ -191,33 +191,53 @@ export default function FormContainer() {
         ]
       },
     ];
-
+  
   
 
     const handleComplete = async (selections) => {
-        console.log('Form completed with selections:', selections);
-        
-        
-        const userData = {
-            role: selections[0],
-            sport: selections[1], 
-            gender: selections[2], 
-            location: selections[3], 
-            playingLevel: selections[4], 
-            seekingOpportunities: selections[5],
-           
-        };
+      
+        console.log('All selections:', selections);
+  console.log('selections[1]:', selections[3]); // Check gender
+  console.log('selections[2]:', selections[4]);
+    try {
+      const requests = [
+  postRequest('/api/onboarding/role', { role: selections[0]?.selection }),
+  postRequest('/api/onboarding/basic-info', {
+    gender: selections[1]?.gender,
+    dateOfBirth: selections[1]?.dateOfBirth,
+    sport: selections[1]?.sport,
+    ...(selections[1]?.position && { position: selections[1]?.position })
+  }),
+  postRequest('/api/onboarding/location', {
+    country: selections[2]?.country,
+    state: selections[2]?.state,
+    city: selections[2]?.city,
+  }),
+  postRequest('/api/onboarding/activity-level', {
+    activityLevel: selections[4]?.selection,
+  }),
+];
 
-         try{
-            const data = await postRequest('https://jsonplaceholder.typicode.com/posts', {username: "testuser", password: "123456"});
-            console.log(data);
-              router.push('/userfeed/feed'); 
-              
-            } catch (error) {
-              console.error('Error:', error);
-            }
-          };
+if (selections[0]?.selection === 'Athlete') {
+  requests.push(
+    postRequest('/api/onboarding/playing-level', { currentPlayingLevel: selections[3]?.selection })
+  );
+} else {
+  requests.push(
+    postRequest('/api/onboarding/scouting-level', { scoutingLevel: selections[3]?.selection })
+  );
+}
 
+await Promise.all(requests);
+await postRequest('/api/onboarding/complete');
+console.log('Onboarding fully complete');
+router.push('/userfeed/feed');
+    } catch (error) {
+      console.error('Error during onboarding submission:', error);
+    } 
+
+
+    }
     const handleSkip = () => {
         console.log('Onboarding skipped by user');
         
@@ -233,4 +253,4 @@ export default function FormContainer() {
     };
 
 return <MultiStepForm formSteps={formSteps} onComplete={handleComplete} onSkip={handleSkip} positionsBySport={positionsBySport} />;
-}
+  }

@@ -6,31 +6,22 @@ import { useRouter } from "next/navigation";
 import { handleGoogleSuccess } from "../googleAuth";
 import { GoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
-import { FaApple } from "react-icons/fa";
-import { Eye, EyeOff } from "lucide-react"; // 👈 import icons
+import { Eye, EyeOff } from "lucide-react"; 
 import { postRequest } from "@/app/api";
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+
 
 const Page = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+    const [formData, setFormData] = useState({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
 
   const [showPassword, setShowPassword] = useState(false); 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [open, setOpen] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const[ users, setUser ] = useState([]);
 
@@ -53,23 +44,14 @@ const Page = () => {
     setErrorMsg("");
 
     try {
-      const data = await postRequest('https://jsonplaceholder.typicode.com/posts', { username: "testuser", password: "123456" });
-
-      if (data) {
-            setOpen(true);
-          }
-    
-          // if (data.token) {
-          //   localStorage.setItem('token', data.token);
-          //   console.log('Account created successfully');
-          // } else {
-          //   console.log('Failed to create account');
-          // }
-        }
-         catch (error) {
-          console.error('Error:', error);
-          setErrorMsg("Registration failed. Please try again.");
-        }
+      const data = await postRequest('/api/auth/register', formData);
+      console.log('Account created successfully', data);
+      router.push('/auth/verify');
+      setLoading(false);
+    } catch (error) {
+      console.error('Error:', error);
+      setErrorMsg("Registration failed. Please try again.");
+    }
   };
 
   return (
@@ -164,7 +146,7 @@ const Page = () => {
             </div>
 
             
-            <div>
+            {/* <div>
               <label className="block text-md font-medium">Confirm Password</label>
               <div className="relative">
                 <input
@@ -183,13 +165,13 @@ const Page = () => {
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-            </div>
+            </div> */}
 
           
             
 
             
-            <Link href="">
+            
             <button
               type="submit"
               disabled={loading}
@@ -197,7 +179,7 @@ const Page = () => {
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
-            </Link>
+          
            {errorMsg && (
               <p className="text-red-500 text-sm mt-2 text-center">{errorMsg}</p>
             )}
@@ -212,25 +194,14 @@ const Page = () => {
           
           
          
-            <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, users, setUser, router)}
+            <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, router)}
             onError={() => console.log('Login Failed')}
-            className = "w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition">
-            <FcGoogle className="mr-2" /> Continue with Google
+            className = "border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition cursor-pointer">
+            {/* <FcGoogle className="mr-2" /> */}
             </GoogleLogin>
           
 
-          <AlertDialog open={open} onOpenChange={setOpen}>
-            <AlertDialogTrigger></AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Almost Done</AlertDialogTitle>
-                <AlertDialogDescription>
-                  An email has been sent to your address. Please verify your email to complete the registration process.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              
-            </AlertDialogContent>
-          </AlertDialog>
+         
           <p className="text-sm text-center text-gray-600 mt-5">
                        Have an account?{" "}
                       <Link href="/auth/login" className="text-teal-700 font-medium">

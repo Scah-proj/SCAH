@@ -1,12 +1,11 @@
-import { getPosts } from "../../lib/posts";
+"use client"
 import Image from 'next/image';
-import { Heart, MessageCircle} from "lucide-react"
+import { Heart, MessageCircle} from "lucide-react";
 
-export default async function PostCard() {
-    const posts = await getPosts();
+export default function PostCard({ post }) {
     return (
         <div className="space-y-6 max-w-2xl mx-auto">
-            {posts.map(post => (
+            
                 <div key={post.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
                     {/* Header section with profile and status */}
                     <div className="flex items-center justify-between p-4">
@@ -43,10 +42,11 @@ export default async function PostCard() {
                     <div className="w-full">
                         <Image
                             src={post.image}
-                            
+                            alt="Post Image "
                             width={800}
                             height={400}
                             className="w-full h-auto object-cover"
+                            priority
                         />
                     </div>
 
@@ -69,7 +69,7 @@ export default async function PostCard() {
                             <MessageCircle size={24} className="text-gray-600 hover:text-blue-600 cursor-pointer mx-4 mb-4" />
                     </div>
                 </div>
-            ))}
+        
         </div>
     );
 };

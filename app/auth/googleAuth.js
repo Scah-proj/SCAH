@@ -1,21 +1,34 @@
+import { jwtDecode } from "jwt-decode";
+import { postRequest } from "../api";
 
-import { jwtDecode} from "jwt-decode";
 
-export const handleGoogleSuccess = (credentialResponse, users, setUser, router) => {
-        const token = credentialResponse.credential;
-        const profile = jwtDecode(token);
+export const handleGoogleSuccess = async (credentialResponse, router) => {
+  const idToken = credentialResponse.credential;
+  const profile = jwtDecode(idToken);
 
-        const existingUser = users.find((u) => u.email === profile.email);
+  try {
+    const response = await postRequest('/api/auth/google', { token: idToken });
+    console.log('Google login response:', response);
 
-        if(existingUser) {
-            router.push('/userfeed/feed');
-        }
-        else{
-            const addUser = [...users, profile];
-            setUser(addUser);
-            localStorage.setItem("users", JSON.stringify(addUser));
-            localStorage.setItem("currentUser", JSON.stringify(profile));
-            router.push('/onboarding');
-        }
-    };
+    const result = response?.data; 
+    if (result?.token) {
+      localStorage.setItem('token', result.token);
+      console.log('Token used:', result.token);
+      console.log('Login successful');
 
+      // Check if user still needs onboarding
+      if (result.requiresOnboarding) {
+        console.log('Redirecting to onboarding...');
+        router.push('/onboarding');
+      } else {
+        console.log('Redirecting to feed...');
+        router.push('/userfeed/feed');
+      }
+    } else {
+      console.log('Login failed: No token found in response');
+    }
+
+  } catch (error) {
+    console.error("Google auth error:", error);
+  }
+};
