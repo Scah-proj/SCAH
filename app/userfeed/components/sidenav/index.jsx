@@ -23,6 +23,7 @@ const Sidenav = ({ onClose }) => {
                 <div className="hidden lg:flex justify-between items-center mb-6 p-4">
                     {/* Profile Picture */}
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center">
+                        <Link href="/profile">
                         <Image
                             src="/wen.webp"
                             alt="Profile"
@@ -30,6 +31,7 @@ const Sidenav = ({ onClose }) => {
                             height={48}
                             className="object-cover"
                         />
+                        </Link>
                     </div>
 
                     {/* Logo */}

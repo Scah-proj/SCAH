@@ -13,7 +13,7 @@ export const handleGoogleSuccess = async (credentialResponse, router) => {
     const result = response?.data; 
     if (result?.token) {
       localStorage.setItem('token', result.token);
-      console.log('Token used:', result.token);
+      
       console.log('Login successful');
 
       // Check if user still needs onboarding

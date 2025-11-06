@@ -152,7 +152,7 @@ const FormCard = React.forwardRef(({ options}, ref) => {
 }
 
  const filteredOptions = options.filter(
-  (opt) => !(opt.id === "position" && userType === "scout")
+  (opt) => !(opt.id === "position" && userType === "Scout")
 )
 
   const isMultiDropdownStep = filteredOptions && filteredOptions.length > 0 && filteredOptions[0].options !== undefined
@@ -390,7 +390,7 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
     if (currentStep > 0) {
       const prevStep = currentStep - 1
       
-      if (formSteps[prevStep]?.id === "step-5" && selectedUserType === "scout") {
+      if (formSteps[prevStep]?.id === "step-5" && selectedUserType === "Scout") {
         setStep(prevStep - 1) // Jump to step 4 instead
       } else {
         setStep(prevStep)
@@ -400,7 +400,7 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
 
   const handleContinue = async () => {
 
-    const isScoutLastStep = currentStepData?.id === "step-4" && selectedUserType === "scout"
+    const isScoutLastStep = currentStepData?.id === "step-4" && selectedUserType === "Scout"
 
     if (currentStep < formSteps.length - 1 && !isScoutLastStep) {
       setStep(currentStep + 1)
@@ -428,7 +428,7 @@ let hasSelection = false;
 
 if (currentStepData?.items && currentStepData.items.length > 0) {
   const filteredItems = currentStepData.items.filter(
-    (item) => !(item.id === "position" && selectedUserType === "scout")
+    (item) => !(item.id === "position" && selectedUserType === "Scout")
   );
 
   // detect if this step uses dropdowns
@@ -501,9 +501,9 @@ console.log("Step", currentStep, "Selections", selections[currentStep], "Has sel
             />
             <div className="mt-4 text-center">
               <h1 className="text-2xl font-semibold mb-2">
-                {currentStepData?.id === "step-3" && selectedUserType === "scout"
+                {currentStepData?.id === "step-3" && selectedUserType === "Scout"
                   ? "Where are you scouting from?"
-                  : currentStepData?.id === "step-4" && selectedUserType === "scout"
+                  : currentStepData?.id === "step-4" && selectedUserType === "Scout"
                   ? "What level of athletes are you interested in?"
                   : currentStepData?.title}
               </h1>

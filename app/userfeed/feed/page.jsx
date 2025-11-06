@@ -8,12 +8,12 @@ import FeedComponent from "./feedComponent/page";
 import { useEffect } from "react";
 const Page = () => {
     const router = useRouter();
-// useEffect(() => {
-//     const token = localStorage.getItem('token');
-//     if (!token) {
-//         router.push('/auth/login');
-//     }
-// },[router]);
+useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+        router.push('/auth/login');
+    }
+},[router]);
  return(
     <div className="min-h-screen bg-white">
         {/* Mobile header with centered logo */}
@@ -34,13 +34,15 @@ const Page = () => {
                   className="text-gray-500"
                />
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center">
-                  <Image
-                  src="/wen.webp"
-                     alt="Profile"
-                     width={32}
-                     height={32}
-                     className="object-cover"
-                  />
+                  <Link href="/profile">
+                        <Image
+                            src="/wen.webp"
+                            alt="Profile"
+                            width={48}
+                            height={48}
+                            className="object-cover"
+                        />
+                        </Link>
                 </div>
             </div>
         </div>

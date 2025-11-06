@@ -27,7 +27,7 @@ export const positionsBySport = {
     { id: "power_forward", title: "Power Forward" },
     { id: "center", title: "Center" },
   ],
-  Tennis: [
+  Soccer: [
     { id: "singles", title: "Singles Player" },
     { id: "doubles", title: "Doubles Player" },
   ],
@@ -47,7 +47,7 @@ export default function FormContainer() {
           icon: Trophy,
         },
         {
-          id: 'scout',
+          id: 'Scout',
           title: 'Scout',
           description: '',
           icon: Target,
@@ -83,7 +83,7 @@ export default function FormContainer() {
             id: 'sport',
             title: 'Sport',
             options: [
-              {id: 'Tennis', title: 'Tennis', description: '', icon: Zap},
+              {id: 'Soccer', title: 'Soccer', description: '', icon: Zap},
               {id: 'Football', title: 'Football', description: '', icon: Zap},
               {id: 'Basketball', title: 'Basketball', description: '', icon: Mountain},
               
@@ -197,44 +197,43 @@ export default function FormContainer() {
     const handleComplete = async (selections) => {
       
         console.log('All selections:', selections);
-  console.log('selections[1]:', selections[3]); // Check gender
-  console.log('selections[2]:', selections[4]);
-    try {
-      const requests = [
-  postRequest('/api/onboarding/role', { role: selections[0]?.selection }),
-  postRequest('/api/onboarding/basic-info', {
-    gender: selections[1]?.gender,
-    dateOfBirth: selections[1]?.dateOfBirth,
-    sport: selections[1]?.sport,
-    ...(selections[1]?.position && { position: selections[1]?.position })
-  }),
-  postRequest('/api/onboarding/location', {
-    country: selections[2]?.country,
-    state: selections[2]?.state,
-    city: selections[2]?.city,
-  }),
-  postRequest('/api/onboarding/activity-level', {
-    activityLevel: selections[4]?.selection,
-  }),
-];
+ 
+   try {
+  const requests = [
+    postRequest('/api/onboarding/role', { role: selections[0]?.selection }),
+    postRequest('/api/onboarding/basic-info', {
+      gender: selections[1]?.gender,
+      dateOfBirth: selections[1]?.dateOfBirth,
+      sport: selections[1]?.sport,
+      ...(selections[1]?.position && { position: selections[1]?.position })
+    }),
+    postRequest('/api/onboarding/location', {
+      country: selections[2]?.country,
+      state: selections[2]?.state,
+      city: selections[2]?.city,
+    }),
+  ];
 
-if (selections[0]?.selection === 'Athlete') {
-  requests.push(
-    postRequest('/api/onboarding/playing-level', { currentPlayingLevel: selections[3]?.selection })
-  );
-} else {
-  requests.push(
-    postRequest('/api/onboarding/scouting-level', { scoutingLevel: selections[3]?.selection })
-  );
+  if (selections[0]?.selection === 'Athlete') {
+    requests.push(
+      postRequest('/api/onboarding/playing-level', { currentPlayingLevel: selections[3]?.selection }),
+      postRequest('/api/onboarding/activity-level', { activityLevel: selections[4]?.selection })
+    );
+  } else {
+    requests.push(
+      postRequest('/api/onboarding/scouting-level', { scoutingLevel: selections[3]?.selection })
+    );
+  }
+
+  await Promise.all(requests);
+  await postRequest('/api/onboarding/complete');
+  console.log('Onboarding fully complete');
+  router.push('/userfeed/feed');
+} catch (error) {
+  console.error('Error during onboarding submission:', error);
 }
 
-await Promise.all(requests);
-await postRequest('/api/onboarding/complete');
-console.log('Onboarding fully complete');
-router.push('/userfeed/feed');
-    } catch (error) {
-      console.error('Error during onboarding submission:', error);
-    } 
+
 
 
     }

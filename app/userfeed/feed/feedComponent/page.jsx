@@ -8,7 +8,7 @@ export default function FeedComponent() {
 
   useEffect(() => {
     async function fetchData() {
-      const data = await getPosts(); // fetch from JSON or API
+      const data = await getPosts();
       setPosts(data);
     }
     fetchData();
