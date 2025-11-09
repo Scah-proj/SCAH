@@ -9,6 +9,7 @@ import {
   Zap, 
   Mountain, 
 } from "lucide-react";
+import { useUserStore } from "@/lib/userStore";
 
 export const positionsBySport = {
   Football: [
@@ -33,6 +34,7 @@ export const positionsBySport = {
   ],
 };
 export default function FormContainer() {
+  const updateProfile = useUserStore((state)=> state.updateProfile);
   const router = useRouter();
   const formSteps = [
   {
@@ -194,11 +196,10 @@ export default function FormContainer() {
   
   
 
-    const handleComplete = async (selections) => {
-      
-        console.log('All selections:', selections);
+  const handleComplete = async (selections) => {    
+  console.log('All selections:', selections);
  
-   try {
+  try {
   const requests = [
     postRequest('/api/onboarding/role', { role: selections[0]?.selection }),
     postRequest('/api/onboarding/basic-info', {
@@ -228,6 +229,25 @@ export default function FormContainer() {
   await Promise.all(requests);
   await postRequest('/api/onboarding/complete');
   console.log('Onboarding fully complete');
+  const onboardingData = {
+      role: selections[0]?.selection,
+      gender: selections[1]?.gender,
+      dateOfBirth: selections[1]?.dateOfBirth,
+      sport: selections[1]?.sport,
+      position: selections[1]?.position,
+      country: selections[2]?.country,
+      state: selections[2]?.state,
+      city: selections[2]?.city,
+      ...(selections[0]?.selection === "Athlete"
+        ? {
+            currentPlayingLevel: selections[3]?.selection,
+            activityLevel: selections[4]?.selection,
+          }
+        : {
+            scoutingLevel: selections[3]?.selection,
+          }),
+    };
+  updateProfile(onboardingData);
   router.push('/userfeed/feed');
 } catch (error) {
   console.error('Error during onboarding submission:', error);

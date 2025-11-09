@@ -29,14 +29,14 @@ const Waitlist = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage('✅ You’ve been added to the waitlist!');
+        setMessage('✅ You’re Subscibed');
         setEmail('');
         setRole('');
       } else {
         if (res.status === 400 && data?.error?.toLowerCase().includes('already')) {
-          setMessage('❌ This email is already on the waitlist.');
+          setMessage('This email exists with us.');
         } else {
-          setMessage(data?.error || '❌ This email is already on the waitlist.');
+          setMessage(data?.error || "❌Couldn't add email.");
         }
       }
     } catch (err) {
@@ -66,7 +66,7 @@ const Waitlist = () => {
              
 
               <p className="mt-6 text-base sm:text-lg font-medium text-gray-700">
-               We're building the future of talent discovery. Join our waitlist to be among the first to experience the platform when we launch
+               Building the future of talent discovery. Subscribe to our newsletter for the latest updates.
               </p>
 
               {/* Waitlist Form */}
@@ -90,11 +90,11 @@ const Waitlist = () => {
                 />
 
                 <button
-                  onClick={handleSubscribe}
+                  
                   disabled={loading}
                   className="bg-teal-800 text-white w-full py-3 rounded-lg shadow-md hover:bg-teal-700 transition-all duration-200"
                 >
-                  {loading ? 'Submitting...' : 'Join Waitlist'}
+                  {loading ? 'Submitting...' : 'Subscribe'}
                 </button>
 
                 {message && (

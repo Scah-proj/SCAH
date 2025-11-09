@@ -19,7 +19,6 @@ const Navbar = () => {
     { name: 'Home', to: '/home' },
     { name: 'Mission', to: '/mission' },
     { name: 'Community', to: '/community' },
-    { name: 'Join us', to: '/join' },
     { name: 'Contact', to: '/contact' },
   ];
 

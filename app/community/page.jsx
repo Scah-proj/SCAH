@@ -56,9 +56,9 @@ const Page = () => {
              Your next breakthrough could start here.
           </motion.p>
 
-          <a href="/join">
+          <a href="/auth/register">
             <motion.button
-              onClick={scrollToPart}
+              
               className="mt-6 px-6 py-3 bg-teal-800 border border-teal-800 shadow-lg text-xl text-white rounded-3xl hover:cursor-pointer font-semibold hover:bg-transparent transition"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

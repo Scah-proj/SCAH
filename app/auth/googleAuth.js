@@ -1,21 +1,21 @@
-import { jwtDecode } from "jwt-decode";
+
 import { postRequest } from "../api";
 
 
-export const handleGoogleSuccess = async (credentialResponse, router) => {
+
+export const handleGoogleSuccess = async (credentialResponse, router, setUser) => {
+  
   const idToken = credentialResponse.credential;
-  const profile = jwtDecode(idToken);
+ 
 
   try {
     const response = await postRequest('/api/auth/google', { token: idToken });
-    console.log('Google login response:', response);
-
-    const result = response?.data; 
+console.log("Google auth response:", response);
+    const result = response?.data;   
     if (result?.token) {
-      localStorage.setItem('token', result.token);
-      
+      localStorage.setItem('token', result.token);  
       console.log('Login successful');
-
+      setUser(result.user)
       // Check if user still needs onboarding
       if (result.requiresOnboarding) {
         console.log('Redirecting to onboarding...');

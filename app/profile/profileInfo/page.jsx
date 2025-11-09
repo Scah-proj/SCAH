@@ -1,7 +1,10 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useUserStore } from "@/lib/userStore";
 
 export default function ProfileInfo(){
+    const user = useUserStore((state) => state.user);
     return(
         <div className="mb-6">
             <div className="grid md:col-30-70 max-md:col-25-auto gap-x-6 items-center max-md:px-4 max-md:py-2">
@@ -26,12 +29,12 @@ export default function ProfileInfo(){
             </div>
             <div className="flex flex-row justify-between items-center mt-16 mx-4">
                 <div className="flex flex-col gap-1">
-                    <p className="font-medium text-2xl text-black break-all">Michael Russ</p>
+                    <p className="font-medium text-2xl text-black break-all"> {user?.name}</p>
                     <p className="text-xs text-gray-600">Manchester United Academy</p>
                     <p className="text-xs text-gray-600">Manchester, England</p>
                 </div>
                 <div>
-                    <Link href="/editProfile">
+                    <Link href="/profile/editProfile">
                         <button className="border rounded-full py-1 px-3 max-sm:w-full text-center hover:bg-gray-100 cursor-pointer">Edit Profile</button>
                     </Link>
                 </div>

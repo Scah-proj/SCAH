@@ -1,22 +1,21 @@
 
 'use client'
 
+import * as React from 'react'
+import Link from 'next/link'
+import DatePicker from 'react-datepicker'
+import "react-datepicker/dist/react-datepicker.css"
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeftIcon } from 'lucide-react'
-import * as React from 'react'
 import { create } from 'zustand'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import DatePicker from 'react-datepicker'
-import "react-datepicker/dist/react-datepicker.css"
 import { Country, State, City } from 'country-state-city'
 import { positionsBySport } from './page'
-import Link from 'next/link'
-import { useState } from 'react'
-// import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
-// import { ChevronDownIcon } from '@heroicons/react/20/solid'
+
 
 const useFormStore = create((set) => ({
   currentStep: 0,

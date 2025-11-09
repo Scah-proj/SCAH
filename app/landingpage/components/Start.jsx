@@ -8,7 +8,7 @@ const Start = () => {
       </p>
 
       <div className="flex items-center justify-center">
-        <a href="/join">
+        <a href="/register">
           <button className="rounded-3xl py-2 px-6 font-semibold text-xl text-gray-200 bg-teal-600 hover:scale-105 active:scale-95 transition-transform duration-200">
             Start your journey
           </button>

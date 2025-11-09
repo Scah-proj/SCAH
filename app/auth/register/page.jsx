@@ -8,6 +8,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
 import { Eye, EyeOff } from "lucide-react"; 
 import { postRequest } from "@/app/api";
+import { useUserStore } from "@/lib/userStore";
 
 
 const Page = () => {
@@ -20,12 +21,10 @@ const Page = () => {
     });
 
   const [showPassword, setShowPassword] = useState(false); 
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const[ users, setUser ] = useState([]);
-
-    const router = useRouter();
+  const setUser = useUserStore((state) =>state.setUser)
+  const router = useRouter();
 
   useEffect(()=>{
     const storedUsers = JSON.parse(localStorage.getItem("users"));
@@ -46,6 +45,8 @@ const Page = () => {
     try {
       const data = await postRequest('/api/auth/register', formData);
       console.log('Account created successfully', data);
+      setUser(data.data.user)
+
       router.push('/auth/verify');
       setLoading(false);
     } catch (error) {
@@ -194,7 +195,7 @@ const Page = () => {
           
           
          
-            <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, router)}
+            <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, router, setUser)}
             onError={() => console.log('Login Failed')}
             className = "border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition cursor-pointer">
             {/* <FcGoogle className="mr-2" /> */}

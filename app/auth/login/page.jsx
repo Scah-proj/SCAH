@@ -9,22 +9,24 @@ import { postRequest } from "@/app/api";
 import { GoogleLogin } from "@react-oauth/google";
 import { handleGoogleSuccess } from "../googleAuth";
 import { useEffect } from "react";
+import { useUserStore } from "@/lib/userStore";
 
 const Page = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
- const[ users, setUser ] = useState([]);
+//  const[ users, setUser ] = useState([]);
+ const setUser = useUserStore((state) =>state.setUser)
  
      const router = useRouter();
  
-   useEffect(()=>{
-     const storedUsers = JSON.parse(localStorage.getItem("users"));
-     if(storedUsers){
-         setUser(storedUsers);
-     }
-   },[])
+  //  useEffect(()=>{
+  //    const storedUsers = JSON.parse(localStorage.getItem("users"));
+  //    if(storedUsers){
+  //        setUser(storedUsers);
+  //    }
+  //  },[])
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -36,20 +38,17 @@ const Page = () => {
 
     try {
       const data = await postRequest('/api/auth/login', formData);
-console.log("Login response:", data);
-const token = data?.data?.token
+      console.log("Login response:", data);
+      const token = data?.data?.token
       if (token) {
         localStorage.setItem('token', token);
-        
         console.log('Login successful');
+        setUser(data.data.user)
         router.push('/userfeed/feed');
       } else {
         console.log('Login failed', data);
-        
       }
-
-
-    } catch (error) {
+      } catch (error) {
       console.error('Error:', error);
       setErrorMsg("Incorrect Email or password. please try again.");
 
@@ -173,7 +172,7 @@ const token = data?.data?.token
           </div>
 
           
-           <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, router)}
+           <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, router, setUser)}
             onError={() => console.log('Login Failed')}
             className = "w-full flex items-center justify-center border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition cursor-pointer">
             <FcGoogle className="mr-2" /> Continue with Google
