@@ -29,8 +29,10 @@ export const positionsBySport = {
     { id: "center", title: "Center" },
   ],
   Soccer: [
-    { id: "singles", title: "Singles Player" },
-    { id: "doubles", title: "Doubles Player" },
+    { id: "goalkeeper", title: "Goalkeeper" },
+    { id: "defender", title: "Defender" },
+    { id: "midfielder", title: "Midfielder" },
+    { id: "forward", title: "Forward" },
   ],
 };
 export default function FormContainer() {
