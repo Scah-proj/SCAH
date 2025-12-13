@@ -1,7 +1,6 @@
 'use client';
 import Sidenav from "../components/sidenav";
 import React, { useState } from "react";
-import Image from 'next/image';
 import { AiOutlineMenu, AiOutlineClose } from 'react-icons/ai';
 
 
@@ -18,7 +17,7 @@ export default function FeedLayout({ children}) {
 
                 {/* Sidebar */}
                 <div className={`
-                    w-80 lg:w-1/5 
+                    w-80 lg:w-1/5
                     fixed left-0 top-0 h-full 
                     transform transition-transform duration-300 ease-in-out 
                     shadow-lg z-20 bg-white

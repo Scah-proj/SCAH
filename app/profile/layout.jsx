@@ -12,13 +12,13 @@ export default function FeedLayout({ children}) {
         <div className="min-h-screen">
             <div className="flex flex-row h-screen">
                 {/* Mobile hamburger menu button */}
-                {/* <div className={`lg:hidden fixed top-4 left-4 z-30 transition-opacity duration-300 ${nav ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <AiOutlineMenu color="black" size={30} onClick={handleNav} />
+                {/* <div className={`lg:hidden fixed top-6 left-8 z-30 transition-opacity duration-300 ${nav ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                    <AiOutlineMenu color="white" size={30} onClick={handleNav} />
                 </div> */}
 
                 {/* Sidebar */}
                 <div className={`
-                    w-80 lg:w-1/5 
+                    w-80 lg:w-1/6 
                     fixed left-0 top-0 h-full 
                     transform transition-transform duration-300 ease-in-out 
                     shadow-lg z-20 bg-white
@@ -28,7 +28,7 @@ export default function FeedLayout({ children}) {
                 </div>
 
                 {/* Main content area */}
-                <div className="flex-1 lg:ml-[20%] lg:w-4/5 ml-0">
+                <div className="flex-1 lg:ml-[16.6667%] lg:w-5/6 ml-0">
                     <div className="lg:ml-0 ml-0 w-full">
                         {children}
                     </div>

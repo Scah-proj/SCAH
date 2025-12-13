@@ -18,5 +18,65 @@
     "caption": "Another exciting update",
     "image": "/hudson.webp",
     "hashtags": ["#update", "#news"]
+  },
+  {
+    "id": "3",
+    "author": "John Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "First Post",
+    "caption": "This is my first post!",
+    "image": "/fan.webp",
+    "hashtags": ["#welcome", "#firstpost"]
+  },
+  {
+    "id": "4",
+    "author": "Jane Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "Second Post",
+    "caption": "Another exciting update",
+    "image": "/hudson.webp",
+    "hashtags": ["#update", "#news"]
+  },
+  {
+    "id": "5",
+    "author": "John Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "First Post",
+    "caption": "This is my first post!",
+    "image": "/fan.webp",
+    "hashtags": ["#welcome", "#firstpost"]
+  },
+  {
+    "id": "6",
+    "author": "Jane Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "Second Post",
+    "caption": "Another exciting update",
+    "image": "/hudson.webp",
+    "hashtags": ["#update", "#news"]
+  },
+  {
+    "id": "7",
+    "author": "John Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "First Post",
+    "caption": "This is my first post!",
+    "image": "/fan.webp",
+    "hashtags": ["#welcome", "#firstpost"]
+  },
+  {
+    "id": "8",
+    "author": "Jane Doe",
+    "role": "Player",
+    "status": "Following",
+    "title": "Second Post",
+    "caption": "Another exciting update",
+    "image": "/hudson.webp",
+    "hashtags": ["#update", "#news"]
   }
 ]

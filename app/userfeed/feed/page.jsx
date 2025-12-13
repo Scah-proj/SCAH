@@ -8,12 +8,12 @@ import FeedComponent from "./feedComponent/page";
 import { useEffect } from "react";
 const Page = () => {
     const router = useRouter();
-useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        router.push('/auth/login');
-    }
-},[router]);
+// useEffect(() => {
+//     const token = localStorage.getItem('token');
+//     if (!token) {
+//         router.push('/auth/login');
+//     }
+// },[router]);
  return(
     <div className="min-h-screen bg-white">
         {/* Mobile header with centered logo */}
@@ -46,6 +46,7 @@ useEffect(() => {
                 </div>
             </div>
         </div>
+        
 
         {/* Main content */}
         <div className="p-4">

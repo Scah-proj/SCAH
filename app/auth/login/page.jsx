@@ -5,10 +5,9 @@ import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { postRequest } from "@/app/api";
+import { getRequest, postRequest } from "@/app/api";
 import { GoogleLogin } from "@react-oauth/google";
 import { handleGoogleSuccess } from "../googleAuth";
-import { useEffect } from "react";
 import { useUserStore } from "@/lib/userStore";
 
 const Page = () => {
@@ -16,17 +15,11 @@ const Page = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-//  const[ users, setUser ] = useState([]);
  const setUser = useUserStore((state) =>state.setUser)
  
      const router = useRouter();
  
-  //  useEffect(()=>{
-  //    const storedUsers = JSON.parse(localStorage.getItem("users"));
-  //    if(storedUsers){
-  //        setUser(storedUsers);
-  //    }
-  //  },[])
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -43,7 +36,8 @@ const Page = () => {
       if (token) {
         localStorage.setItem('token', token);
         console.log('Login successful');
-        setUser(data.data.user)
+        // const user = await getRequest('/api/auth/me');
+        // setUser(user.data)
         router.push('/userfeed/feed');
       } else {
         console.log('Login failed', data);

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { getPosts } from "../../lib/posts";
-import PostCard from "../post/page";
+import PostCard from "../../../components/PostCard";
 
 export default function FeedComponent() {
   const [posts, setPosts] = useState([]);

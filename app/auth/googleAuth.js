@@ -1,6 +1,6 @@
 
 import { postRequest } from "../api";
-
+import { useUserStore } from "@/lib/userStore";
 
 
 export const handleGoogleSuccess = async (credentialResponse, router, setUser) => {
@@ -15,8 +15,13 @@ console.log("Google auth response:", response);
     if (result?.token) {
       localStorage.setItem('token', result.token);  
       console.log('Login successful');
-      setUser(result.user)
-      // Check if user still needs onboarding
+       const fakeUser = {
+    id: 1,
+    name: "John Doe",
+    role: "athlete", // or "scout"
+  };
+setUser(fakeUser);     
+// Check if user still needs onboarding
       if (result.requiresOnboarding) {
         console.log('Redirecting to onboarding...');
         router.push('/onboarding');

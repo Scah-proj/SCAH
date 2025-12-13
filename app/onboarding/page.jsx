@@ -231,25 +231,25 @@ export default function FormContainer() {
   await Promise.all(requests);
   await postRequest('/api/onboarding/complete');
   console.log('Onboarding fully complete');
-  const onboardingData = {
-      role: selections[0]?.selection,
-      gender: selections[1]?.gender,
-      dateOfBirth: selections[1]?.dateOfBirth,
-      sport: selections[1]?.sport,
-      position: selections[1]?.position,
-      country: selections[2]?.country,
-      state: selections[2]?.state,
-      city: selections[2]?.city,
-      ...(selections[0]?.selection === "Athlete"
-        ? {
-            currentPlayingLevel: selections[3]?.selection,
-            activityLevel: selections[4]?.selection,
-          }
-        : {
-            scoutingLevel: selections[3]?.selection,
-          }),
-    };
-  updateProfile(onboardingData);
+  // const onboardingData = {
+  //     role: selections[0]?.selection,
+  //     gender: selections[1]?.gender,
+  //     dateOfBirth: selections[1]?.dateOfBirth,
+  //     sport: selections[1]?.sport,
+  //     position: selections[1]?.position,
+  //     country: selections[2]?.country,
+  //     state: selections[2]?.state,
+  //     city: selections[2]?.city,
+  //     ...(selections[0]?.selection === "Athlete"
+  //       ? {
+  //           currentPlayingLevel: selections[3]?.selection,
+  //           activityLevel: selections[4]?.selection,
+  //         }
+  //       : {
+  //           scoutingLevel: selections[3]?.selection,
+  //         }),
+  //   };
+  // updateProfile(onboardingData);
   router.push('/userfeed/feed');
 } catch (error) {
   console.error('Error during onboarding submission:', error);
