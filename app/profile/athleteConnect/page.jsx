@@ -1,3 +1,4 @@
+"use client";
 import { useState, useEffect } from "react";
 import { getProfiles } from "../../userfeed/lib/profile";
 import AthleteProfile from "@/app/components/AthleteProfile";
