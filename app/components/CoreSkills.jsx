@@ -1,5 +1,10 @@
+"use client";
+import { useState } from "react";
+
 export default function CoreSkillsDisplay({ coreSkills, isOwnProfile = false }) {
-   
+   const [showAll, setShowAll] = useState(false);
+  const MAX_VISIBLE = 6;
+
   const skillLabels = {
     speed: 'Speed',
     agility: 'Agility',
@@ -49,19 +54,33 @@ export default function CoreSkillsDisplay({ coreSkills, isOwnProfile = false }) 
     );
   }
 
+  const visibleSkills = showAll
+    ? coreSkills
+    : coreSkills.slice(0, MAX_VISIBLE);
+
   return (
-    <div className="my-4">
-      <h3 className="text-xl font-semibold mb-4">Core Skills</h3>
+     <div className="mb-16">
+      <h3 className="text-lg font-semibold mb-4">Core Strength</h3>
+
       <div className="flex flex-wrap gap-2">
-        {coreSkills.map((skill) => (
+        {visibleSkills.map((skill) => (
           <span
             key={skill}
-            className="px-4 py-1.5 rounded-md border border-teal-700"
+            className="px-4 py-1.5 rounded-full border border-teal-600 text-sm"
           >
-            {skillLabels[skill] || skill}
+           {skillLabels[skill] || skill}
           </span>
         ))}
       </div>
+
+      {coreSkills.length > MAX_VISIBLE && (
+        <button
+          onClick={() => setShowAll((prev) => !prev)}
+          className="mt-3 text-sm font-medium text-teal-600 hover:underline"
+        >
+          {showAll ? "Show less" : `Show more (${coreSkills.length - MAX_VISIBLE})`}
+        </button>
+      )}
     </div>
   );
 }

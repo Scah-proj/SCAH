@@ -5,6 +5,8 @@ import { useUserStore } from "@/lib/userStore";
 import ExperienceSection from "@/app/components/Experience";
 import CoreSkillsDisplay from "@/app/components/CoreSkills";
 import TechnicalSkillDisplay from "../components/TechnicalSkill";
+import AthleteProfileConnect from "./athleteConnect/page";
+import ScoutProfileConnect from "./followScout/page";
 
 const Page = () => {
 const user = useUserStore((state) => state.user);
@@ -19,10 +21,16 @@ return(
             <div>
 
         <ProfileGallery />
-        <div className="border border-gray-200 py-2">
-            <p className="px-4 font-semiboldtext-lg">Experience</p>
+        <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
+            <p className=" font-semibold text-lg">Experience</p>
             <ExperienceSection experienceList={user?.experienceList || []} isOwnProfile={isOwnProfile} /> 
         </div>
+         <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
+        <p className=" font-semibold text-lg">Explore Scout Profiles</p>
+        <ScoutProfileConnect />
+        </div>
+        <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
+
         <CoreSkillsDisplay 
           coreSkills={user?.coreStrength || []} 
           isOwnProfile={true}
@@ -31,6 +39,11 @@ return(
         technicalSkills={user?.technicalSkills || []}
         isOwnProfile={true}
         />
+        </div>
+        <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
+        <p className=" font-semibold text-lg">People you may know</p>
+        <AthleteProfileConnect />
+        </div>
             </div>
         </div>
     </div>

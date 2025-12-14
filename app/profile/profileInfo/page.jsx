@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import {useState, useEffect } from "react";
 import { useUserStore } from "@/lib/userStore";
 import { MdEdit } from "react-icons/md";
 import { Label } from "@/components/ui/label";
@@ -34,6 +34,7 @@ export default function ProfileInfo(){
   }
 }, []); // Run only once on mount //
     // get profile details from backend
+    const [bio, setBio] = useState(""); // initially empty
 
     const handleEdit = () => {
         router.push('/profile/editBio');
@@ -78,11 +79,18 @@ export default function ProfileInfo(){
                     </Link>
                 </div>
             </div>
-            <div className="py-2 flex"> 
-                <div onClick={handleEdit} className="border p-2 rounded-md cursor-pointer hover:bg-gray-100 flex items-center gap-2">
-                    <MdEdit size={16}/>
-                <p className="font-medium">Add Bio</p>
+            <div className="py-2 flex">
+                {bio ? (
+                <p className="p-2 rounded-md bg-gray-100">{bio}</p>
+                ) : (
+                <div
+                    onClick={handleEdit}
+                    className="border p-2 rounded-md cursor-pointer hover:bg-gray-100 flex items-center gap-2"
+                >
+                    <MdEdit size={16} />
+                    <p className="font-medium">Add Bio</p>
                 </div>
+                )}
             </div>
             <div className="flex">
                 <div className="border rounded-full p-3 mt-5 cursor-pointer">

@@ -1,5 +1,11 @@
+"use client";
+import { useState } from "react";
+
 export default function TechnicalSkillDisplay({ technicalSkills, isOwnProfile = false }) {
    
+  const [showAll, setShowAll] = useState(false);
+  const MAX_VISIBLE = 6;
+
   const technicalSkillLabels = {
   // Ball Control
   ball_control: 'Ball Control',
@@ -63,19 +69,34 @@ export default function TechnicalSkillDisplay({ technicalSkills, isOwnProfile = 
     );
   }
 
+   const visibleSkills = showAll
+    ? technicalSkills
+    : technicalSkills.slice(0, MAX_VISIBLE);
+
+
   return (
-    <div className="my-4">
-      <h3 className="text-xl font-semibold mb-4">Technical Skill</h3>
+     <div className="mb-16">
+      <h3 className="text-lg font-semibold mb-4">Technical Skills</h3>
+
       <div className="flex flex-wrap gap-2">
-        {technicalSkills.map((skill) => (
+        {visibleSkills.map((skill) => (
           <span
             key={skill}
-            className="px-4 py-1.5 rounded-md border border-teal-700"
+            className="px-4 py-1.5 rounded-full border border-teal-600 text-sm"
           >
-            {technicalSkillLabels[skill] || skill}
+           {technicalSkillLabels[skill] || skill}
           </span>
         ))}
       </div>
+
+      {technicalSkills.length > MAX_VISIBLE && (
+        <button
+          onClick={() => setShowAll((prev) => !prev)}
+          className="mt-3 text-sm font-medium text-teal-600 hover:underline"
+        >
+          {showAll ? "Show less" : `Show more (${technicalSkills.length - MAX_VISIBLE})`}
+        </button>
+      )}
     </div>
   );
 }

@@ -498,7 +498,7 @@ export default function EditProfile() {
         </div>
         <div>
           {section.id === "experience" && (
-<ExperienceSection experienceList={user?.experienceList || []} isOwnProfile={true} />          )}
+<ExperienceSection experienceList={user?.experienceList || []} isOwnProfile={true} mode="edit" />          )}
         </div>
         </AccordionContent>
       </AccordionItem>

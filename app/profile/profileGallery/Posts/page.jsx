@@ -1,9 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
 import { getPosts } from "@/app/userfeed/lib/posts";
-import PostCard from "@/app/components/PostCard";
+// import PostCard from "@/app/components/PostCard";
 import { MdArrowBack } from "react-icons/md";
 import Link from "next/link";
+import PostGrid from "@/app/components/PostGrid";
 
 export default function AllPosts() {
   const [posts, setPosts] = useState([]);
@@ -24,9 +25,9 @@ export default function AllPosts() {
             <p className="px-2">Posts</p>
             </Link>
         </div>
-    <div className="space-y-6 max-w-2xl mx-auto">
+    <div className="grid grid-cols-3 max-w-2xl mx-auto">
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostGrid key={post.id} post={post} />
       ))}
     </div>
     </div>

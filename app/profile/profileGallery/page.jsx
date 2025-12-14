@@ -28,28 +28,43 @@ export default function ProfileGallery(){
                 <div className="w-full">
 
                 <TabsContent value="posts">
-                    <Link href="/profile/profileGallery/Posts">
                     <div className="max-w-2xl grid grid-cols-3">
                         {posts.slice(0,6).map((post) => (
                             <PostGrid key={post.id} post={post} />
                         ))}
                         </div>
+                    
+                    {posts.length > 6 && (
+                    <div className="flex justify-end mt-4">
+                    <Link
+                        href="/profile/profileGallery/Posts"
+                        className="px-3 py-1 rounded-full border border-teal-600 text-sm"
+                    >
+                        View all posts
                     </Link>
-                    <Link href="/profile/profileGallery/Posts" className="block text-right mt-4 text-teal-600 hover:underline">
-                        View All Posts
-                    </Link>
+                    </div>
+  )}
                 </TabsContent>
                 <TabsContent value="media">
-                    <div className="max-w-2xl grid grid-cols-1 md:grid-cols-3">
-                        {posts.map((post) => (
+                    <div className="max-w-2xl grid grid-cols-3">
+                        {posts.slice(0, 6).map((post) => (
                             <PostGrid key={post.id} post={post} />
                         ))}
                         </div>
-                         <Link href="/profile/profileGallery/Posts" className="block text-right mt-4 text-teal-600 hover:underline">
-                        View All Media
+                        {posts.length > 6 && (
+                    <div className="flex justify-end mt-4">
+                    <Link
+                        href="/profile/profileGallery/Posts"
+                        className="px-3 py-1 rounded-full border border-teal-600 text-sm"
+                    >
+                        View all media
                     </Link>
+                    </div>
+  )}
                 </TabsContent>
-                <TabsContent value="community">Be a part of a Community</TabsContent>
+                <TabsContent value="community">
+                    Be a part of a Community
+                </TabsContent>
                 </div>
             </Tabs>
             </div>

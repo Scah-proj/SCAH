@@ -1,6 +1,7 @@
 "use client";
 import Image from 'next/image';
 import { Heart, MessageCircle } from "lucide-react";
+import Link from 'next/link';
 
 export default function PostGrid({ post }) {
   if (!post) {
@@ -9,23 +10,25 @@ export default function PostGrid({ post }) {
   }
 
   return (
-    <div className="border max-w-2xl">
+    <div className="max-w-2xl">
+      <Link href={`/post/${post?.id}`} className="block mb-2">
       <div key={post?.id} className="bg-white border border-gray-200 shadow-sm overflow-hidden">
       
         {/* Post image */}
         {post?.image && (
-          <div className="w-full">
+          <div className="w-full aspect-square overflow-hidden">
             <Image
               src={post.image}
               alt="Post Image"
               width={500}
               height={500}
-              className="w-full h-auto object-cover"
+              className="object-cover w-full h-full"
               priority
             />
           </div>
         )}
       </div>
+      </Link>
     </div>
   );
 }
