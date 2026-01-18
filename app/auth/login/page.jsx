@@ -8,7 +8,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { getRequest, postRequest } from "../../api";
 import { GoogleLogin } from "@react-oauth/google";
 import { handleGoogleSuccess } from "../googleAuth";
-import { useUserStore } from "../../lib/userStore";
+import { useUserStore } from "../../../lib/userStore";
 
 const Page = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
