@@ -1,3 +1,4 @@
+"use client";
 import StoryAvatar from './StoryAvatar';
 import { currentUser, mockUserStories } from '../data/userstories';
 import { useState } from 'react';
