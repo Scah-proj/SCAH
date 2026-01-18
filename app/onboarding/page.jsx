@@ -2,14 +2,14 @@
 
 import MultiStepForm from "./onboardingform";
 import { useRouter } from 'next/navigation';
-import { postRequest } from "@/app/api";
+import { postRequest } from "../api";
 import { 
   Trophy, 
   Target, 
   Zap, 
   Mountain, 
 } from "lucide-react";
-import { useUserStore } from "@/lib/userStore";
+import { useUserStore } from "../../lib/userStore";
 
 export const positionsBySport = {
   Football: [

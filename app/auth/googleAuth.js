@@ -1,6 +1,6 @@
 
 import { postRequest } from "../api";
-import { useUserStore } from "@/lib/userStore";
+import { useUserStore } from "../../lib/userStore";
 
 
 export const handleGoogleSuccess = async (credentialResponse, router, setUser) => {

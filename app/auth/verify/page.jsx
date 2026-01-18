@@ -1,5 +1,5 @@
 "use client";
-import { postRequest } from "@/app/api";
+import { postRequest } from "../../api";
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Image from "next/image";

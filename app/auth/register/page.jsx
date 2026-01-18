@@ -7,8 +7,8 @@ import { handleGoogleSuccess } from "../googleAuth";
 import { GoogleLogin } from "@react-oauth/google";
 import { FcGoogle } from "react-icons/fc";
 import { Eye, EyeOff } from "lucide-react"; 
-import { postRequest } from "@/app/api";
-import { useUserStore } from "@/lib/userStore";
+import { postRequest } from "../../api";
+import { useUserStore } from "../../lib/userStore";
 
 
 const Page = () => {

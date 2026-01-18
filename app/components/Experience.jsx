@@ -1,7 +1,7 @@
 "use client";
 import { MdEdit } from "react-icons/md";
 import { IoTrash } from "react-icons/io5";
-import { useUserStore } from "@/lib/userStore";
+import { useUserStore } from "../../lib/userStore";
 
 function ExperienceCard({ exp, isEditable, index }) {
   return (
@@ -54,13 +54,16 @@ function formatDate(dateString) {
   return `${month} ${year}`;
 }
 
-export default function ExperienceSection({ experienceList = [], mode = "view" }) {
+export default function ExperienceSection({ experienceList = [], mode = "view", isOwnProfile }) {
   const isEditable = mode === "edit";
 
   if (!experienceList.length) {
     return (
-      <div className="p-6 text-center text-gray-500">
-        No experience added yet
+      <div className="my-4 p-6 rounded-md text-center text-gray-500">
+        <p>No Experience added yet</p>
+        {isOwnProfile && (
+          <p className="text-sm mt-2">Add Experience in Edit Profile</p>
+        )}
       </div>
     );
   }

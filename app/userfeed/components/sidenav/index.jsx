@@ -4,12 +4,13 @@ import React, { useState } from "react";
 import { usePathname } from "next/navigation";
 import Image from 'next/image';
 import { navroutes } from "./navroutes";
-import { BellPlus } from "lucide-react";
 import { AiOutlineClose } from 'react-icons/ai';
+import { useUserStore } from "../../../../lib/userStore";
 
 
 const Sidenav = ({ onClose }) => {
     const pathname = usePathname();
+    const { user } = useUserStore();
 
     return (
         <div className="relative w-full h-screen flex flex-col">
@@ -37,11 +38,11 @@ const Sidenav = ({ onClose }) => {
 
                     {/* Profile Section */}
                     <div className="flex items-center gap-3">
-                        <Link href="/profile" className="flex-shrink-0">
+                        <Link href="/profile/123" className="flex-shrink-0">
                             <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border">
                                 <Image
-                                    src="/wen.webp"
-                                    alt="Profile"
+                                    src={user?.profilePicture || '/wen.webp'}
+                                    alt="Profile Picture"
                                     width={48}
                                     height={48}
                                     className="object-cover"
@@ -49,9 +50,9 @@ const Sidenav = ({ onClose }) => {
                             </div>
                         </Link>
                         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                            <p className="font-semibold text-base text-black truncate">Johnny</p>
-                            <p className="text-xs text-gray-600 truncate">Manchester United Academy</p>
-                            <p className="text-xs text-gray-600 truncate">Manchester, England</p>
+                            <p className="font-semibold text-base text-black truncate">{user?.name || "Michael AE"}</p>
+                            <p className="text-xs text-gray-600 truncate">{user?.club || "Super Eagles"}</p>
+                            <p className="text-xs text-gray-600 truncate">{user?.location || "Nigeria"}</p>
                         </div>
                     </div>
                 </div>

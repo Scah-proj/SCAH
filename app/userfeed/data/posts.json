@@ -2,6 +2,8 @@
   {
     "id": "1",
     "author": "John Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
     "status": "Following",
     "title": "First Post",
@@ -12,8 +14,10 @@
   {
     "id": "2",
     "author": "Jane Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
-    "status": "Following",
+    "status": "Follow",
     "title": "Second Post",
     "caption": "Another exciting update",
     "image": "/hudson.webp",
@@ -22,6 +26,8 @@
   {
     "id": "3",
     "author": "John Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
     "status": "Following",
     "title": "First Post",
@@ -32,6 +38,8 @@
   {
     "id": "4",
     "author": "Jane Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
     "status": "Following",
     "title": "Second Post",
@@ -42,6 +50,8 @@
   {
     "id": "5",
     "author": "John Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
     "status": "Following",
     "title": "First Post",
@@ -52,6 +62,8 @@
   {
     "id": "6",
     "author": "Jane Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
     "status": "Following",
     "title": "Second Post",
@@ -62,6 +74,8 @@
   {
     "id": "7",
     "author": "John Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
     "status": "Following",
     "title": "First Post",
@@ -72,6 +86,8 @@
   {
     "id": "8",
     "author": "Jane Doe",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Player",
     "status": "Following",
     "title": "Second Post",

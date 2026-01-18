@@ -1,79 +1,365 @@
 "use client";
-import Image from 'next/image';
-import { Heart, MessageCircle } from "lucide-react";
+import { useState } from "react";
+import Image from "next/image";
+import {
+  Heart,
+  MessageCircle,
+  Repeat2,
+  Bookmark,
+  Send,
+  Star,
+  UserX2,
+  Copy,
+  CircleSlash,
+  MessageSquareWarning
+} from "lucide-react";
+import PostComments from "./comment/CommentSection";
+import SharePost from "./SharePost";
+import { useCommentStore } from "../../lib/commentStore";
+import { MoreHorizontalIcon } from "lucide-react"
+import { Button } from "../../components/ui/button"
+import { Checkbox } from "../../components/ui/checkbox"
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldSeparator,
+  FieldSet,
+} from "../../components/ui/field"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu"
+
 
 export default function PostCard({ post }) {
   if (!post) {
-    // Prevent build error and show a placeholder instead
     return <p className="text-center text-gray-500">Loading post...</p>;
   }
 
+  const [likes, setLikes] = useState(post.likes ?? 0);
+  const [liked, setLiked] = useState(false);
+  const [reposts, setReposts] = useState(post.reposts ?? 0);
+  const [reposted, setReposted] = useState(false);
+  const [shares, setShares] = useState(post.shares ?? 0);
+  const [saved, setSaved] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+  const commentsByPost = useCommentStore(state => state.commentsByPost);
+  const commentCount = (commentsByPost[post.id] || []).length;
+  const [showReportDialog, setShowReportDialog] = useState(false)
+  const [showFeedback, setShowFeedback] = useState(false)
+
+
+
   return (
-    <div className="space-y-6 max-w-2xl mx-auto">
-      <div key={post?.id} className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-        {/* Header section with profile and status */}
-        <div className="flex items-center justify-between p-4">
-          {/* Left side - Profile info */}
-          <div className="flex items-center space-x-3">
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center">
+    <div className="max-w-2xl mx-auto mb-6">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full overflow-hidden border">
               <Image
-                src={post?.image || "/wen.webp"}
-                alt={post?.author || "Author"}
-                width={48}
-                height={48}
+                src={post.authorAvatar || "/default-avatar.png"}
+                alt={post.author || "Author"}
+                width={40}
+                height={40}
                 className="object-cover"
               />
             </div>
+
             <div>
-              <h3 className="font-semibold text-gray-900">{post?.author || "Unknown Author"}</h3>
-              <p className="text-sm text-gray-500">{post?.role || "Member"}</p>
+              <p className="text-sm font-semibold text-gray-900">
+                {post.author || "Unknown"} •  
+                <span className="text-xs mx-2 font-semibold text-teal-600">
+            {post.status || "Active"}
+          </span>
+              </p>
+              <p className="text-xs text-gray-500">
+                {post.sport} • {post.position}
+              </p>
             </div>
           </div>
 
-          {/* Right side - Status */}
-          <div className="text-right">
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-gray-500">
-              {post?.status || "Active"}
-            </span>
-          </div>
+         <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" aria-label="Open menu" size="icon-sm">
+            <MoreHorizontalIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-40" align="end">
+          <DropdownMenuGroup>
+            <DropdownMenuItem>
+              <Bookmark/>
+              Save
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Star/>
+            Add to Favourites
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <UserX2/>
+            Unfollow
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <Copy/>
+            Copy link to post
+            </DropdownMenuItem>
+            <DropdownMenuItem >
+              < CircleSlash/>
+              Not Interested
+              </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setShowReportDialog(true)} className="text-red">
+              <MessageSquareWarning color="red"/>
+              Report post
+              </DropdownMenuItem>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Why are you reporting this post?</DialogTitle>
+            <DialogDescription>
+              Your report is anonymous. If someone is in immediate danger , call the local emergency service
+              , don't wait.
+            </DialogDescription>
+          </DialogHeader>
+          <FieldGroup>
+          <Field orientation="horizontal">
+              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
+              <FieldLabel
+                htmlFor="finder-pref-9k2-hard-disks-ljj"
+                className="font-normal"
+                defaultChecked
+              >
+                I just don't like it
+              </FieldLabel>
+            </Field>
+          <Field orientation="horizontal">
+              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
+              <FieldLabel
+                htmlFor="finder-pref-9k2-hard-disks-ljj"
+                className="font-normal"
+                defaultChecked
+              >
+                Bullying or unwanted contact
+              </FieldLabel>
+            </Field>
+          <Field orientation="horizontal">
+              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
+              <FieldLabel
+                htmlFor="finder-pref-9k2-hard-disks-ljj"
+                className="font-normal"
+                defaultChecked
+              >
+                Suicide, self-injury or eating disorders
+              </FieldLabel>
+            </Field>
+          <Field orientation="horizontal">
+              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
+              <FieldLabel
+                htmlFor="finder-pref-9k2-hard-disks-ljj"
+                className="font-normal"
+                defaultChecked
+              >
+                Violence, hate or exploitation
+              </FieldLabel>
+            </Field>
+          <Field orientation="horizontal">
+              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
+              <FieldLabel
+                htmlFor="finder-pref-9k2-hard-disks-ljj"
+                className="font-normal"
+                defaultChecked
+              >
+                Selling or promoting restricted items
+              </FieldLabel>
+            </Field>
+          <Field orientation="horizontal">
+              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
+              <FieldLabel
+                htmlFor="finder-pref-9k2-hard-disks-ljj"
+                className="font-normal"
+                defaultChecked
+              >
+                Nudity or sexual activity
+              </FieldLabel>
+            </Field>
+          <Field orientation="horizontal">
+              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
+              <FieldLabel
+                htmlFor="finder-pref-9k2-hard-disks-ljj"
+                className="font-normal"
+                defaultChecked
+              >
+                Scam, fraud or spam
+              </FieldLabel>
+            </Field>
+          
+          </FieldGroup>
+        
+          <DialogFooter>
+           
+            <Button onClick={() => setShowFeedback(true)} type="submit">
+              <DialogClose>Submit</DialogClose>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Thanks for your feedback</DialogTitle>
+            <DialogDescription>
+              We use these reports to show you less of this kind of content in the future.
+            </DialogDescription>
+          </DialogHeader>
+         
+        
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Done</Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
         </div>
 
         {/* Title */}
-        <div className="px-4 py-2">
-          <h2 className="text-lg font-semibold text-gray-900">{post?.title || "Untitled Post"}</h2>
-        </div>
-
-        {/* Post image */}
-        {post?.image && (
-          <div className="w-full">
-            <Image
-              src={post.image}
-              alt="Post Image"
-              width={800}
-              height={400}
-              className="w-full h-auto object-cover"
-              priority
-            />
+        {post.title && (
+          <div className="px-4 pb-2">
+            <h2 className="text-base text-gray-900">
+              {post.title}
+            </h2>
           </div>
         )}
 
         {/* Hashtags */}
-        <div className="p-4 space-y-3">
-          <div className="flex flex-wrap gap-2">
-            {post?.hashtags?.map((hashtag, index) => (
-              <span key={index} className="text-teal-600 text-sm font-medium">
-                {hashtag}
+        {post.hashtags?.length > 0 && (
+          <div className="px-4 pb-3 flex flex-wrap gap-2">
+            {post.hashtags.map((tag, i) => (
+              <span
+                key={i}
+                className="text-sm text-teal-600 font-medium"
+              >
+                #{tag}
               </span>
             ))}
           </div>
-        </div>
+        )}
 
-        {/* Interaction buttons */}
-        <div className="flex items-center border-t border-gray-100">
-          <Heart size={24} className="text-gray-600 hover:text-blue-600 cursor-pointer mx-4 mb-4" />
-          <MessageCircle size={24} className="text-gray-600 hover:text-blue-600 cursor-pointer mx-4 mb-4" />
+        {/* Post Image */}
+        {post.image && (
+          <div className="relative w-full aspect-square bg-gray-100">
+            <Image
+              src={post.image}
+              alt="Post"
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-5">
+            {/* Like */}
+            <div className="flex items-center">       
+            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setLikes(liked ? likes - 1 : likes + 1) || setLiked(!liked)}>
+              <Heart
+                size={22}
+                className={`transition ${
+                  liked
+                    ? "fill-red-500 text-red-500"
+                    : "text-gray-600 hover:text-red-500"
+                }`}
+              />
+            </button>
+            <span>
+              {likes > 0 && <span>{likes}</span>}
+            </span>
+            </div>
+
+            {/* Comment */}
+            <div className="flex items-center">
+             <button onClick={() => setShowComments(prev => !prev)}  className="flex space-y-1 mr-1 cursor-pointer">
+              <MessageCircle
+                size={22}
+                className="text-gray-600 hover:text-teal-600"
+                
+              />
+            </button>
+                <span>{commentCount > 0 && <span>{commentCount}</span>}</span>
+            </div>
+
+            {/* Repost */}
+            <div className="flex items-center">
+            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setReposts(reposted ? reposts - 1 : reposts + 1) || setReposted(!reposted)}>
+              <Repeat2
+                size={22}
+                className={`transition ${
+                  reposted
+                    ? "text-teal-500"
+                    : "text-gray-600 hover:text-teal-500"
+                }`}
+              />
+            </button>
+            <span>{reposts > 0 && <span>{reposts}</span>}</span>
+            </div>
+
+            {/* Share */}
+            <div className="flex items-center">
+            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setIsShareOpen(true)}>
+              <Send
+                size={22}
+                className="text-gray-600 hover:text-teal-600"
+              />
+             
+            </button>
+            <span>{shares > 0 && <span>{shares}</span>}</span>
+            </div>
+          </div>
+
+          {/* Save */}
+          <button onClick={() => setSaved(!saved)}>
+            <Bookmark
+              size={22}
+              className={`transition ${
+                saved
+                  ? "fill-gray-900 text-gray-900"
+                  : "text-gray-600 hover:text-gray-900"
+              }`}
+            />
+          </button>
         </div>
+                {showComments && (
+          <PostComments
+            postId={post.id}
+          />
+        )}
       </div>
+     
+        {isShareOpen && (
+        <SharePost postId={post.id} onClose={() => setIsShareOpen(false)} />
+      )
+        }
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function TechnicalSkillDisplay({ technicalSkills, isOwnProfile = false }) {
+export default function TechnicalSkillDisplay({ technicalSkills, isOwnProfile }) {
    
   const [showAll, setShowAll] = useState(false);
   const MAX_VISIBLE = 6;
@@ -60,7 +60,7 @@ export default function TechnicalSkillDisplay({ technicalSkills, isOwnProfile = 
 };
   if (!technicalSkills || technicalSkills.length === 0) {
     return (
-      <div className="my-4 p-6 border border-gray-200 rounded-md text-center text-gray-500">
+      <div className="my-4 p-6 rounded-md text-center text-gray-500">
         <p>No Technical Skill added yet</p>
         {isOwnProfile && (
           <p className="text-sm mt-2">Add your Technical Skill in Edit Profile</p>

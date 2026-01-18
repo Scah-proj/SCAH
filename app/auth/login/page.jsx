@@ -5,10 +5,10 @@ import { FcGoogle } from "react-icons/fc";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-import { getRequest, postRequest } from "@/app/api";
+import { getRequest, postRequest } from "../../api";
 import { GoogleLogin } from "@react-oauth/google";
 import { handleGoogleSuccess } from "../googleAuth";
-import { useUserStore } from "@/lib/userStore";
+import { useUserStore } from "../../lib/userStore";
 
 const Page = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });

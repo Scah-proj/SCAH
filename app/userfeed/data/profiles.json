@@ -4,6 +4,8 @@
     "photo": "/hudson.webp",
     "author": "Neymar Jnr",
     "club": "Free Agent",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Athlete"
   },
     {
@@ -11,6 +13,8 @@
     "photo": "/toa.webp",
     "author": "Fabrizo Smith",
     "club": "Inter miami",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Scout"
   },
     {
@@ -18,6 +22,8 @@
     "photo": "/roa.webp",
     "author": "David Uchenna",
     "club": "Sprta Prague",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Athlete"
   },
     {
@@ -25,6 +31,8 @@
     "photo": "/chang.webp",
     "author": "Mike Johnson",
     "club": "Chelsea FC",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Scout"
   },
     {
@@ -32,6 +40,8 @@
     "photo": "/coa.webp",
     "author": "Momoh Tobi",
     "club": "Barcelona",
+    "sport": "Soccer",
+    "position": "Defender",
     "role": "Scout"
   }
 ]

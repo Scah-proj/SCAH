@@ -1,9 +1,9 @@
-import {HomeIcon, MessageCircle, UsersIcon, CircleMinus, Search, Settings} from "lucide-react";
+import {HomeIcon, MessageCircle, UsersIcon, CircleMinus, Search, BellPlus, Settings} from "lucide-react";
 
 export const navroutes = [
     {
         label: "Feed",
-        path: "/userfeed/feed",
+        path: "/userfeed",
         icon: <HomeIcon/>,
     },
     {
@@ -25,6 +25,11 @@ export const navroutes = [
         label: "Explore",
         path: "/userfeed/explore",
         icon: <Search/>,
+    },
+    {
+        label: "Notifications",
+        path: "/userfeed/notifications",
+        icon: <BellPlus/>,
     },
     {
         label: "Settings",
