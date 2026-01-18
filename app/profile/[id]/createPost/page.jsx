@@ -34,7 +34,7 @@ export default function CreatePost() {
     <div className="mx-auto w-full h-screen bg-white p-4 md:max-w-md md:rounded-xl md:shadow-xl md:mt-10 flex flex-col">
       {/* Top bar */}
       <div className="flex justify-between items-center mb-4">
-        <Link href="/userfeed/feed" className="text-gray-500">
+        <Link href="/userfeed" className="text-gray-500">
           Cancel
         </Link>
         <button className="bg-teal-600 text-white px-4 py-1 rounded-full text-sm">

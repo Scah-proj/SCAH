@@ -27,7 +27,7 @@ setUser(fakeUser);
         router.push('/onboarding');
       } else {
         console.log('Redirecting to feed...');
-        router.push('/userfeed/feed');
+        router.push('/userfeed');
       }
     } else {
       console.log('Login failed: No token found in response');

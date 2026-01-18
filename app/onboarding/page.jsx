@@ -250,7 +250,7 @@ export default function FormContainer() {
   //         }),
   //   };
   // updateProfile(onboardingData);
-  router.push('/userfeed/feed');
+  router.push('/userfeed');
 } catch (error) {
   console.error('Error during onboarding submission:', error);
 }
@@ -270,7 +270,7 @@ export default function FormContainer() {
         
         //keep track of skips?
 
-        router.push('/userfeed/feed');
+        router.push('/userfeed');
     };
 
 return <MultiStepForm formSteps={formSteps} onComplete={handleComplete} onSkip={handleSkip} positionsBySport={positionsBySport} />;

@@ -482,7 +482,7 @@ console.log("Step", currentStep, "Selections", selections[currentStep], "Has sel
               {title && <div className="flex items-center">{title}</div>}
               <div className="w-20 flex justify-end">
                 {currentStep > 1 && (
-                  <Link href="/userfeed/feed">
+                  <Link href="/userfeed">
                     <Button
                       variant="link"
                       onClick={onSkip}

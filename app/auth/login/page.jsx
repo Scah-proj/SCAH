@@ -38,7 +38,7 @@ const Page = () => {
         console.log('Login successful');
         // const user = await getRequest('/api/auth/me');
         // setUser(user.data)
-        router.push('/userfeed/feed');
+        router.push('/userfeed');
       } else {
         console.log('Login failed', data);
       }

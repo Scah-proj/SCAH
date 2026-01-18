@@ -12,9 +12,22 @@ export default function FeedLayout({ children}) {
         <div className="min-h-screen">
             <div className="flex flex-row h-screen">
                 {/* Mobile hamburger menu button */}
-                {/* <div className={`lg:hidden fixed top-6 left-8 z-30 transition-opacity duration-300 ${nav ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                    <AiOutlineMenu color="white" size={30} onClick={handleNav} />
-                </div> */}
+                <div
+  className={`
+    lg:hidden fixed top-4 left-4 z-30
+    bg-white/10 backdrop-blur
+    p-2 rounded-md shadow
+    transition-opacity duration-300
+    ${nav ? 'opacity-0 pointer-events-none' : 'opacity-100'}
+  `}
+>
+  <AiOutlineMenu
+    size={26}
+    className="text-gray-700"
+    onClick={handleNav}
+  />
+</div>
+
 
                 {/* Sidebar */}
                 <div className={`
