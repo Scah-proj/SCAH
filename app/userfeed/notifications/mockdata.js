@@ -1,0 +1,42 @@
+export const mockNotifications = [
+  {
+    id: "1",
+    category: "activity",
+    type: "new_follower",
+    sender: { name: "Sarah Miller", profilePic: "/coa.webp" },
+    message: "followed you",
+    secondary: "View profile",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2h ago
+    read: false,
+  },
+  {
+    id: "2",
+    category: "activity",
+    type: "profile_view",
+    sender: { name: "Chelsea Academy Scout", profilePic: "/toa.webp" },
+    message: "viewed your profile",
+    secondary: "Improve your visibility",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+    read: false,
+  },
+  {
+    id: "3",
+    category: "opportunities",
+    type: "trial_invite",
+    sender: { name: "London Tigers FC", profilePic: "/roa.webp" },
+    message: "invited you to a trial match",
+    secondary: "March 15 · Wembley Sports Hub",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString(),
+    read: false,
+  },
+  {
+    id: "4",
+    category: "opportunities",
+    type: "application_update",
+    sender: { name: "Lagos United", profilePic: "/chang.webp" },
+    message: "updated your application status",
+    secondary: "Application under review",
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+    read: false,
+  },
+];

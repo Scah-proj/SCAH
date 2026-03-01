@@ -12,8 +12,14 @@ export default function AllPosts() {
   useEffect(() => {
     async function fetchData() {
       const data = await getPosts();
-      setPosts(data);
-    }
+
+    const postsWithTime = data.map(post => ({
+      ...post,
+      createdAt: post.createdAt || new Date().toISOString(),
+    }));
+
+    setPosts(postsWithTime);
+      }
     fetchData();
   }, []);
 

@@ -1,5 +1,6 @@
 "use client"
 import Trials from "../../../components/trials";
+
 import ScoutProfileConnect from "../../../profile/followScout";
 import { useState, useEffect } from "react";
 import { getTryout } from "../../lib/tryOuts";
@@ -16,9 +17,10 @@ export default function Suggestions() {
     fetchData();
     
   },[])
+ 
   return (
     <div className="flex flex-col">
-    <div className="rounded-lg p-4">
+    <div className="rounded-lg">
        <div className="flex justify-between mb-6">
         <p className="font-semibold">Upcoming Trials</p>
         {tryOuts.length > 1 && 
@@ -30,8 +32,9 @@ export default function Suggestions() {
       ))}
      </div>
         </div>
-       <div className=" rounded-xl shadow-sm p-4 my-4 space-y-4">
-              <p className=" font-semibold text-lg">Scout Suggestions</p>
+       <div className=" rounded-xl shadow-sm p-4 my-4 space-y-1">
+              <p className=" font-semibold text-lg">Trusted Scout on SCAH</p>
+              <p className="text-sm text-gray-500">Based on your location and distance</p>
               <ScoutProfileConnect />
               </div>
     </div>

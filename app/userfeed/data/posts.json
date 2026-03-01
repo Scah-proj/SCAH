@@ -9,7 +9,8 @@
     "title": "First Post",
     "caption": "This is my first post!",
     "image": "/fan.webp",
-    "hashtags": ["#welcome", "#firstpost"]
+    "hashtags": ["#welcome", "#firstpost"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   },
   {
     "id": "2",
@@ -21,7 +22,8 @@
     "title": "Second Post",
     "caption": "Another exciting update",
     "image": "/hudson.webp",
-    "hashtags": ["#update", "#news"]
+    "hashtags": ["#update", "#news"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   },
   {
     "id": "3",
@@ -33,7 +35,8 @@
     "title": "First Post",
     "caption": "This is my first post!",
     "image": "/fan.webp",
-    "hashtags": ["#welcome", "#firstpost"]
+    "hashtags": ["#welcome", "#firstpost"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   },
   {
     "id": "4",
@@ -45,7 +48,8 @@
     "title": "Second Post",
     "caption": "Another exciting update",
     "image": "/hudson.webp",
-    "hashtags": ["#update", "#news"]
+    "hashtags": ["#update", "#news"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   },
   {
     "id": "5",
@@ -57,7 +61,8 @@
     "title": "First Post",
     "caption": "This is my first post!",
     "image": "/fan.webp",
-    "hashtags": ["#welcome", "#firstpost"]
+    "hashtags": ["#welcome", "#firstpost"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   },
   {
     "id": "6",
@@ -69,7 +74,8 @@
     "title": "Second Post",
     "caption": "Another exciting update",
     "image": "/hudson.webp",
-    "hashtags": ["#update", "#news"]
+    "hashtags": ["#update", "#news"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   },
   {
     "id": "7",
@@ -81,7 +87,8 @@
     "title": "First Post",
     "caption": "This is my first post!",
     "image": "/fan.webp",
-    "hashtags": ["#welcome", "#firstpost"]
+    "hashtags": ["#welcome", "#firstpost"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   },
   {
     "id": "8",
@@ -93,6 +100,7 @@
     "title": "Second Post",
     "caption": "Another exciting update",
     "image": "/hudson.webp",
-    "hashtags": ["#update", "#news"]
+    "hashtags": ["#update", "#news"],
+    "createdAt": "2026-02-20T18:30:00.000Z"
   }
 ]

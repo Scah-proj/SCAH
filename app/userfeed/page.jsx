@@ -15,13 +15,13 @@ const Page = () => {
 //     }
 // },[router]);
  return(
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
         {/* Mobile header with centered logo */}
       
         
 
         {/* Main content */}
-        <div className="p-4">
+        <div className="">
             <FeedComponent />
         </div>
     </div>

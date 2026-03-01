@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Heart } from "lucide-react";
-import { timeAgo } from "../../../components/timeAgo"
+import { time } from "../../../components/timeAgo"
 import { useState } from "react";
 import Link from "next/link";
 
@@ -25,7 +25,7 @@ export default function Comment({ comment }) {
       <div>
         <p className="text-xs flex gap-2 items-center">
           <span className="font-medium">{comment.author}</span>
-          <span>{timeAgo(comment.createdAt)}</span>
+          <span>{time(comment.createdAt)}</span>
         </p>
         <div>
           {comment.text}

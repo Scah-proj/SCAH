@@ -7,7 +7,10 @@ import CoreSkillsDisplay from "../../../components/CoreSkills";
 import TechnicalSkillDisplay from "../../../components/TechnicalSkill";
 import AthleteProfileConnect from "../../athleteConnect";
 import ScoutProfileConnect from "../../followScout";
-import { useUserStore } from "../../../../lib/userStore"
+import { useUserStore } from "../../../../lib/userStore";
+import Link from "next/link";
+import { MdArrowBack } from "react-icons/md";
+
 export default function Profile({profile}){
 
     const { user } = useUserStore();
@@ -17,7 +20,11 @@ export default function Profile({profile}){
 
     return(
         <div>
-             <ProfileInfo profile={profile} isOwnProfile={isOwnProfile} />
+ <div className="lg:hidden fixed top-0 left-0 w-full h-16 z-20 flex items-center justify-between px-4">
+             <Link href="/userfeed"><MdArrowBack size={26}/></Link>
+
+            </div>           
+              <ProfileInfo profile={profile} isOwnProfile={isOwnProfile} />
         <div className="mx-4 flex justify-center items-center">
             <div>
 

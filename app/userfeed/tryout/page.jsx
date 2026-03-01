@@ -54,10 +54,8 @@ const filteredTryouts = tryOuts.filter(trial => {
         }
      
 return(
-    <div className="space-y-6 max-w-4xl mx-auto">
-        <div className="m-4">
-        <p className="text-lg font-semibold mb-4">Try Outs</p>
-        </div>
+    <div className="space-y-8 max-w-3xl px-4 py-8 mx-auto">
+       <h1 className="text-2xl font-bold">Tryouts</h1>
             <div>
               <TryoutSearch/>
             </div>
@@ -139,12 +137,11 @@ return(
           </div>
 
           
-        <div className="relative grid md:grid-cols-2 gap-4 w-full">
+        <div className="max-w-2xl mx-auto space-y-6">
             {filteredTryouts.map((trial)=>(
-           <div key={trial.id} className="space-6 ">
+           
 
              <Trials key={trial.id} trial={trial}/>
-           </div>
               
         ))}               
         </div>

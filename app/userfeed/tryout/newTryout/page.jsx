@@ -55,12 +55,12 @@ const Page = () => {
     
     return(
         
-        <div className="space-y-6 max-w-2xl mx-auto">
- <div className="m-4">
-        <p className="text-2xl font-semibold mb-4">New Tryout</p>
+        <div className="space-y-8 max-w-2xl px-4 py-8 mx-auto">
+ <div className="my-4">
+        <p className="text-2xl font-bold">New Tryout</p>
         </div>         
            <div>
-                 <form onSubmit={handleSubmit} className="rounded-lg p-6 space-y-6 shadow-md border">
+                 <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6 space-y-6 shadow-md border">
   {/* SECTION 1: Tryout Details */}
   <div className="space-y-4">
     <h3 className="text-lg font-semibold">Tryout Details</h3>
@@ -111,7 +111,7 @@ const Page = () => {
             key={g}
             type="button"
             onClick={() => setGender(g)}
-            className={`px-4 py-2 rounded-md border text-sm ${
+            className={`px-4 py-2 rounded-md border text-sm hover:bg-gray-200 ${
               gender === g ? "bg-teal-600 text-white border-teal-600" : "bg-gray-100 border-gray-300"
             }`}
           >

@@ -16,9 +16,9 @@ const Sidenav = ({ onClose }) => {
         <div className="relative w-full h-screen flex flex-col">
             <div className="flex-shrink-0 px-4 pt-4">
                 {/* Mobile header - close button on the right */}
-                <div className="lg:hidden flex justify-end items-center mb-4">
+                {/* <div className="lg:hidden flex justify-end items-center mb-4">
                     <AiOutlineClose color="gray" size={24} className="cursor-pointer" onClick={onClose} />
-                </div>
+                </div> */}
 
                 {/* Large screen header - profile pic, logo, bell icon */}
                 <div className="hidden lg:block mb-6">
@@ -28,7 +28,7 @@ const Sidenav = ({ onClose }) => {
                             <Image
                                 src="/yattr.png"
                                 alt="SCAH Logo"
-                                width={80}
+                                width={60}
                                 height={30}
                                 priority
                                 className="object-contain"
@@ -71,11 +71,11 @@ const Sidenav = ({ onClose }) => {
                                         className={`group flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors ${
                                             isActive 
                                                 ? "bg-teal-500 text-white" 
-                                                : "text-gray-700 hover:bg-teal-500 hover:text-white"
+                                                : "text-gray-700 hover:bg-gray-200/50 hover:text-gray-700"
                                         }`}
                                     >
                                         <span className={`flex-shrink-0 ${
-                                            isActive ? 'text-white' : 'text-gray-500 group-hover:text-white' 
+                                            isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700' 
                                         }`}>
                                             {route.icon} 
                                         </span>

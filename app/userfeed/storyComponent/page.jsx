@@ -32,7 +32,7 @@ const markViewedAndGoNext = () => {
   setTimeout(goToNextUser, 0);
 };
   return (
-    <div className="flex space-x-4 p-3 overflow-x-auto">
+    <div className="flex space-x-4 p-3 overflow-x-auto no-scrollbar">
       {users.map((user, index) => {
         const viewedCount = user.viewedCount || 0;
 

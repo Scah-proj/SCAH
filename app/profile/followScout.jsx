@@ -19,9 +19,12 @@ export default function Page() {
   );
 
   return (
-    <div>
+    <div className="">
       {scoutProfiles.map((profile) => (
-        <ScoutProfile key={profile.id} profile={profile} />
+        <div key={profile.id} className=""> 
+
+          <ScoutProfile key={profile.id} profile={profile} />
+        </div>
       ))}
     </div>
     )

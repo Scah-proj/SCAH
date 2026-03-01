@@ -45,6 +45,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu"
+import { timeAgo } from "../../components/timeAgo"
 
 
 export default function PostCard({ post }) {
@@ -69,7 +70,7 @@ export default function PostCard({ post }) {
 
   return (
     <div className="max-w-2xl mx-auto mb-6">
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xl mb-2 transition hover:shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
@@ -349,6 +350,10 @@ export default function PostCard({ post }) {
             />
           </button>
         </div>
+        <div className="text-xs text-gray-500 px-4 mb-2">{timeAgo(post.createdAt)}
+
+        </div>
+         
                 {showComments && (
           <PostComments
             postId={post.id}

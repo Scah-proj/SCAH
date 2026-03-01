@@ -9,16 +9,16 @@ import Link from "next/link";
 export default function Trials({trial}) {
   const sportConfig = {
   football: {
-    bg: "bg-teal-600",
+    bg: "bg-teal-800/40",
     Icon: BiFootball,
   },
  
   basketball: {
-    bg: "bg-orange-400",
+    bg: "bg-orange-400/50",
     Icon: BiBasketball,
   },
   soccer: {
-    bg: "bg-lime-600",
+    bg: "bg-lime-600/50",
     Icon: CiFootball,
   },
 
@@ -28,7 +28,7 @@ export default function Trials({trial}) {
 const sportKey = trial.sport?.toLowerCase()
 
 const sport = sportConfig[sportKey] || {
-  bg: "bg-gray-500",
+  bg: "bg-gray-500/50",
   Icon: null,
 }
  const scout = trial.scout
@@ -36,13 +36,13 @@ const sport = sportConfig[sportKey] || {
      <div className="max-w-md mx-auto mb-4">
     
 
-      <div className="bg-white border border-gray-200 rounded-md p-4 shadow-sm">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition">
         
         {/* Trial Info */}
        
        <div className="flex">
   <span
-    className={`flex items-center justify-center gap-1 rounded-full text-sm font-semibold px-2 py-0.5 text-white mb-2 ${sport.bg}`}
+    className={`flex items-center justify-center gap-1 rounded-full text-sm font-medium whitespace-nowrap transition px-2 py-1 text-white mb-2 ${sport.bg}`}
   >
     {sport.Icon && <sport.Icon size={14} />}
     <span className="mx-1">
@@ -68,14 +68,16 @@ const sport = sportConfig[sportKey] || {
 
         {/* Apply Button */}
         <div className="mt-4 flex justify-center">
-          <button
-            className="
+          
+            <Link href={`/userfeed/tryout/application/${trial.id}`}
+             className="
               w-full
               max-w-sm
               bg-teal-600
               text-white
               font-medium
               text-sm
+              flex justify-center
               py-2.5
               rounded-lg
               hover:bg-teal-700
@@ -83,11 +85,8 @@ const sport = sportConfig[sportKey] || {
               focus:outline-none
               focus:ring-2
               focus:ring-teal-500
-            "
-          >
-            <Link href={`/userfeed/tryout/application/${trial.id}`}>View Details</Link>
+            ">View Details</Link>
             
-          </button>
         </div>
          <div>
           <span className="text-xs text-gray-500 my-1">Posted by: {scout.name}</span>

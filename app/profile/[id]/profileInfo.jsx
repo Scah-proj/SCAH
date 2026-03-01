@@ -62,12 +62,12 @@ export default function ProfileInfo({ profile, isOwnProfile }){
                 </div>
                 <div>
                     {isOwnProfile ? (
-                    <Link href="/profile/editProfile">
+                    <Link href={`/profile/123/editProfile`}>
                         <button className="border rounded-full py-1 px-3 max-sm:w-full text-center hover:bg-gray-100 cursor-pointer">Edit Profile</button>
                     </Link>
                     ) : (
                         <button className="border rounded-full py-1 px-3 max-sm:w-full text-center hover:bg-gray-100 cursor-pointer">Follow</button>
-
+ 
                     )}
                 </div>
             </div>
