@@ -18,7 +18,7 @@ export default function TryoutSearch() {
   return (
     <>
       <SearchBar
-        placeholder="Search"
+        placeholder="Search upcoming try outs.."
         onSearch={handleSearch}
       />
 

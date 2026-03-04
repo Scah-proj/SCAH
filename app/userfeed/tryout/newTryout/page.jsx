@@ -31,6 +31,13 @@ const Page = () => {
     { value: 'Pro', label: 'Pro' },
     { value: 'Scholarship', label: 'Scholarship' },
   ];
+  const ageRangeOptions = [
+  { value: "U12 (8–12)", label: "U12 (8–12)" },
+  { value: "U15 (13–15)", label: "U15 (13–15)" },
+  { value: "U17 (16–17)", label: "U17 (16–17)" },
+  { value: "U20 (18–20)", label: "U20 (18–20)" },
+  { value: "Senior (21+)", label: "Senior (21+)" },
+];
   const feeOptions = [
     { value: 'Free', label: 'Free' },
     { value: 'Paid', label: 'Paid' },
@@ -41,8 +48,24 @@ const Page = () => {
   ];
 
       const [gender, setGender ] = useState("")
-    const [formData, setFormData ] = useState({firstName: "",lastName: "", age: "", spots: "", description:"" });
-           const handleChange = (e) => {
+    const [formData, setFormData] = useState({
+  trialTitle: "",
+  sport: "",
+  level: "",
+  gender: "",
+  city: "",
+  venue: "",
+  date: "",
+  time: "",
+  ageRange: "",
+  positions: "",
+  feeType: "",
+  feeAmount: "",
+  visibility: "",
+  deadline: "",
+  organization: "",
+  contactEmail: "",
+});       const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
       };
     const [open, setOpen] = useState(false)
@@ -110,7 +133,10 @@ const Page = () => {
           <button
             key={g}
             type="button"
-            onClick={() => setGender(g)}
+            onClick={() => { setGender(g);
+              setFormData({ ...formData, gender: g });
+            }}
+            
             className={`px-4 py-2 rounded-md border text-sm hover:bg-gray-200 ${
               gender === g ? "bg-teal-600 text-white border-teal-600" : "bg-gray-100 border-gray-300"
             }`}
@@ -164,13 +190,27 @@ const Page = () => {
   <div className="space-y-4">
     <h3 className="text-lg font-semibold">Eligibility</h3>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <input
-        name="ageRange"
-        placeholder="Age Range (e.g. 15–18)"
-        value={formData.ageRange}
-        onChange={handleChange}
-        className="w-full p-2 border rounded-md focus:ring-1 focus:ring-teal-500"
-      />
+      <Select
+  name="ageRange"
+  options={ageRangeOptions}
+  value={ageRangeOptions.find(option => option.value === formData.ageRange)}
+  onChange={(selected) =>
+    setFormData({ ...formData, ageRange: selected.value })
+  }
+  placeholder="Select Age Range"
+  classNames={{
+    control: (state) =>
+      `w-full mt-1 p-1 border rounded-md ${
+        state.isFocused ? "border-teal-500" : "border-gray-300"
+      }`,
+    menu: () =>
+      "bg-white shadow-lg rounded-md border border-gray-200",
+    option: (state) =>
+      `px-3 py-2 cursor-pointer ${
+        state.isFocused ? "bg-gray-100" : ""
+      }`,
+  }}
+/>
       <input
         name="positions"
         placeholder="Positions Needed (e.g. GK, ST)"
@@ -218,16 +258,7 @@ const Page = () => {
     </div>
   </div>
 
-  {/* SECTION 5: Athlete Requirements */}
-  <div className="space-y-2">
-    <h3 className="text-lg font-semibold">Athlete Requirements</h3>
-    {["SCAH Profile", "Highlight Video", "ID / Passport"].map(req => (
-      <label key={req} className="flex items-center gap-2 text-sm">
-        <input type="checkbox" />
-        {req}
-      </label>
-    ))}
-  </div>
+  
 
   {/* SECTION 6: Visibility & Deadline */}
   <div className="space-y-4">

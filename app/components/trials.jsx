@@ -9,16 +9,16 @@ import Link from "next/link";
 export default function Trials({trial}) {
   const sportConfig = {
   football: {
-    bg: "bg-teal-800/40",
+    bg: "bg-teal-800/80",
     Icon: BiFootball,
   },
  
   basketball: {
-    bg: "bg-orange-400/50",
+    bg: "bg-orange-400/80",
     Icon: BiBasketball,
   },
   soccer: {
-    bg: "bg-lime-600/50",
+    bg: "bg-lime-600/80",
     Icon: CiFootball,
   },
 
@@ -33,7 +33,7 @@ const sport = sportConfig[sportKey] || {
 }
  const scout = trial.scout
   return (
-     <div className="max-w-md mx-auto mb-4">
+     <div className="mb-4">
     
 
       <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition">
@@ -42,7 +42,7 @@ const sport = sportConfig[sportKey] || {
        
        <div className="flex">
   <span
-    className={`flex items-center justify-center gap-1 rounded-full text-sm font-medium whitespace-nowrap transition px-2 py-1 text-white mb-2 ${sport.bg}`}
+    className={`flex items-center justify-center gap-1 rounded-full text-xs font-semibold whitespace-nowrap transition px-2 py-1 text-white mb-2 ${sport.bg}`}
   >
     {sport.Icon && <sport.Icon size={14} />}
     <span className="mx-1">

@@ -16,8 +16,10 @@ const TRYOUTS = [
     contactEmail: "info@ccya.ng",
 
     eligibility: {
-      ageRange: "15–17",
+      ageRange: "15–17 years",
+      gender: "Male",
       positions: ["RB", "LB", "CM"],
+      experience: "Professional",
     },
 
     fee: {
@@ -27,7 +29,7 @@ const TRYOUTS = [
 
     opportunities: ["Scholarship", "Scout Evaluation"],
 
-    requirements: ["SCAH Profile", "Highlight Video"],
+    
 
     visibility: "Public",
     deadline: "June 28, 2025",
@@ -58,10 +60,11 @@ const TRYOUTS = [
     contactEmail: "trials@risingqueensfc.com",
 
     eligibility: {
-      ageRange: "18–25",
-      positions: ["ST", "LW", "RW"],
+      ageRange: "15–17 years",
+      gender: "Male",
+      positions: ["RB", "LB", "CM"],
+      experience: "Professional",
     },
-
     fee: {
       type: "Free",
       amount: null,
@@ -69,7 +72,7 @@ const TRYOUTS = [
 
     opportunities: ["Contract", "Scout Evaluation"],
 
-    requirements: ["Highlight Video", "ID / Passport"],
+    
 
     visibility: "Public",
     deadline: "August 01, 2025",
@@ -100,8 +103,10 @@ const TRYOUTS = [
     contactEmail: "hello@hoopsafrica.org",
 
     eligibility: {
-      ageRange: "17–20",
-      positions: ["PG", "SG", "SF"],
+      ageRange: "15–17 years",
+      gender: "Male",
+      positions: ["RB", "LB", "CM"],
+      experience: "Professional",
     },
 
     fee: {
@@ -111,7 +116,6 @@ const TRYOUTS = [
 
     opportunities: ["Trial", "Scholarship"],
 
-    requirements: ["SCAH Profile", "ID / Passport"],
 
     visibility: "Public",
     deadline: "June 15, 2025",
@@ -128,8 +132,8 @@ const TRYOUTS = [
 
   {
     id: 4,
-    title: "Elite Tennis Development Tryout – Accra",
-    sport: "Tennis",
+    title: "Elite Soccer Development Tryout – Accra",
+    sport: "Soccer",
     level: "Scholarship",
     gender: "Co-ed",
 
@@ -142,10 +146,11 @@ const TRYOUTS = [
     contactEmail: "apply@watf.org",
 
     eligibility: {
-      ageRange: "14–18",
-      positions: ["Singles", "Doubles"],
+      ageRange: "15–17 years",
+      gender: "Male",
+      positions: ["RB", "LB", "CM"],
+      experience: "Professional",
     },
-
     fee: {
       type: "Paid",
       amount: "$20",
@@ -184,8 +189,10 @@ const TRYOUTS = [
     contactEmail: "combine@southsouthhub.ng",
 
     eligibility: {
-      ageRange: "19–23",
-      positions: ["CB", "CDM", "GK"],
+      ageRange: "15–17 years",
+      gender: "Male",
+      positions: ["RB", "LB", "CM"],
+      experience: "Professional",
     },
 
     fee: {
@@ -210,8 +217,6 @@ const TRYOUTS = [
       }
   },
 
-  // 🔥 ADDITIONAL 5 UNIQUE TRYOUTS
-
   {
     id: 6,
     title: "U15 Grassroots Football Camp – Abeokuta",
@@ -227,9 +232,11 @@ const TRYOUTS = [
     organizer: "Future Stars Academy",
     contactEmail: "futurestars@gmail.com",
 
-    eligibility: {
-      ageRange: "13–15",
-      positions: ["All Positions"],
+   eligibility: {
+      ageRange: "15–17 years",
+      gender: "Male",
+      positions: ["RB", "LB", "CM"],
+      experience: "Professional",
     },
 
     fee: {

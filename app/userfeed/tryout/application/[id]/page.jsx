@@ -64,7 +64,7 @@ const Page = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 md:px-6 py-10 pb-28 lg:pb-10">
+    <div className="max-w-4xl mx-auto px-4 md:px-8 py-6 pb-28 lg:pb-16">
 
       {/* Back */}
       <Link
@@ -78,19 +78,20 @@ const Page = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2">
 
         {/* LEFT CONTENT */}
-        <div className="lg:col-span-2 space-y-10">
+        <div className="lg:col-span-2 space-y-6">
 
-          {/* Header */}
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
           <div className="space-y-3">
-            <h1 className="text-2xl md:text-4xl font-bold leading-tight">
-              {tryout.title}
-            </h1>
-
-            <p className="text-teal-600 font-medium">
+            <p className="text-sm font-medium tracking-wide text-teal-600 uppercase">
               Official {tryout.level} Tryout
             </p>
 
-            <div className="flex flex-wrap gap-6 text-sm text-gray-600">
+            <h1 className="text-3xl md:text-5xl font-bold leading-tight text-gray-900">
+              {tryout.title}
+            </h1>
+
+
+            <div className="flex flex-wrap gap-6 text-sm text-gray-500">
               <span>{tryout.date} · {tryout.time}</span>
               <span>{tryout.city}, {tryout.venue}</span>
               <span>{tryout.sport} · {tryout.gender}</span>
@@ -98,80 +99,126 @@ const Page = () => {
           </div>
 
           {/* Description */}
-          <p className="text-gray-700 leading-relaxed">
+          <p className="text-gray-700 leading-relaxed text-base">
             {tryout.description}
           </p>
+    
+      </div>
 
-          {/* Opportunities */}
-          <div>
-            <h3 className="font-semibold text-lg mb-4">
-              Opportunities Available
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              {tryout.opportunities.map((opp, i) => (
-                <span
-                  key={i}
-                  className="px-4 py-2 text-sm rounded-full bg-teal-50 text-teal-700 border border-teal-200"
-                >
-                  {opp}
-                </span>
-              ))}
-            </div>
-          </div>
 
           {/* Eligibility + Requirements */}
-          <div className="space-y-8 md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
+          <div className="space-y-6 md:grid md:grid-cols-3 md:gap-6 md:space-y-0">
+
 
   {/* LEFT SIDE */}
-  <div className="md:col-span-1 space-y-8">
+  <div className="md:col-span-2 space-y-6">
+          {/* Opportunities */}
+         <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+  <h3 className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+    Opportunities
+  </h3>
 
+  <div className="flex flex-wrap gap-3">
+    {tryout.opportunities.map((opp, i) => (
+      <span
+        key={i}
+        className="px-4 py-2 text-sm rounded-lg font-medium bg-teal-50 text-teal-700"
+      >
+        {opp}
+      </span>
+    ))}
+  </div>
+</div>
+
+    <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4">
+  <h3 className="text-xs font-semibold tracking-wider text-gray-500 uppercase">
+    Eligibility
+  </h3>
+
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
     <div>
-      <h3 className="font-semibold text-lg mb-3">Eligibility</h3>
-      <p className="text-sm text-gray-600 mb-2">
-        Age: {tryout.eligibility.ageRange}
+      <p className="text-gray-400 uppercase tracking-wide text-xs mb-1">
+        Age Range
       </p>
-      <p className="text-sm text-gray-600">
-        Positions: {tryout.eligibility.positions.join(", ")}
+      <p className="text-gray-800 font-medium">
+        {tryout.eligibility.ageRange}
       </p>
     </div>
 
     <div>
-      <h3 className="font-semibold text-lg mb-3">Requirements</h3>
-      <ul className="list-disc pl-5 text-sm text-gray-600 space-y-1">
-        {tryout.requirements.map((req, i) => (
-          <li key={i}>{req}</li>
-        ))}
-      </ul>
+      <p className="text-gray-400 uppercase tracking-wide text-xs mb-1">
+        Positions
+      </p>
+      <p className="text-gray-800 font-medium">
+        {tryout.eligibility.positions.join(", ")}
+      </p>
     </div>
+
+    <div>
+      <p className="text-gray-400 uppercase tracking-wide text-xs mb-1">
+        Gender
+      </p>
+      <p className="text-gray-800 font-medium">
+        {tryout.eligibility.gender}
+      </p>
+    </div>
+
+    <div>
+      <p className="text-gray-400 uppercase tracking-wide text-xs mb-1">
+        Experience
+      </p>
+      <p className="text-gray-800 font-medium">
+        {tryout.eligibility.experience}
+      </p>
+    </div>
+  </div>
+</div>
+    
 
   </div>
 
   {/* RIGHT INFO CARD */}
-  <div className="md:col-span-2 md:mr-10 flex items-center justify-center">
-    <div className="border rounded-2xl p-5 shadow-sm bg-white space-y-5 md:sticky md:top-24">
+  <div className="md:col-span-1">
+   <div className="border border-gray-200 rounded-2xl p-6 bg-white md:sticky md:top-24">
+  <div className="space-y-4 text-sm text-gray-700">
 
-      <div className="space-y-2 text-sm">
-        <p><strong>Date:</strong> {tryout.date}</p>
-        <p><strong>Time:</strong> {tryout.time}</p>
-        <p><strong>Location:</strong> {tryout.city}</p>
-        <p><strong>Age:</strong> {tryout.eligibility.ageRange}</p>
-      </div>
-
-      <p className="text-sm text-red-600 font-medium">
-        Deadline: {tryout.deadline}
-      </p>
-
-      <div className="">
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button className="w-full bg-teal-600 hover:bg-teal-700">
-              Apply Now
-            </Button>
-          </DialogTrigger>
-        </Dialog>
-      </div>
-
+    <div className="flex justify-between pb-3 border-b border-gray-200">
+      <span className="text-gray-500">Date</span>
+      <span className="font-medium">{tryout.date}</span>
     </div>
+
+    <div className="flex justify-between pb-3 border-b border-gray-200">
+      <span className="text-gray-500">Time</span>
+      <span className="font-medium">{tryout.time}</span>
+    </div>
+
+    <div className="flex justify-between pb-3 border-b border-gray-200">
+      <span className="text-gray-500">Location</span>
+      <span className="font-medium">{tryout.city}</span>
+    </div>
+
+    <div className="flex justify-between">
+      <span className="text-gray-500">Age</span>
+      <span className="font-medium">{tryout.eligibility.ageRange}</span>
+    </div>
+  </div>
+
+  <div className="mt-6">
+    <p className="px-4 py-3 rounded-lg bg-red-50 text-sm text-red-600 font-medium text-center">
+      Deadline: {tryout.deadline}
+    </p>
+  </div>
+
+  <div className="mt-6">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="w-full bg-teal-600">
+          Apply Now
+        </Button>
+      </DialogTrigger>
+    </Dialog>
+  </div>
+</div>
   </div>
 </div>
 

@@ -24,6 +24,7 @@ const Page = () =>   {
     { value: 'all', label: 'All Sports' },
     { value: 'Football', label: 'Football' },
     { value: 'Basketball', label: 'Basketball' },
+    { value: 'Soccer', label: 'Soccer' },
     { value: 'Tennis', label: 'Tennis' },
   ];
   const levelOptions = [
@@ -54,97 +55,76 @@ const filteredTryouts = tryOuts.filter(trial => {
         }
      
 return(
-    <div className="space-y-8 max-w-3xl px-4 py-8 mx-auto">
-       <h1 className="text-2xl font-bold">Tryouts</h1>
-            <div>
-              <TryoutSearch/>
-            </div>
-          <div className="flex items-center justify-between">
-<div className="p-4 rounded-lg  flex flex-wrap gap-4 items-center">
-  <p className="font-medium text-sm text-gray-700">Filter by:</p>
-
-  {/* Sport */}
-  <Select
-    options={sportOptions}
- value={sportOptions.find(
-    option => option.value === filters.sport
-  )}    onChange={(option) =>
-      setFilters(prev => ({ ...prev, sport: option.value }))
-    }
-    placeholder="All Sports"
-     classNames={{
-    control: (state) =>
-      `border rounded-md text-sm  w-full ${
-        state.isFocused ? "border-teal-500" : "border-gray-300"
-      }`,
-    option: (state) =>
-      `px-3 py-2 cursor-pointer ${
-        state.isFocused ? "bg-gray-100" : ""
-      }`,
-    menu: () => "bg-white shadow-lg border border-gray-200 rounded-md",
-    menuList: () => "bg-white rounded-md",
-    valueContainer: () => "p-1",
-    placeholder: () => "text-gray-400",
-  }}
-  />
-  <Select
-    options={levelOptions}
- value={levelOptions.find(
-    option => option.value === filters.level
-  )}    onChange={(option) =>
-      setFilters(prev => ({ ...prev, level: option.value }))
-    }
-    placeholder="Any Levels"
-     classNames={{
-    control: (state) =>
-      `border rounded-md text-sm  w-full ${
-        state.isFocused ? "border-teal-500" : "border-gray-300"
-      }`,
-    option: (state) =>
-      `px-3 py-2 cursor-pointer ${
-        state.isFocused ? "bg-gray-100" : ""
-      }`,
-    menu: () => "bg-white shadow-lg border border-gray-200 rounded-md",
-    menuList: () => "bg-white rounded-md",
-    valueContainer: () => "p-1",
-    placeholder: () => "text-gray-400",
-  }}
-  />
- 
-
-  {/* Location */}
-  {/* <select
-    className="border rounded-md px-3 py-2 text-sm"
-    value={filters.location}
-    onChange={(e) =>
-      setFilters(prev => ({ ...prev, location: e.target.value }))
-    }
-  >
-    <option value="all">All Locations</option>
-    <option value="Lagos">Lagos</option>
-    <option value="Abuja">Abuja</option>
-    <option value="Ibadan">Ibadan</option>
-  </select> */}
+    <div className="space-y-10 max-w-4xl px-4 md:px-6 py-12 mx-auto">
+       <div className="space-y-3">
+  <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+    Discover Tryouts
+  </h1>
+  <p className="text-gray-500 text-sm">
+    Explore available sports tryouts and filter by sport or level.
+  </p>
 </div>
-{user?.role === "scout" && (
+<div className="px-4 space-y-6">
+  <TryoutSearch />
 
-            <Button>
-            <Link href="/userfeed/tryout/newTryout" className="flex items-center gap-2">
-              Post New Tryout
-            </Link>
-            </Button>
-)}
-          </div>
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+    <div className="flex flex-wrap items-center gap-4">
+      <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+        Filters
+      </p>
+
+      <div className="w-48">
+        <Select
+          options={sportOptions}
+          value={sportOptions.find(option => option.value === filters.sport)}
+          onChange={(option) =>
+            setFilters(prev => ({ ...prev, sport: option.value }))
+          }
+          classNames={{
+            control: (state) =>
+              `border rounded-lg text-sm ${
+                state.isFocused ? "border-teal-500" : "border-gray-300"
+              }`,
+            menu: () => "border border-gray-200 rounded-lg",
+          }}
+        />
+      </div>
+
+      <div className="w-48">
+        <Select
+          options={levelOptions}
+          value={levelOptions.find(option => option.value === filters.level)}
+          onChange={(option) =>
+            setFilters(prev => ({ ...prev, level: option.value }))
+          }
+          classNames={{
+            control: (state) =>
+              `border rounded-lg text-sm ${
+                state.isFocused ? "border-teal-500" : "border-gray-300"
+              }`,
+            menu: () => "border border-gray-200 rounded-lg",
+          }}
+        />
+      </div>
+    </div>
+
+    {user?.role === "scout" && (
+      <Button className="bg-teal-600">
+        <Link href="/userfeed/tryout/newTryout">
+          Post Tryout
+        </Link>
+      </Button>
+    )}
+  </div>
+</div>
 
           
-        <div className="max-w-2xl mx-auto space-y-6">
-            {filteredTryouts.map((trial)=>(
-           
-
-             <Trials key={trial.id} trial={trial}/>
-              
-        ))}               
-        </div>
+       <div className="grid sm:grid-cols-2 gap-8">
+  {filteredTryouts.map((trial) => (
+    <Trials key={trial.id} trial={trial} />
+  ))}
+</div>
              
         
     </div>
