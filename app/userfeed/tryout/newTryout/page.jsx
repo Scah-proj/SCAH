@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "../../../../components/ui/popover"
+import { positionsBySport } from "../../../onboarding/page";
 
 const Page = () => {
     const sportOptions = [
@@ -58,7 +59,7 @@ const Page = () => {
   date: "",
   time: "",
   ageRange: "",
-  positions: "",
+  positions: [],
   feeType: "",
   feeAmount: "",
   visibility: "",
@@ -75,7 +76,10 @@ const Page = () => {
         const handleSubmit = async (e) => {
             e.preventDefault();
           };
-    
+    const positionOptions =
+  (positionsBySport[formData.sport] || []).map((pos) => ({
+                            value: pos.id,
+                            label: pos.title,}));
     return(
         
         <div className="space-y-8 max-w-2xl px-4 py-8 mx-auto">
@@ -91,7 +95,7 @@ const Page = () => {
     <input
       type="text"
       name="trialTitle"
-      placeholder="U17 Football Tryout – Lagos"
+      placeholder="Trial Title"
       value={formData.trialTitle}
       onChange={handleChange}
       className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500"
@@ -102,7 +106,7 @@ const Page = () => {
         options={sportOptions}
         name="sport"
         value={sportOptions.find(option => option.value === formData.sport)}
-        onChange={(selected) => setFormData({ ...formData, sport: selected.value })}
+        onChange={(selected) => setFormData({ ...formData, sport: selected.value, positions: [] })}
         placeholder="Select Sport"
         classNames={{
           control: (state) => `w-full mt-1 p-1 border rounded-md ${state.isFocused ? "border-teal-500" : "border-gray-300"}`,
@@ -110,7 +114,37 @@ const Page = () => {
           option: (state) => `px-3 py-2 cursor-pointer ${state.isFocused ? "bg-gray-100" : ""}`,
         }}
       />
+ <Select
+  isMulti
+  name="positions"
+  options={positionOptions} // ✅ already correct
 
+  value={positionOptions.filter((opt) =>
+    formData.positions?.includes(opt.value)
+  )}
+
+  onChange={(selected) =>
+    setFormData({
+      ...formData,
+      positions: selected.map((item) => item.value),
+    })
+  }
+
+  placeholder={
+    formData.sport ? "Select Positions" : "Pick a sport"
+  }
+
+  isDisabled={!formData.sport}
+
+  classNames={{
+    control: (state) =>
+      `w-full mt-1 p-1 border rounded-md ${
+        state.isFocused ? "border-teal-500" : "border-gray-300"
+      }`,
+    menu: () =>
+      "bg-white shadow-lg rounded-md border border-gray-200",
+  }}
+/>
       <Select
         options={levelOptions}
         name="level"
@@ -211,13 +245,7 @@ const Page = () => {
       }`,
   }}
 />
-      <input
-        name="positions"
-        placeholder="Positions Needed (e.g. GK, ST)"
-        value={formData.positions}
-        onChange={handleChange}
-        className="w-full p-2 border rounded-md focus:ring-1 focus:ring-teal-500"
-      />
+    
     </div>
   </div>
 

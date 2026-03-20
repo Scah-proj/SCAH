@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "../../../../../components/ui/dialog"
 
 const Page = () => {
@@ -91,10 +92,10 @@ const Page = () => {
             </h1>
 
 
-            <div className="flex flex-wrap gap-6 text-sm text-gray-500">
-              <span>{tryout.date} · {tryout.time}</span>
-              <span>{tryout.city}, {tryout.venue}</span>
+            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+              {/* <span>{tryout.date} · {tryout.time}</span> */}
               <span>{tryout.sport} · {tryout.gender}</span>
+              <span>{tryout.city}, {tryout.venue}</span>
             </div>
           </div>
 
@@ -182,7 +183,7 @@ const Page = () => {
    <div className="border border-gray-200 rounded-2xl p-6 bg-white md:sticky md:top-24">
   <div className="space-y-4 text-sm text-gray-700">
 
-    <div className="flex justify-between pb-3 border-b border-gray-200">
+    {/* <div className="flex justify-between pb-3 border-b border-gray-200">
       <span className="text-gray-500">Date</span>
       <span className="font-medium">{tryout.date}</span>
     </div>
@@ -190,7 +191,7 @@ const Page = () => {
     <div className="flex justify-between pb-3 border-b border-gray-200">
       <span className="text-gray-500">Time</span>
       <span className="font-medium">{tryout.time}</span>
-    </div>
+    </div> */}
 
     <div className="flex justify-between pb-3 border-b border-gray-200">
       <span className="text-gray-500">Location</span>
@@ -211,12 +212,112 @@ const Page = () => {
 
   <div className="mt-6">
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="w-full bg-teal-600">
-          Apply Now
-        </Button>
-      </DialogTrigger>
-    </Dialog>
+  <DialogTrigger asChild>
+    <Button className="w-full bg-teal-600">
+      Apply Now
+    </Button>
+  </DialogTrigger>
+
+  <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+    <DialogHeader>
+      <div className="p-6">
+
+      <DialogTitle className="text-xl font-semibold">
+        Tryout Application
+      </DialogTitle>
+      <p className="text-sm text-gray-500">
+        Fill in your details to apply for this tryout.
+      </p>
+      </div>
+    </DialogHeader>
+
+      <div className="max-h-[70vh] overflow-y-auto no-scrollbar px-6">
+
+    <form className="space-y-6">
+      
+      {/* PERSONAL INFO */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold uppercase text-gray-500 tracking-wide">
+          Personal Information
+        </h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          <input 
+          type="text"
+          placeholder="First Name"
+          name="firstName" 
+          className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500"/>
+          <input type="text" placeholder="Last Name" name="lastName" className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500" />
+        </div>
+
+        <input type="email" placeholder="Email Address" name="email" className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500" />
+        <input type="text" placeholder="Phone Number" name="phone" className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500" />
+      </div>
+
+      {/* PLAYER DETAILS */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold uppercase text-gray-500 tracking-wide">
+          Player Details
+        </h3>
+
+        <div className="grid grid-cols-2 gap-4">
+          <input type="text" placeholder="Age" name="age" className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500" />
+          <input type="text" placeholder="Position (e.g. ST, GK)" name="position" className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500" />
+        </div>
+
+        <input
+          type="text"
+          placeholder="Years of Experience (e.g. 3 years)"
+          name="experience"
+          className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500"
+        />
+
+        <input
+          placeholder="Preferred Foot (Optional)"
+          name="foot"
+          className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500"
+        />
+      </div>
+
+      {/* MEDIA */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold uppercase text-gray-500 tracking-wide">
+          Media
+        </h3>
+
+        <input
+          placeholder="Highlight Video URL (YouTube, Drive, etc.)"
+          name="highlightVideo"
+          className="w-full rounded-md p-2 border border-gray-300 focus:ring-1 focus:ring-teal-500"
+        />
+      </div>
+
+      {/* EXTRA */}
+      <div className="space-y-4">
+        <h3 className="text-sm font-semibold uppercase text-gray-500 tracking-wide">
+          Additional Info
+        </h3>
+
+        <textarea
+          placeholder="Tell the scout anything that might help your application..."
+          className="w-full border border-gray-300 rounded-md p-3 text-sm focus:outline-none focus:ring-1 focus:ring-teal-500"
+          rows={3}
+        />
+      </div>
+      
+    </form>
+      </div>
+      {/* SUBMIT */}
+      <div className="p-4 border-t border-gray-200">
+        <p className="text-xs text-gray-500 py-2">
+          By submitting this application, you agree to our terms and conditions.
+        </p>
+        <Button type="submit" className="w-full bg-teal-600">
+          Submit Application
+        </Button> 
+      </div>
+  </DialogContent>
+</Dialog>
   </div>
 </div>
   </div>

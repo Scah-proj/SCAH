@@ -4,36 +4,28 @@ const TRYOUTS = [
     id: 1,
     title: "U17 Football Scouting Camp – Abuja",
     sport: "Football",
+    badge: "/foa.webp",
     level: "Academy",
     gender: "Male",
-
     date: "July 05, 2025",
     time: "8:30 AM",
     city: "Abuja, Nigeria",
     venue: "FIFA Goal Project Pitch",
-
     organizer: "Capital City Youth Academy",
     contactEmail: "info@ccya.ng",
-
     eligibility: {
       ageRange: "15–17 years",
       gender: "Male",
       positions: ["RB", "LB", "CM"],
       experience: "Professional",
     },
-
     fee: {
       type: "Paid",
       amount: "₦5,000",
     },
-
     opportunities: ["Scholarship", "Scout Evaluation"],
-
-    
-
     visibility: "Public",
     deadline: "June 28, 2025",
-
     description:
       "A scouting-focused tryout aimed at identifying technically gifted players for local and international academy placements.",
       scout: {
@@ -48,6 +40,8 @@ const TRYOUTS = [
     id: 2,
     title: "Women’s Pro Football Trial – Ibadan",
     sport: "Football",
+    badge: "/foa.webp",
+
     level: "Pro",
     gender: "Female",
 
@@ -93,6 +87,7 @@ const TRYOUTS = [
     sport: "Basketball",
     level: "Semi-Pro",
     gender: "Male",
+    badge: "/foa.webp",
 
     date: "June 20, 2025",
     time: "11:00 AM",
@@ -136,6 +131,7 @@ const TRYOUTS = [
     sport: "Soccer",
     level: "Scholarship",
     gender: "Co-ed",
+    badge: "/foa.webp",
 
     date: "September 02, 2025",
     time: "7:30 AM",
@@ -179,6 +175,7 @@ const TRYOUTS = [
     sport: "Football",
     level: "Semi-Pro",
     gender: "Male",
+    badge: "/foa.webp",
 
     date: "July 18, 2025",
     time: "9:00 AM",
@@ -223,6 +220,7 @@ const TRYOUTS = [
     sport: "Football",
     level: "Academy",
     gender: "Male",
+    badge: "/foa.webp",
 
     date: "June 15, 2025",
     time: "8:00 AM",
@@ -267,6 +265,7 @@ const TRYOUTS = [
     sport: "Basketball",
     level: "Academy",
     gender: "Female",
+    badge: "/foa.webp",
 
     date: "July 25, 2025",
     time: "12:00 PM",
@@ -309,6 +308,7 @@ const TRYOUTS = [
     sport: "Football",
     level: "Pro",
     gender: "Male",
+    badge: "/foa.webp",
 
     date: "September 14, 2025",
     time: "9:30 AM",
@@ -351,6 +351,7 @@ const TRYOUTS = [
     sport: "Tennis",
     level: "Academy",
     gender: "Co-ed",
+    badge: "/foa.webp",
 
     date: "June 22, 2025",
     time: "7:00 AM",
@@ -393,6 +394,7 @@ const TRYOUTS = [
     sport: "Football",
     level: "Scholarship",
     gender: "Male",
+    badge: "/wen.webp",
 
     date: "August 03, 2025",
     time: "9:00 AM",
