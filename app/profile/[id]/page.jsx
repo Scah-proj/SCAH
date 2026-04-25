@@ -1,5 +1,10 @@
 
 import Profile from "./profile/page";
+import { notFound } from "next/navigation";
+
+if (!Profile) {
+  notFound();
+}
 
 export default async function Page({ params }){
    

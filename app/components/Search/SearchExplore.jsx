@@ -49,7 +49,7 @@ export default function ExploreSearch({ query, category }) {
     return () => clearTimeout(timer);
   }, [query, category]);
 
-  return { results, loading };
+  // return { results, loading };
 }
 
  

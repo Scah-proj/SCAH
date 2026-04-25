@@ -1,6 +1,6 @@
 "use client";   
-import SearchBar from "../../components/Search/SearchBar";
-import ExploreSearch from "../../components/Search/SearchExplore";
+import SearchExplore from "../../components/Search/SearchExplore";
+// import useExploreSearch  from "../../components/Search/SearchExplore";
 import UserCard from "../../components/UserCard";
 // import PostCard from "../../components/PostCard";
 // import CommunityCard from "../../components/CommunityCard";
@@ -17,7 +17,7 @@ const Page = () => {
 
    const [query, setQuery] = useState("");
   const [category, setCategory] = useState("user"); // user | post | community
-  const { results, loading } = ExploreSearch({ query, category });  
+  // const { results, loading } = useExploreSearch ({ query, category });  
 
     const [profile, setProfile] = useState([]);
           
@@ -37,12 +37,26 @@ const Page = () => {
         <div className="space-y-8 max-w-3xl px-4 py-8 mx-auto">
           <h1 className="text-2xl font-bold">Explore</h1>
             <div className="">
-              <SearchBar
+              <SearchExplore
           query={query}
           setQuery={setQuery}
           placeholder="Search users, posts, communities..."
         />
             </div>
+             {/* <div>
+        {loading && <p>Loading...</p>}
+
+        {!loading && results.length === 0 && query && (
+          <p>No results found</p>
+        )}
+
+        {!loading &&
+          results.map((item) => (
+            <div key={item.id}>
+              {"name" in item ? item.name : item.title}
+            </div>
+          ))}
+      </div> */}
 {/* 
           <div className="flex gap-2">
         {["user", "post", "community"].map((c) => (
