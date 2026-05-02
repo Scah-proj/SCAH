@@ -1,19 +1,32 @@
 "use client"
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { MdArrowBack } from "react-icons/md";
+import { Switch } from "../../../../../components/ui/switch";
+
 
 const privacySettings = [
     {
+        key: "privateAccount",
         label: "Private account",
         desc: "When you account is public, your profile and posts can be seen by anyone, on or off Scah, even if they don’t have a Scah account. When your account is private, only the followers that you approve can see what you share, including your photos or videos on hashtag and location pages, and your followers and following lists. Certain info on your profile picture and username, is visible to everyone on and off Scah. Learn more",
     },
-    {
-        label: "Allow public photos and videos to appear in search engine results",
-        desc: "When this is on, search engines such as Google can show your public phots and videos in search results outside of Scah. when this is off, links to your publicly shared content can still appear in search result. Learn more"
-    },
+   
 ];
 const Page = () => {
+     const [settings, setSettings] = useState({
+        privateAccount: false,
+       
+      });
+
+       const handleToggle = (key, value) => {
+    setSettings((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+  };
+
     return(
         <div className="space-y-10 max-w-4xl px-4 md:px-6 py-12 mx-auto">
                 <div className="space-y-3">
@@ -36,7 +49,12 @@ const Page = () => {
                             <p className="text-sm text-gray-500">{setting.desc}</p>
                             </div>
                        
-                          <span className="text-gray-400"><ChevronRight size={18} /></span>
+                           <Switch
+                                        checked={settings[setting.key]}
+                                        onCheckedChange={(value) =>
+                                          handleToggle(setting.key, value)
+                                        }
+                                      />
                  </div>
                 ))}
             </div>

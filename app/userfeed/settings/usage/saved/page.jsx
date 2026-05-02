@@ -6,7 +6,7 @@ import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
 
 
-const filters = ["All", "Collection", "Reels", "Posts", "Audio",];
+const filters = ["All", "Tryouts", "Posts",];
 
 export default function FilterBar() {
     const [posts, setPosts] = useState([]);
@@ -55,7 +55,6 @@ export default function FilterBar() {
       ))}
     </div>
       <div>
-        <h2 className="font-semibold text-lg">Reels and posts</h2>
         <div className="grid grid-cols-3 max-w-3xl mx-auto">
               {posts.map((post) => (
                 <PostGrid key={post.id} post={post} />

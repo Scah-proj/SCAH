@@ -1,4 +1,4 @@
-import { User, Shield, SquareMinus, Bookmark, History, Bell, Star, BellOff, LockKeyhole, CircleStar,
+import { User, Shield, SquareMinus, Bookmark, History, Bell, BellOff, LockKeyhole, CircleStar,
 MessageSquare, AtSign, Smartphone,ArrowDownToLine, PersonStanding, Languages, Signal,
  } from "lucide-react";
 
@@ -8,7 +8,7 @@ export const settingsSections = [
     items: [
       { label: "Personal details", path: "/userfeed/settings/account/details" , icon: <User size={20} />},
       { label: "Password and security", path: "/userfeed/settings/account/security" , icon: <Shield size={20} />},
-      { label: "Ad preferences", path: "/userfeed/settings/account/ad-preferences" , icon: <SquareMinus size={20} />},
+      // { label: "Ad preferences", path: "/userfeed/settings/account/ad-preferences" , icon: <SquareMinus size={20} />},
     ],
     more: "See more in Account Center",
   },
@@ -21,14 +21,13 @@ export const settingsSections = [
     ],
     more: "",
   },
-  {
-    title: "What you see",
-    items: [
-      { label: "Favorites", path: "/userfeed/settings/usage/saved" , icon: <Star size={20} />},
-      { label: "Muted accounts", path: "/userfeed/settings/usage/activity" , icon: <BellOff size={20} />},
-    ],
-     more: "",
-  },
+  // {
+  //   title: "What you see",
+  //   items: [
+  //     { label: "Muted accounts", path: "/userfeed/settings/usage/activity" , icon: <BellOff size={20} />},
+  //   ],
+  //    more: "",
+  // },
   {
     title: "Who can see your content",
     items: [
@@ -59,7 +58,7 @@ export const settingsSections = [
   {
     title: "Learn more about privacy on Scah",
     items: [
-      { label: "Privacy center", path: "/userfeed/settings/usage/saved" , icon: <User size={20} />},
+      // { label: "Privacy center", path: "/userfeed/settings/usage/saved" , icon: <User size={20} />},
       { label: "Privacy policy", path: "/userfeed/settings/usage/activity" , icon: <User size={20} />},
       { label: "Contact us", path: "/userfeed/settings/usage/privacy" , icon: <User size={20} />},
      ],

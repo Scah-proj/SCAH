@@ -39,12 +39,17 @@ const Page = () => {
             
        
 
-        <div>
-          <p className="text-sm text-gray-500">{item.placeholder}</p>
+        <div className="flex gap-1">
+          <p className="text-sm text-gray-300">{item.placeholder}</p>
           <span className="text-gray-400"><ChevronRight size={18} /></span>
         </div>
         </Link>
       ))}
+    </div>
+    <div className="text-right">
+      <Link href="/profile/123/editProfile" className="px-3 py-2.5 rounded-md text-sm font-medium text-teal-600 hover:bg-gray-50">
+        Edit personal details
+        </Link>
     </div>
   </div>
 ))}
