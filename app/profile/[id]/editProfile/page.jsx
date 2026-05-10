@@ -39,12 +39,12 @@ export default function EditProfile() {
 
   
   if (name === "expPrimarySport") {
-    useUserStore.getState().updateProfile({ [name]: value, expAthletePosition: "" });
+    useUserStore.getState().setUser({ [name]: value, expAthletePosition: "" });
     return;
   }
 
   if (name === "primarySport") {
-    useUserStore.getState().updateProfile({ [name]: value, athletePosition: "" });
+    useUserStore.getState().setUser({ [name]: value, athletePosition: "" });
     return;
   }
 
@@ -58,7 +58,7 @@ export default function EditProfile() {
       });
     }
 
-    useUserStore.getState().updateProfile({
+    useUserStore.getState().setUser({
       expCurrent: value,
       ...(value ? { expEnd: "" } : {})
     });
@@ -75,7 +75,7 @@ export default function EditProfile() {
       });
     }
 
-    useUserStore.getState().updateProfile({
+    useUserStore.getState().setUser({
       current: value,
       ...(value ? { end: "" } : {})
     });
@@ -85,7 +85,7 @@ export default function EditProfile() {
 
   
   if (name === "expEnd" || name === "end") {
-    useUserStore.getState().updateProfile({ [name]: value });
+    useUserStore.getState().setUser({ [name]: value });
     setErrors((p) => {
       const c = { ...p };
       delete c[name];
@@ -98,7 +98,7 @@ export default function EditProfile() {
   if (name === "expStart" || name === "start") {
     // Update start and clear any existing end-date error while editing.
     const endField = name === "expStart" ? "expEnd" : "end";
-    useUserStore.getState().updateProfile({ [name]: value });
+    useUserStore.getState().setUser({ [name]: value });
     setErrors((p) => {
       const c = { ...p };
       delete c[endField];
@@ -108,7 +108,7 @@ export default function EditProfile() {
   }
 
   
-  useUserStore.getState().updateProfile({ [name]: value });
+  useUserStore.getState().setUser({ [name]: value });
 };
 
   const handleAddExperience = (e) => {
@@ -157,7 +157,7 @@ export default function EditProfile() {
 
   const allExperience = userState.experienceList || [];
 
-  useUserStore.getState().updateProfile({
+  useUserStore.getState().setUser({
     experienceList: [...allExperience, experience],
     expAcademy: "",
     expPrimarySport: "",
@@ -182,7 +182,7 @@ export default function EditProfile() {
 // const handleDeleteExperience = (index) => {
 //   const allExperience = user?.experienceList || [];
 //   const updatedList = allExperience.filter((_, i) => i !== index);
-//   useUserStore.getState().updateProfile({ experienceList: updatedList });
+//   useUserStore.getState().setUser({ experienceList: updatedList });
 // };
 
     
@@ -1320,7 +1320,7 @@ function CoreSkillField({ label, name, value, onChange }){
         
       },
     });
-    useUserStore.getState().updateProfile({ [name]: updated });
+    useUserStore.getState().setUser({ [name]: updated });
   };
 
 
@@ -1416,7 +1416,7 @@ function TechnicalSkillField({ label, name, value, onChange }){
         value: updated,
       },
     });
-        useUserStore.getState().updateProfile({ [name]: updated });
+        useUserStore.getState().setUser({ [name]: updated });
 
   };
 

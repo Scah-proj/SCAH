@@ -1,4 +1,4 @@
-import { Heart, MessageCircle, SquareMinus, Repeat2, Trash2, Bell, Star, LockKeyhole, Smartphone,
+import { Heart, MessageCircle, SquareMinus, Repeat2, Trash2, Search, Star, LockKeyhole, Smartphone,
  } from "lucide-react";
 
 export const activityRoutes = [
