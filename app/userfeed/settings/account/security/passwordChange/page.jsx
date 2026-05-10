@@ -17,7 +17,7 @@ const Page = () => {
         <h3 className="text-3xl md:text-4xl font-bold text-gray-900">
           Change Password
         </h3>
-        <p className="text-sm text-gray-500 mb-3">Your password must be at least 6 characters and should include a combination of numbers, letters and special characters (!$@%).</p>
+        <p className="text-sm text-gray-500 mb-3">Password must be at least 8 characters in length including uppercase and lowercase, a number(S) and special characters.</p>
         <div className="flex flex-col gap-4">
           <input 
           type="password"

@@ -31,7 +31,7 @@ export const settingsSections = [
   {
     title: "Who can see your content",
     items: [
-      { label: "Account privacy", path: "/userfeed/settings/view/privacy" , icon: <LockKeyhole size={20} />},
+      // { label: "Account privacy", path: "/userfeed/settings/view/privacy" , icon: <LockKeyhole size={20} />},
       { label: "Close friends", path: "/userfeed/settings/view/closeFriendList" , icon: <CircleStar size={20} />},
     ],
      more: "",
@@ -39,7 +39,7 @@ export const settingsSections = [
   {
     title: "How others interact with you",
     items: [
-      { label: "Messages and story replies", path: "/userfeed/settings/interact/messageandstories" , icon: <MessageSquare size={20} />},
+      // { label: "Messages and story replies", path: "/userfeed/settings/interact/messageandstories" , icon: <MessageSquare size={20} />},
       { label: "Tag and mentions", path: "/userfeed/settings/interact/tagsAndMention" , icon: <AtSign size={20} />},
     ],
      more: "",
@@ -47,11 +47,11 @@ export const settingsSections = [
   {
     title: "Your app and media",
     items: [
-      { label: "Device Permissions", path: "/userfeed/settings/appAndMedia/permissions" , icon: <Smartphone size={20} />},
+      // { label: "Device Permissions", path: "/userfeed/settings/appAndMedia/permissions" , icon: <Smartphone size={20} />},
       { label: "Archiving and downloading", path: "/userfeed/settings/appAndMedia/archives" , icon: <ArrowDownToLine size={20} />},
       { label: "Accessibility", path: "/userfeed/settings/appAndMedia/accessibility" , icon: <PersonStanding size={20} />},
-      { label: "Language and translations", path: "/userfeed/settings/appAndMedia/lang" , icon: <Languages size={20} />},
-      { label: "Media quality", path: "/userfeed/settings/appAndMedia/media" , icon: <Signal size={20} />},
+      // { label: "Language and translations", path: "/userfeed/settings/appAndMedia/lang" , icon: <Languages size={20} />},
+      // { label: "Media quality", path: "/userfeed/settings/appAndMedia/media" , icon: <Signal size={20} />},
     ],
      more: "",
   },
@@ -59,7 +59,7 @@ export const settingsSections = [
     title: "Learn more about privacy on Scah",
     items: [
       // { label: "Privacy center", path: "/userfeed/settings/usage/saved" , icon: <User size={20} />},
-      { label: "Privacy policy", path: "/userfeed/settings/usage/activity" , icon: <User size={20} />},
+      { label: "Privacy policy", path: "/userfeed/settings/usage/privacy" , icon: <User size={20} />},
       // { label: "Contact us", path: "/userfeed/settings/usage/privacy" , icon: <User size={20} />},
      ],
       more: "",

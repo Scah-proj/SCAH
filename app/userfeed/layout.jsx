@@ -10,12 +10,13 @@ import { BellPlus, MessageCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { mobileroutes } from "./components/sidenav/navroutes";
 import { AiOutlinePlus } from "react-icons/ai";
-
+import { useRouter } from "next/navigation";
 
 
 export default function FeedLayout({ children }) {
   const [nav, setNav] = useState(false);
   // const handleNav = () => setNav(!nav);
+  const router = useRouter();
   const pathname = usePathname();
     const handleAddPost = () => {
     // Implement logic to add a new post
