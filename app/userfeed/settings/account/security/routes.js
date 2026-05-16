@@ -8,7 +8,7 @@ export const loginChecks = [
       { label: "Change password",
         path: "/userfeed/settings/account/security/passwordChange" , },
       { label: "Two-factor authentication", 
-        path: "/userfeed/settings/account/security/twoFactor" , },
+        path: "/userfeed/settings/account/security/twoFA" , },
       { label: "Saved login", 
         path: "/userfeed/settings/account/security/savedLogins" , },
     ],
