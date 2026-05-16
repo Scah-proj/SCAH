@@ -22,11 +22,11 @@ const Page = () => {
       {/* Header */}
       <div className="space-y-3">
         <Link
-          href="/userfeed/settings"
+          href="/userfeed/settings/account/security"
           className="flex items-center text-gray-600 hover:text-gray-900 mb-6"
         >
           <MdArrowBack />
-          <span className="ml-2 text-sm font-medium">Back to Settings</span>
+          <span className="ml-2 text-sm font-medium">Password and Security</span>
         </Link>
 
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">

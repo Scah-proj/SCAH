@@ -35,9 +35,9 @@ export const activityRoutes = [
     title: "How you use Scah",
     items: [
       // { label: "Time Spent", path: "/settings/usage/saved" , icon: <MessageSquare size={20} />},
-      { label: "Watch history", path: "/userfeed/settings/usage/history" , icon: <Smartphone size={20} />},
+      // { label: "Watch history", path: "/userfeed/settings/usage/history" , icon: <Smartphone size={20} />},
       // { label: "Account history", path: "/settings/usage/activity" , icon: <AtSign size={20} />},
-      { label: "Recent Searches", path: "/userfeed/settings/usage/recent-searches" , icon: <Search size={20} />},
+      // { label: "Recent Searches", path: "/userfeed/settings/usage/recent-searches" , icon: <Search size={20} />},
       // { label: "Link history", path: "/settings/usage/activity" , icon: <AtSign size={20} />},
     ],
   },
