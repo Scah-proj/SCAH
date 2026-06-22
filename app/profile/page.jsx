@@ -1,9 +1,10 @@
+
 "use client";
 import Profile from "./profile/page";
 import { useUserStore } from "../../lib/userStore";
 
 
-export default async function Page({ params }){
+export default function Page({ params }){
    const user = useUserStore((state) => state.user);
 
 
@@ -12,7 +13,7 @@ export default async function Page({ params }){
     <div className="">
 
        <Profile profile={user}
-      isOwnProfile={false}/>
+      isOwnProfile={true}/>
     </div>
 )
 }

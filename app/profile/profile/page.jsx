@@ -2,22 +2,18 @@
 import ProfileInfo from "../profileInfo";
 import ProfileGallery from "../profileGallery"
 // import { useState, useEffect } from "react";
-import ExperienceSection from "../../../components/Experience";
-import CoreSkillsDisplay from "../../../components/CoreSkills";
-import TechnicalSkillDisplay from "../../../components/TechnicalSkill";
-import AthleteProfileConnect from "../../athleteConnect";
-import ScoutProfileConnect from "../../followScout";
-import { useUserStore } from "../../../../lib/userStore";
+import ExperienceSection from "../../components/Experience";
+import CoreSkillsDisplay from "../../components/CoreSkills";
+import TechnicalSkillDisplay from "../../components/TechnicalSkill";
+import AthleteProfileConnect from "../athleteConnect";
+import ScoutProfileConnect from "../followScout";
+import { useUserStore } from "../../../lib/userStore";
 import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
 
-export default function Profile({profile}){
+export default function Profile({profile, isOwnProfile = false }){
 
-    const { user } = useUserStore();
-
-    // const isOwnProfile = user?.id === profile?.id;
-        const isOwnProfile = true;
-
+   
     return(
         <div>
  <div className="lg:hidden fixed top-0 left-0 w-full h-16 z-20 flex items-center justify-between px-4">

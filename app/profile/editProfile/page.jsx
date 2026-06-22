@@ -2,24 +2,24 @@
 import Image from "next/image";
 import Link from "next/link";
 import Slider from '@mui/material/Slider';
-import PlacesAutocomplete from "../../../../components/PlacesAutocomplete";
+import PlacesAutocomplete from "../../../components/PlacesAutocomplete";
 import Select from 'react-select'
 import { useState, useEffect, useRef } from "react";
-import { positionsBySport } from "../../../onboarding/page";
+import { positionsBySport } from "../../onboarding/page";
 import { MdEdit, MdArrowBack, MdExpandMore, MdCheck } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { IoTrash } from "react-icons/io5";
-import { useUserStore } from "../../../../lib/userStore";
-import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../../../components/ui/accordion";
+import { useUserStore } from "../../../lib/userStore";
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../../components/ui/accordion";
 import { profileSections } from "./profileSections";
 import { PhoneInput } from 'react-international-phone';
 import { CountryDropdown } from 'react-country-region-selector';
 import 'react-international-phone/style.css';
 import { createPortal } from "react-dom";
-import { Checkbox } from "../../../../components/ui/checkbox"
-import { Label } from "../../../../components/ui/label"
-import ExperienceSection from "../../../components/Experience";
+import { Checkbox } from "../../../components/ui/checkbox"
+import { Label } from "../../../components/ui/label"
+import ExperienceSection from "../../components/Experience";
 
 export default function EditProfile() {
   const user = useUserStore((state) => state.user);

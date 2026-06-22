@@ -17,42 +17,52 @@ const Page = () => {
       lastName: "",
       email: "",
       password: "",
-      confirmPassword: "",
+      
     });
 
   const [showPassword, setShowPassword] = useState(false); 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const setUser = useUserStore((state) =>state.setUser)
   const router = useRouter();
 
-  useEffect(()=>{
-    const storedUsers = JSON.parse(localStorage.getItem("users"));
-    if(storedUsers){
-        setUser(storedUsers);
-    }
-  },[])
+  
   
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
 
+    
+  if (!formData.email || !formData.password) {
+  setErrorMsg("Email and password are required");
+  return;
+}
+
+if (formData.password !== formData.confirmPassword) {
+  setErrorMsg("Passwords do not match");
+  return;
+}
+
     try {
       const data = await postRequest('/api/auth/register', formData);
       console.log('Account created successfully', data);
       setUser(data.data.user)
-
       router.push('/auth/verify');
-      setLoading(false);
     } catch (error) {
-      console.error('Error:', error);
-      setErrorMsg("Registration failed. Please try again.");
-    }
+  console.error('Error:', error);
+
+  setErrorMsg(error.message || "Something went wrong");
+
+}finally {
+  setLoading(false);
+}
   };
 
   return (
@@ -147,7 +157,7 @@ const Page = () => {
             </div>
 
             
-            {/* <div>
+            <div>
               <label className="block text-md font-medium">Confirm Password</label>
               <div className="relative">
                 <input
@@ -166,7 +176,7 @@ const Page = () => {
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-            </div> */}
+            </div>
 
           
             
@@ -175,7 +185,7 @@ const Page = () => {
             
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !formData.email || !formData.password}
               className="w-full bg-teal-900 text-white py-2 px-4 rounded-md hover:bg-green-800 transition"
             >
               {loading ? "Creating Account..." : "Create Account"}

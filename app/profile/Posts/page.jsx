@@ -1,10 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
-import { getPosts } from "../../../userfeed/lib/posts";
+import { getPosts } from "../../userfeed/lib/posts";
 // import PostCard from "../../../components/PostCard";
 import { MdArrowBack } from "react-icons/md";
 import Link from "next/link";
-import PostGrid from "../../../components/PostGrid";
+import PostGrid from "../../components/PostGrid";
 
 export default function AllPosts() {
   const [posts, setPosts] = useState([]);

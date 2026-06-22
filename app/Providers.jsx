@@ -33,7 +33,7 @@ export default function Providers({ children }) {
     // }
     //     ,[token]);
 
-        useEffect(() => {
+        // useEffect(() => {
             // const token = localStorage.getItem("token");
             // if (!token) {
             //     logout();
@@ -41,14 +41,8 @@ export default function Providers({ children }) {
             // }
             // setToken(token);
 
-            const sampleUser = {
-                id: 1,
-                name: "Michael O.A",
-                email: "scah123.com",
-                role: "scout", // or "player"
-            }
-            setUser(sampleUser);
-        }, []);
+            
+        // }, []);
   return (
     <Provider store={store}>
       <GooglePlacesProvider>

@@ -202,33 +202,38 @@ export default function FormContainer() {
   console.log('All selections:', selections);
  
   try {
-  const requests = [
-    postRequest('/api/onboarding/role', { role: selections[0]?.selection }),
-    postRequest('/api/onboarding/basic-info', {
-      gender: selections[1]?.gender,
-      dateOfBirth: selections[1]?.dateOfBirth,
-      sport: selections[1]?.sport,
-      ...(selections[1]?.position && { position: selections[1]?.position })
-    }),
-    postRequest('/api/onboarding/location', {
-      country: selections[2]?.country,
-      state: selections[2]?.state,
-      city: selections[2]?.city,
-    }),
-  ];
+  await postRequest('/api/onboarding/role', {
+  role: selections[0]?.selection
+});
 
-  if (selections[0]?.selection === 'Athlete') {
-    requests.push(
-      postRequest('/api/onboarding/playing-level', { currentPlayingLevel: selections[3]?.selection }),
-      postRequest('/api/onboarding/activity-level', { activityLevel: selections[4]?.selection })
-    );
-  } else {
-    requests.push(
-      postRequest('/api/onboarding/scouting-level', { scoutingLevel: selections[3]?.selection })
-    );
-  }
+await postRequest('/api/onboarding/basic-info', {
+  gender: selections[1]?.gender,
+  dateOfBirth: selections[1]?.dateOfBirth,
+  sport: selections[1]?.sport,
+  ...(selections[1]?.position && {
+    position: selections[1]?.position
+  })
+});
 
-  await Promise.all(requests);
+await postRequest('/api/onboarding/location', {
+  country: selections[2]?.country,
+  state: selections[2]?.state,
+  city: selections[2]?.city,
+});
+
+if (selections[0]?.selection === 'Athlete') {
+  await postRequest('/api/onboarding/playing-level', {
+    currentPlayingLevel: selections[3]?.selection
+  });
+
+  await postRequest('/api/onboarding/activity-level', {
+    activityLevel: selections[4]?.selection
+  });
+} else {
+  await postRequest('/api/onboarding/scouting-level', {
+    scoutingLevel: selections[3]?.selection
+  });
+}
   await postRequest('/api/onboarding/complete');
   console.log('Onboarding fully complete');
   // const onboardingData = {

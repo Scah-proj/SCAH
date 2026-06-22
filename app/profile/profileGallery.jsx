@@ -1,21 +1,21 @@
 "use client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
 import { useState, useEffect } from "react";
-import { useUserStore } from "../../../lib/userStore";
-import { getPosts } from "../../userfeed/lib/posts";
-import PostGrid from "../../components/PostGrid";
+import { getPosts } from "../userfeed/lib/posts";
+import PostGrid from "../components/PostGrid";
 import Link from "next/link";
 
 export default function ProfileGallery({profile}){
-    const [posts, setPosts] = useState([]);
+    const post = profile?.posts || [];
+    // const [posts, setPosts] = useState([]);
     
-      useEffect(() => {
-        async function fetchData() {
-          const data = await getPosts();
-          setPosts(data);
-        }
-        fetchData();
-      }, []);
+    //   useEffect(() => {
+    //     async function fetchData() {
+    //       const data = await getPosts();
+    //       setPosts(data);
+    //     }
+    //     fetchData();
+    //   }, []);
 
     return(
         <div className="w-full flex justify-center items-center">
@@ -30,30 +30,38 @@ export default function ProfileGallery({profile}){
                 <div className="w-full">
 
                 <TabsContent value="posts">
-                    <div className="max-w-2xl grid grid-cols-3">
-                        {posts.slice(0,6).map((post) => (
-                            <PostGrid key={post.id} post={post} />
-                        ))}
-                    </div>
-                    
-                    {posts.length > 6 && (
-                    <div className="flex justify-end mt-4">
-                    <Link
-                        href="/profile/profileGallery/Posts"
-                        className="px-3 py-1 rounded-full border border-teal-600 text-sm"
-                    >
-                        View all posts
-                    </Link>
-                    </div>
+  {post.length === 0 ? (
+    <div className="text-center py-8 text-gray-500">
+      No posts yet
+    </div>
+  ) : (
+    <>
+      <div className="max-w-2xl grid grid-cols-3">
+        {post.slice(0, 6).map((post) => (
+          <PostGrid key={post.id} post={post} />
+        ))}
+      </div>
+
+      {post.length > 6 && (
+        <div className="flex justify-end mt-4">
+          <Link
+            href="/profile/profileGallery/posts"
+            className="px-3 py-1 rounded-full border border-teal-600 text-sm"
+          >
+            View all posts
+          </Link>
+        </div>
+      )}
+    </>
   )}
-                </TabsContent>
+</TabsContent>
                 <TabsContent value="media">
                     <div className="max-w-2xl grid grid-cols-3">
-                        {posts.slice(0, 6).map((post) => (
+                        {post.slice(0, 6).map((post) => (
                             <PostGrid key={post.id} post={post} />
                         ))}
                         </div>
-                        {posts.length > 6 && (
+                        {post.length > 6 && (
                     <div className="flex justify-end mt-4">
                     <Link
                         href="/profile/profileGallery/Posts"

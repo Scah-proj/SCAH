@@ -25,36 +25,45 @@ const Page = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrorMsg("");
+  e.preventDefault();
+  setLoading(true);
+  setErrorMsg("");
+
+  try {
+    const data = await postRequest('/api/auth/login', formData);
+
+    if (!data?.success) {
+      setErrorMsg(data?.error?.message || "Login failed");
+      return;
+    }
+
+    const token = data?.data?.token;
+
+    if (!token) {
+      setErrorMsg("No token received");
+      return;
+    }
+
+    localStorage.setItem("token", token);
 
     try {
-      const data = await postRequest('/api/auth/login', formData);
-      console.log("Login response:", data);
-      const token = data?.data?.token
-      if (token) {
-        localStorage.setItem('token', token);
-        console.log('Login successful');
-        // const user = await getRequest('/api/auth/me');
-        // setUser(user.data)
-        router.push('/userfeed');
-      } else {
-        console.log('Login failed', data);
-      }
-      } catch (error) {
-      console.error('Error:', error);
-      setErrorMsg("Incorrect Email or password. please try again.");
-
-    } finally {
-      setLoading(false);
+      const profile = await getRequest("/api/profile");
+      console.log("Fetched profile:", profile);
+      setUser(profile.data);
+    } catch (err) {
+      console.error("Profile fetch failed:", err);
+      setErrorMsg("Failed to load profile");
+      return;
     }
-      
-    
-    
-    
-    
-  };
+
+    router.push("/userfeed");
+  } catch (error) {
+    console.error("Error:", error);
+    setErrorMsg(error.message || "Login failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">

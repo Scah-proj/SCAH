@@ -10,6 +10,7 @@ import { BellPlus, MessageCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { mobileroutes } from "./components/sidenav/navroutes";
 import { AiOutlinePlus } from "react-icons/ai";
+import { useUserStore } from "../../lib/userStore";
 import { useRouter } from "next/navigation";
 
 
@@ -18,9 +19,11 @@ export default function FeedLayout({ children }) {
   // const handleNav = () => setNav(!nav);
   const router = useRouter();
   const pathname = usePathname();
+  const user = useUserStore((state) => state.user);
+console.log("Current user in layout:", user);
     const handleAddPost = () => {
     // Implement logic to add a new post
-    router.push('/profile/profileGallery/createPost');
+    router.push('/profile/createPost');
   };
 
   return (
