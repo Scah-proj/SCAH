@@ -1,61 +1,156 @@
 "use client";
-import StoryAvatar from './StoryAvatar';
-import { currentUser, mockUserStories } from '../data/userstories';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import ViewStory from './ViewStory';
+
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import StoryAvatar from "./StoryAvatar";
+import ViewStory from "./ViewStory";
+import CreateStory from "./CreateStory";
+
+import { useGetFeedStoriesQuery } from "../../redux/api/storyApi";
+
+import {
+  setFeedStories,
+  setLoadingFeedStories,
+  setFeedStoriesError,
+} from "../../redux/features/story/storySlice";
+
 export default function StoryComponent() {
+  const dispatch = useDispatch();
+
   const [activeIndex, setActiveIndex] = useState(null);
+  const [viewedUsers, setViewedUsers] = useState({});
+  const [openCreateStory, setOpenCreateStory] = useState(false);
 
-  const [users, setUsers] = useState([currentUser, ...mockUserStories]);
+  const {
+    data,
+    isLoading,
+    error,
+  } = useGetFeedStoriesQuery();
 
-  const activeUser = activeIndex !== null ? users[activeIndex] : null;
+  const users =
+    useSelector((state) => state.story.feedStories) || [];
 
-  const closeStories = () => setActiveIndex(null);
+  useEffect(() => {
+    dispatch(setLoadingFeedStories(isLoading));
+  }, [isLoading, dispatch]);
+
+  useEffect(() => {
+    if (data?.data?.stories) {
+      dispatch(setFeedStories(data.data.stories));
+    }
+  }, [data, dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      dispatch(setFeedStoriesError(error));
+    }
+  }, [error, dispatch]);
+
+  const activeUser =
+    activeIndex !== null ? users[activeIndex] : null;
+
+  const closeStories = () => {
+    setActiveIndex(null);
+  };
 
   const goToNextUser = () => {
     setActiveIndex((prev) => {
       if (prev === null) return null;
-      if (prev + 1 < users.length) return prev + 1;
-      return null; // all stories finished
+
+      if (prev + 1 < users.length) {
+        return prev + 1;
+      }
+
+      return null;
     });
   };
-const markViewedAndGoNext = () => {
-  setUsers(prev =>
-    prev.map((u, i) =>
-      i === activeIndex
-        ? { ...u, viewedCount: u.stories.length }
-        : u
-    )
-  );
 
-  setTimeout(goToNextUser, 0);
-};
+  const markViewedAndGoNext = () => {
+    if (activeUser) {
+      setViewedUsers((prev) => ({
+        ...prev,
+        [activeUser.userId]: true,
+      }));
+    }
+
+    setTimeout(goToNextUser, 0);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex p-3 space-x-4 overflow-x-auto">
+        <p className="text-sm text-gray-500">
+          Loading stories...
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex p-3 space-x-4 overflow-x-auto">
+        <p className="text-sm text-red-500">
+          Failed to load stories.
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex space-x-4 p-3 overflow-x-auto no-scrollbar">
-      {users.map((user, index) => {
-        const viewedCount = user.viewedCount || 0;
+    <>
+      <div className="flex space-x-4 p-3 overflow-x-auto no-scrollbar">
 
-        return (
+        {/* Your Story */}
+        <StoryAvatar
+          owner={true}
+          hasStory={false}
+          hasUnseenStories={false}
+          avatar="/default-avatar.png" // Replace with logged-in user's avatar
+          onClick={() => setOpenCreateStory(true)}
+        />
+
+        {/* Feed Stories */}
+        {users.map((user, index) => (
           <StoryAvatar
-            key={user.id}
-            avatar={user.avatar}
-            owner={user.id === currentUser.id}
-            hasStory={user.stories.length > 0}
-            hasUnseenStories={viewedCount < user.stories.length}
+            key={user.userId}
+            avatar={
+              user.profilePicture ||
+              user.picture ||
+              user.stories?.[0]?.media?.url ||
+              "/default-avatar.png"
+            }
+            owner={false}
+            hasStory={user.stories?.length > 0}
+            hasUnseenStories={!viewedUsers[user.userId]}
             onClick={() => setActiveIndex(index)}
           />
-        );
-      })}
+        ))}
 
-      {activeUser && (
-       <ViewStory
-  user={activeUser}
-  onClose={closeStories}
-  onNextUser={markViewedAndGoNext}
-/>
+        {activeUser && (
+          <ViewStory
+            user={{
+              ...activeUser,
+              id: activeUser.userId,
+              userId: activeUser.userId,
+              username: `${activeUser.firstName || ""} ${
+                activeUser.lastName || ""
+              }`.trim(),
+              avatar:
+                activeUser.profilePicture ||
+                activeUser.picture ||
+                activeUser.stories?.[0]?.media?.url ||
+                "/default-avatar.png",
+            }}
+            onClose={closeStories}
+            onNextUser={markViewedAndGoNext}
+          />
+        )}
+      </div>
 
-      )}
-    </div>
+      <CreateStory
+        open={openCreateStory}
+        onClose={() => setOpenCreateStory(false)}
+      />
+    </>
   );
 }

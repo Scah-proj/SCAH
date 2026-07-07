@@ -1,65 +1,38 @@
-
 "use client";
-import Image from "next/image";
 import CommentList from "./CommentList";
 import CommentInput from "./CommentInput";
-import { useCommentStore } from "../../../lib/commentStore";
 
-
-// TEMP — mock data
-// import { mockComments } from "../../userfeed/data/mockComment";
-
-export default function PostComments({ postId }) {
-  // const [comments, setComments] = useState([]);
-  const commentsByPost = useCommentStore(state => state.commentsByPost);
-  const addComment = useCommentStore(state => state.addComment);
-  const comments = commentsByPost[postId] || [];
-  const commentCount = comments.length;
-//   fetch()
-//   .then(data => setComments(data));
-// }, [postId]);
-
-
-  // called when user submits a comment
-  const handleAddComment = (text) => {
-    // const res = await fetch("", {
-    //   method: "POST",
-    //   body: JSON.stringify({text}),
-
-    // });
-
-    // const newComment = await response.json();
-    const newComment = {
-      id: Date.now(),
-      postId,
-      author: "You",
-      text,
-      createdAt: new Date().toISOString(),
-    };
-
-    // setComments(prev => [newComment, ...prev]);
-    addComment(postId, newComment);
+export default function PostComments({ postId, comments, isLoading, onCommentAdded }) {
+  
+  // Handles the real API mutation call when a user types a comment and presses send
+  const handleAddComment = async (text) => {
+    if (!text.trim()) return;
+    
+    try {
+      // Executes the useAddCommentMutation passed down from PostCard
+      await onCommentAdded(text);
+    } catch (err) {
+      console.error("Failed to append comment to server:", err);
+    }
   };
 
   return (
-    <div className="
-        max-h-[85vh]
-       sm:rounded-xl
-        overflow-y-auto
-        p-4">
-      {/* fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center */}
-      
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-semibold text-lg">Comments</h3>
-          {/* <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-800"
-          >
-            ✕
-          </button> */}
-        </div>
-      <CommentList comments={comments} />
+    <div className="max-h-[85vh] sm:rounded-xl overflow-y-auto p-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-lg">Comments</h3>
+      </div>
+
+      {/* Main Comment Feed Container */}
+      {isLoading ? (
+        <p className="text-sm text-gray-500 text-center py-4">Loading comments...</p>
+      ) : comments && comments.length > 0 ? (
+        <CommentList comments={comments} />
+      ) : (
+        <p className="text-sm text-gray-400 text-center py-4">No comments yet. Be the first to say something!</p>
+      )}
+
+      {/* Sticky Bottom Input Field */}
       <CommentInput onAddComment={handleAddComment} />
     </div>
   );

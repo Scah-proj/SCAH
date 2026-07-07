@@ -1,115 +1,115 @@
-"use client";   
+"use client";
+
+import { useState } from "react";
 import SearchExplore from "../../components/Search/SearchExplore";
-// import useExploreSearch  from "../../components/Search/SearchExplore";
-import UserCard from "../../components/UserCard";
-// import PostCard from "../../components/PostCard";
-// import CommunityCard from "../../components/CommunityCard";
-import { useEffect, useState } from "react";
 import FilterBar from "./FilterBar";
 import TrendingSection from "./TrendingSection";
-import ScoutProfileConnect from "../../profile/followScout";
 import ScoutProfile from "../../components/ScoutProfile";
-import { getProfiles } from "../../userfeed/lib/profile";
 
+import { useGetTrendingPostsQuery } from "../../redux/api/feedApi";
+import { useGetScoutsQuery } from "../../redux/api/profileApi";
 
 const Page = () => {
- 
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("user");
 
-   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("user"); // user | post | community
-  // const { results, loading } = useExploreSearch ({ query, category });  
+  // Trending Posts
+  const {
+    data: trendingData,
+    isLoading: trendingLoading,
+    isError: trendingError,
+  } = useGetTrendingPostsQuery();
 
-    const [profile, setProfile] = useState([]);
-          
-            useEffect(() => {
-              async function fetchData() {
-                const data = await getProfiles();
-                setProfile(data);
-              }
-              fetchData();
-            }, []);
-  
-             const scoutProfiles = profile.filter(
-      (profile) => profile.role === "Scout"
-    );
-    
-    return(
-        <div className="space-y-8 max-w-3xl px-4 py-8 mx-auto">
-          <h1 className="text-2xl font-bold">Explore</h1>
-            <div className="">
-              <SearchExplore
+  // Scouts
+  const {
+    data: scoutsData,
+    isLoading: scoutsLoading,
+    isError: scoutsError,
+  } = useGetScoutsQuery();
+
+  const trendingPosts = trendingData?.data?.posts || [];
+  const scouts = scoutsData?.data?.scouts || [];
+
+  const isLoading = trendingLoading || scoutsLoading;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 max-w-3xl px-4 py-8 mx-auto">
+        <h1 className="text-2xl font-bold">Explore</h1>
+
+        <SearchExplore
           query={query}
           setQuery={setQuery}
           placeholder="Search users, posts, communities..."
         />
+
+        <div className="space-y-6">
+          <FilterBar />
+
+          <div className="flex items-center justify-center py-24">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
+
+              <p className="text-sm text-gray-500">
+                Loading explore...
+              </p>
             </div>
-             {/* <div>
-        {loading && <p>Loading...</p>}
-
-        {!loading && results.length === 0 && query && (
-          <p>No results found</p>
-        )}
-
-        {!loading &&
-          results.map((item) => (
-            <div key={item.id}>
-              {"name" in item ? item.name : item.title}
-            </div>
-          ))}
-      </div> */}
-{/* 
-          <div className="flex gap-2">
-        {["user", "post", "community"].map((c) => (
-          <button
-            key={c}
-            onClick={() => setCategory(c)}
-            className={`flex-1 px-4 py-1 rounded-full text-sm font-medium transition
-              ${
-                category === c
-                  ? "bg-teal-600 text-white border border-teal-600"
-                  : "bg-gray-100 text-gray-700 border border-gray-300"
-              }`}
-          >
-            {c.charAt(0).toUpperCase() + c.slice(1)}s
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-4">
-        {loading && <p className="text-gray-500">Searching...</p>}
-        {!loading && results.length === 0 && query && (
-          <p className="text-gray-500">No results found.</p>
-        )}
-        {!loading && results.length > 0 && (
-          <div className="flex flex-col gap-2">
-            {results.map((item) => (
-              <div
-                key={item.id}
-                className="p-2 border rounded hover:bg-gray-50 cursor-pointer"
-              >
-                {item.name || item.title}
-              </div>
-            ))}
           </div>
-        )}
-      </div> */}
-      <div className="space-y-6">
-        <FilterBar/>
-        <TrendingSection/>
-        <div className="p-2 my-4 space-y-4">
-                <p className=" font-semibold text-lg">Suggested People</p>
-                <div className="grid md:grid-cols-2 grid-cols-1 gap-4">
-
-                 {profile.map((profile) => (
-                      <div key={profile.id} className="border px-4"> 
-              
-                        <ScoutProfile key={profile.id} profile={profile} />
-                      </div>
-                    ))}
-                </div>
-          </div>
-      </div>
         </div>
-    )
-}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 max-w-3xl px-4 py-8 mx-auto">
+      <h1 className="text-2xl font-bold">Explore</h1>
+
+      <SearchExplore
+        query={query}
+        setQuery={setQuery}
+        placeholder="Search users, posts, communities..."
+      />
+
+      <div className="space-y-6">
+        <FilterBar />
+
+        {trendingError ? (
+          <p className="text-red-500">
+            Failed to load trending posts.
+          </p>
+        ) : (
+          <TrendingSection
+            posts={trendingPosts}
+            loading={false}
+            error={false}
+          />
+        )}
+
+        <div className="p-2 my-4 space-y-4">
+          <p className="font-semibold text-lg">
+            Suggested People
+          </p>
+
+          {scoutsError ? (
+            <p className="text-red-500">
+              Failed to load scouts.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {scouts.map((scout) => (
+                <div
+                  key={scout._id}
+                  className="border px-4"
+                >
+                  <ScoutProfile profile={scout} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default Page;

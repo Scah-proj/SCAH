@@ -7,102 +7,88 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "../../../components/ui/carousel"
-import Autoplay from "embla-carousel-autoplay"
+} from "../../../components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
-const mockTrending = [
-  {
-    id: 1,
-    type: "post",
-    title: "How to get scouted in Nigeria",
-    cover: "/coach.webp",
-    profile: "/wen.webp",
-    author: "Coach Timi",
-    views: 1200,
-    engagement: 340,
-    createdAt: "2026-02-01T18:30:00.000Z"
-  },
-  {
-    id: 2,
-    type: "tryout",
-    title: "U17 Football Tryout",
-    cover: "/balll.webp",
-    profile: "/coa.webp",
-    club: "Barcelona Academy Lagos",
-    views: 890,
-    applications: 120,
-    createdAt: "2026-02-04T18:30:00.000Z"
-  },
-  {
-    id: 3,
-    type: "post",
-    title: "Top drills for midfielders",
-    cover: "/foa.webp",
-    profile: "/roa.webp",
-    author: "Elite Trainer",
-    views: 670,
-    engagement: 210,
-    createdAt: "2026-02-06T18:30:00.000Z"
-  },
-  {
-    id: 4,
-    type: "post",
-    title: "Liverpool FC Academy Open Trial",
-    cover: "/ath.webp",
-    profile: "/roa.webp",
-    author: "Liverpool FC Academy",
-    views: "5.8k",
-    applications: 394,
-    createdAt: "2026-02-06T18:30:00.000Z"
-  },
-  {
-    id: 5,
-    type: "post",
-    title: "Analysis: Rising Attacker from Nigeria",
-    cover: "/america.webp",
-    profile: "/roa.webp",
-    author: "Ryan Connors",
-    views: 4700,
-    engagement: 271,
-    createdAt: "2026-02-06T18:30:00.000Z"
-  },
-  {
-    id: 6,
-    type: "post",
-    title: "Samuel Wahyu Highlight Reel",
-    cover: "/amerball.webp",
-    profile: "/roa.webp",
-    author: "Samuel Wahyu",
-    views: 6400,
-    engagement: 438,
-    createdAt: "2026-02-06T18:30:00.000Z"
-  },
-];
+export default function TrendingCarousel({ posts = [] }) {
+  const trendingItems = posts.map((post) => ({
+    id: post.id,
+    type: post.type,
 
-export default function TrendingCarousel() {
+    // Backend uses caption
+    title: post.caption,
+
+    // First uploaded media or fallback image
+    cover:
+      post.media && post.media.length > 0
+        ? post.media[0].url
+        : "/placeholder.webp",
+
+    // Author profile picture
+    profile: post.author?.picture || "/default-avatar.png",
+
+    // Handle users with either name or firstName/lastName
+    author:
+      post.author?.name ||
+      `${post.author?.firstName || ""} ${post.author?.lastName || ""}`.trim() ||
+      "Unknown User",
+
+    // Your backend doesn't return views, so use engagement score
+    views: post.engagement_score,
+
+    // Total engagement
+    engagement:
+      (post.likes?.count || 0) +
+      (post.comments?.count || 0) +
+      (post.saves?.count || 0),
+
+    // Backend field
+    createdAt: post.created_at,
+
+    // Extra fields in case TrendingCard wants them later
+    likes: post.likes?.count || 0,
+    comments: post.comments?.count || 0,
+    saves: post.saves?.count || 0,
+    sport: post.sport,
+    hasLiked: post.hasLiked,
+    hasSaved: post.hasSaved,
+    userId: post.user_id,
+    authorData: post.author,
+    media: post.media,
+  }));
+
+  if (!trendingItems.length) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No trending posts found.
+      </div>
+    );
+  }
+
   return (
-    <div>
-     <Carousel plugins={[
+    <Carousel
+      plugins={[
         Autoplay({
           delay: 5000,
         }),
-      ]} opts={{
+      ]}
+      opts={{
         align: "start",
       }}
-      className="">
-  <CarouselContent className="gap-2">
-    {mockTrending.map((item) => (
-      <CarouselItem
-        key={item.id}
-        className="basis-full sm:basis-1/2 lg:basis-1/3"
-      >
-        <TrendingCard item={item} />
-      </CarouselItem>
-    ))}
-  </CarouselContent>
-  <CarouselPrevious />
-  <CarouselNext />
-</Carousel>
-    </div>
+    >
+      <CarouselContent className="gap-2">
+        {trendingItems.map((item) => (
+          <CarouselItem
+            key={item.id}
+            className="basis-full sm:basis-1/2 lg:basis-1/3"
+          >
+            <TrendingCard item={item} />
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+
+      <CarouselPrevious />
+      <CarouselNext />
+    </Carousel>
   );
 }

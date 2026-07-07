@@ -46,6 +46,12 @@ import {
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu"
 import { timeAgo } from "../../components/timeAgo"
+import { 
+  useToggleLikePostMutation, 
+  useToggleSavePostMutation,
+  useAddCommentMutation,
+  useGetCommentsQuery
+} from "../redux/api/feedApi";
 
 
 export default function PostCard({ post }) {
@@ -53,20 +59,104 @@ export default function PostCard({ post }) {
     return <p className="text-center text-gray-500">Loading post...</p>;
   }
 
-  const [likes, setLikes] = useState(post.likes ?? 0);
-  const [liked, setLiked] = useState(false);
-  const [reposts, setReposts] = useState(post.reposts ?? 0);
-  const [reposted, setReposted] = useState(false);
-  const [shares, setShares] = useState(post.shares ?? 0);
-  const [saved, setSaved] = useState(false);
+  // API Hooks
+  const [toggleLikePost] = useToggleLikePostMutation();
+  const [toggleSavePost] = useToggleSavePostMutation();
+  const [addComment] = useAddCommentMutation();
+  
+  // Conditional query execution: Only fetch data when comments panel is expanded
   const [showComments, setShowComments] = useState(false);
+  const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsQuery(post.id, {
+    skip: !showComments,
+  });
+
+  // FIX: Initialize state from the post data directly so your likes persist on page refresh
+  const [likes, setLikes] = useState(post.likes ?? 0);
+  const [liked, setLiked] = useState(!!(post.liked || post.isLiked));
+  const [reposts, setReposts] = useState(post.reposts ?? 0);
+  const [reposted, setReposted] = useState(!!(post.reposted || post.isReposted));
+  const [shares, setShares] = useState(post.shares ?? 0);
+  const [saved, setSaved] = useState(!!(post.saved || post.isSaved));
   const [isShareOpen, setIsShareOpen] = useState(false);
+  
+  // Raw incoming payload list
+  const rawComments = commentsData?.data?.comments || [];
+  
+  // Maps both legacy property schemas ('text'/'author') and new normalized schemas ('content'/'user')
+  const commentsList = rawComments.map(comment => {
+    const fullName = comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : "Unknown User";
+    return {
+      id: comment.id,
+      postId: comment.post_id,
+      userId: comment.user_id,
+      content: comment.content,
+      text: comment.content, 
+      author: fullName,      
+      isActive: comment.is_active,
+      createdAt: comment.created_at,
+      user: comment.user ? {
+        id: comment.user._id, 
+        firstName: comment.user.firstName,
+        lastName: comment.user.lastName,
+        avatar: comment.user.avatar || "/default-avatar.png"
+      } : null
+    };
+  });
+
   const commentsByPost = useCommentStore(state => state.commentsByPost);
-  const commentCount = (commentsByPost[post.id] || []).length;
+  
+  // Count counts real current parsed array elements gracefully
+  const commentCount = commentsList.length > 0 
+    ? commentsList.length 
+    : (commentsByPost[post.id] || []).length;
+
   const [showReportDialog, setShowReportDialog] = useState(false)
   const [showFeedback, setShowFeedback] = useState(false)
 
+  // Real backend sync for liking
+  const handleLikeClick = async () => {
+    const previousLiked = liked;
+    const previousLikesCount = likes;
+    setLikes(liked ? likes - 1 : likes + 1);
+    setLiked(!liked);
 
+    try {
+      const res = await toggleLikePost(post.id).unwrap();
+      if (res?.success && res?.data) {
+        setLiked(res.data.liked);
+        setLikes(res.data.count);
+      }
+    } catch (err) {
+      setLiked(previousLiked);
+      setLikes(previousLikesCount);
+    }
+  };
+
+  // Real backend sync for saving
+  const handleSaveClick = async () => {
+    const previousSaved = saved;
+    setSaved(!saved);
+
+    try {
+      const res = await toggleSavePost(post.id).unwrap();
+      if (res?.success && res?.data) {
+        setSaved(res.data.saved);
+      }
+    } catch (err) {
+      setSaved(previousSaved);
+    }
+  };
+
+  // Callback context logic matching payload properties properly
+  const handleCommentAdded = async (content) => {
+    try {
+      const res = await addComment({ postId: post.id, content }).unwrap();
+      return res; 
+    } catch (err) {
+      console.error("Failed to post comment:", err);
+      throw err;
+    }
+  };
 
   return (
     <div className="max-w-2xl mx-auto mb-6">
@@ -105,7 +195,7 @@ export default function PostCard({ post }) {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-40" align="end">
           <DropdownMenuGroup>
-            <DropdownMenuItem>
+            <DropdownMenuItem onSelect={handleSaveClick}>
               <Bookmark/>
               Save
             </DropdownMenuItem>
@@ -143,72 +233,44 @@ export default function PostCard({ post }) {
           </DialogHeader>
           <FieldGroup>
           <Field orientation="horizontal">
-              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
-              <FieldLabel
-                htmlFor="finder-pref-9k2-hard-disks-ljj"
-                className="font-normal"
-                defaultChecked
-              >
+              <Checkbox id="report-1" />
+              <FieldLabel htmlFor="report-1" className="font-normal" defaultChecked>
                 I just don't like it
               </FieldLabel>
             </Field>
           <Field orientation="horizontal">
-              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
-              <FieldLabel
-                htmlFor="finder-pref-9k2-hard-disks-ljj"
-                className="font-normal"
-                defaultChecked
-              >
+              <Checkbox id="report-2" />
+              <FieldLabel htmlFor="report-2" className="font-normal" defaultChecked>
                 Bullying or unwanted contact
               </FieldLabel>
             </Field>
           <Field orientation="horizontal">
-              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
-              <FieldLabel
-                htmlFor="finder-pref-9k2-hard-disks-ljj"
-                className="font-normal"
-                defaultChecked
-              >
+              <Checkbox id="report-3" />
+              <FieldLabel htmlFor="report-3" className="font-normal" defaultChecked>
                 Suicide, self-injury or eating disorders
               </FieldLabel>
             </Field>
           <Field orientation="horizontal">
-              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
-              <FieldLabel
-                htmlFor="finder-pref-9k2-hard-disks-ljj"
-                className="font-normal"
-                defaultChecked
-              >
+              <Checkbox id="report-4" />
+              <FieldLabel htmlFor="report-4" className="font-normal" defaultChecked>
                 Violence, hate or exploitation
               </FieldLabel>
             </Field>
           <Field orientation="horizontal">
-              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
-              <FieldLabel
-                htmlFor="finder-pref-9k2-hard-disks-ljj"
-                className="font-normal"
-                defaultChecked
-              >
+              <Checkbox id="report-5" />
+              <FieldLabel htmlFor="report-5" className="font-normal" defaultChecked>
                 Selling or promoting restricted items
               </FieldLabel>
             </Field>
           <Field orientation="horizontal">
-              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
-              <FieldLabel
-                htmlFor="finder-pref-9k2-hard-disks-ljj"
-                className="font-normal"
-                defaultChecked
-              >
+              <Checkbox id="report-6" />
+              <FieldLabel htmlFor="report-6" className="font-normal" defaultChecked>
                 Nudity or sexual activity
               </FieldLabel>
             </Field>
           <Field orientation="horizontal">
-              <Checkbox id="finder-pref-9k2-hard-disks-ljj" />
-              <FieldLabel
-                htmlFor="finder-pref-9k2-hard-disks-ljj"
-                className="font-normal"
-                defaultChecked
-              >
+              <Checkbox id="report-7" />
+              <FieldLabel htmlFor="report-7" className="font-normal" defaultChecked>
                 Scam, fraud or spam
               </FieldLabel>
             </Field>
@@ -283,7 +345,7 @@ export default function PostCard({ post }) {
           <div className="flex items-center gap-5">
             {/* Like */}
             <div className="flex items-center">       
-            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setLikes(liked ? likes - 1 : likes + 1) || setLiked(!liked)}>
+            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleLikeClick}>
               <Heart
                 size={22}
                 className={`transition ${
@@ -332,14 +394,14 @@ export default function PostCard({ post }) {
                 size={22}
                 className="text-gray-600 hover:text-teal-600"
               />
-             
+                
             </button>
             <span>{shares > 0 && <span>{shares}</span>}</span>
             </div>
           </div>
 
           {/* Save */}
-          <button onClick={() => setSaved(!saved)}>
+          <button onClick={handleSaveClick}>
             <Bookmark
               size={22}
               className={`transition ${
@@ -353,14 +415,17 @@ export default function PostCard({ post }) {
         <div className="text-xs text-gray-500 px-4 mb-2">{timeAgo(post.createdAt)}
 
         </div>
-         
-                {showComments && (
+           
+        {showComments && (
           <PostComments
             postId={post.id}
+            comments={commentsList}
+            isLoading={isLoadingComments}
+            onCommentAdded={handleCommentAdded}
           />
         )}
       </div>
-     
+       
         {isShareOpen && (
         <SharePost postId={post.id} onClose={() => setIsShareOpen(false)} />
       )

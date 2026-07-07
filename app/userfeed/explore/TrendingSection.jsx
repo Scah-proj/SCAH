@@ -1,12 +1,23 @@
-"use client";
 import TrendingCarousel from "./TrendingCarousel";
 
-export default function TrendingSection() {
+export default function TrendingSection({
+  posts,
+  loading,
+  error,
+}) {
+  if (loading) {
+    return <p>Loading trending posts...</p>;
+  }
+
+  if (error) {
+    return <p>Failed to load trending posts.</p>;
+  }
+
   return (
-    <div className="space-y-2">
-      <h2 className="text-xl font-semibold">🔥 Trending on SCAH</h2>
-      <p className="text-gray-500 text-md text-semibold">What scouts and academies are engaging with</p>
-      <TrendingCarousel />
-    </div>
+    <section className="space-y-4">
+      <h2 className="text-lg font-semibold">Trending</h2>
+
+      <TrendingCarousel posts={posts} />
+    </section>
   );
 }

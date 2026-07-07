@@ -1,35 +1,23 @@
 "use client"
 import Trials from "../../../components/trials";
-
 import ScoutProfileConnect from "../../../profile/followScout";
-import { useState, useEffect } from "react";
-import { getTryout } from "../../lib/tryOuts";
+import { useGetLatestTryoutQuery } from "../../../redux/api/tryoutApi";
 import Link from "next/link";
 
 export default function Suggestions() {
-   const [tryOuts, setTryOuts ] = useState([]);
-  useEffect(() => {
-    async function fetchData(){
-      const data = await getTryout();
-      console.log("tryouts data:", data);
-      setTryOuts(data);
-    }
-    fetchData();
-    
-  },[])
- 
+  const { data: tryout, isLoading, isError } = useGetLatestTryoutQuery();
+
   return (
     <div className="flex flex-col">
     <div className="rounded-lg">
        <div className="flex justify-between mb-6">
         <p className="font-semibold">Upcoming Trials</p>
-        {tryOuts.length > 1 && 
-        <Link href="/userfeed/tryOut" className="text-teal-600 font-semibold cursor-pointer">See All</Link>}
+        <Link href="/userfeed/tryOut" className="text-teal-600 font-semibold cursor-pointer">See All</Link>
      </div>
      <div>
-      {tryOuts.slice(0,1).map((trial)=>(
-            <Trials key={trial.id} trial={trial}/>
-      ))}
+      {isLoading && <p className="text-sm text-gray-500">Loading trials...</p>}
+      {isError && <p className="text-sm text-red-600">Failed to load trials.</p>}
+      {tryout && <Trials key={tryout._id} trial={tryout}/>}
      </div>
         </div>
        <div className=" rounded-xl shadow-sm p-4 my-4 space-y-1">
@@ -39,4 +27,4 @@ export default function Suggestions() {
               </div>
     </div>
   );
-}    
+}

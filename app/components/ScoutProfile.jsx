@@ -1,29 +1,52 @@
-import Image from 'next/image';
+"use client";
 
+import Image from "next/image";
 
 export default function ScoutProfile({ profile }) {
-    return (
-        <div className="flex justify-between items-center py-4 rounded-lg">
-            <div className="flex items-center space-x-3">
-                       <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center">
-                         <Image
-                           src={profile?.photo || "/wen.webp"}
-                           alt={profile?.author || "Author"}
-                           width={48}
-                           height={48}
-                           className="object-cover"
-                         />
-                       </div>
-                       <div>
-                         <h3 className="font-semibold text-sm text-gray-900">{profile?.author || "Unknown Author"}</h3>
-                         <p className="text-xs text-gray-600">{profile?.club || "Member"}</p>
-                       </div>
-                     </div>
-            <div>
-                <div className="border border-gray-300 px-3 py-1 flex items-center justify-center rounded-sm text-teal-600 text-xs font-semibold cursor-pointer">
-                    <p>View Profile</p>
-                </div>
-            </div>
+  const user = profile?.userId || {};
+
+  const name =
+    `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+    profile?.name ||
+    "Unknown Scout";
+
+  const photo =
+    profile?.media?.profilePicture ||
+    "/wen.webp";
+
+  const subtitle =
+    profile?.organization ||
+    profile?.orgType ||
+    profile?.sport ||
+    "Scout";
+
+  return (
+    <div className="flex items-center justify-between py-4 rounded-lg">
+      <div className="flex items-center space-x-3">
+        <div className="w-12 h-12 overflow-hidden rounded-full border bg-gray-200">
+          <Image
+            src={photo}
+            alt={name}
+            width={48}
+            height={48}
+            className="w-full h-full object-cover"
+          />
         </div>
-    )
+
+        <div>
+          <h3 className="text-sm font-semibold">
+            {name}
+          </h3>
+
+          <p className="text-xs text-gray-500">
+            {subtitle}
+          </p>
+        </div>
+      </div>
+
+      <button className="border rounded-sm px-3 py-1 text-xs font-semibold text-teal-600">
+        View Profile
+      </button>
+    </div>
+  );
 }
