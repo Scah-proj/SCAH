@@ -22,7 +22,7 @@ export default function PostGrid({ post }) {
   return (
     <div className="max-w-2xl">
       <Link
-        href={`/post/${post.id}`}
+        href={`/profile/Posts/${post.id}`}
         className="block mb-2"
       >
         <div className="bg-white border border-gray-200 shadow-sm overflow-hidden">
