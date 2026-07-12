@@ -20,25 +20,33 @@ const Notification = ({ notification }) => {
 
     // Follow notifications
     if (
-      [
-        "follow",
-        "connection_request",
-        "connection_accepted",
-      ].includes(notification.type) &&
+      ["follow", "connection_request", "connection_accepted"].includes(
+        notification.type
+      ) &&
       notification.relatedUser
     ) {
       router.push(`/profile/${notification.relatedUser}`);
       return;
     }
 
-    // Future tryout notifications
+    // Tryout: someone applied (scout-facing) -> take them to the applicant list
     if (
-      ["tryout", "application"].includes(notification.type) &&
+      notification.type === "tryout_application" &&
       notification.relatedTryout
     ) {
       router.push(
         `/userfeed/tryout/application/${notification.relatedTryout}`
       );
+      return;
+    }
+
+    // Tryout: application accepted/rejected (athlete-facing) -> take them to the tryout listing
+    if (
+      notification.type === "tryout_application_status" &&
+      notification.relatedTryout
+    ) {
+      router.push(`/userfeed/tryout/${notification.relatedTryout}`);
+      return;
     }
   };
 
@@ -61,9 +69,7 @@ const Notification = ({ notification }) => {
       {/* Content */}
       <div className="flex-1">
         <p className="text-sm text-gray-800">
-          <span className="font-semibold">
-            {notification.sender?.name || "Someone"}
-          </span>{" "}
+          <span className="font-semibold">{notification.sender?.name}</span>{" "}
           {notification.message}
         </p>
 

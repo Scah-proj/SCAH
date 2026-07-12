@@ -74,8 +74,7 @@ const Page = () => {
       : allData?.data?.tryouts ?? [];
 
   // Apply filters locally
- const filteredTryouts = tryOuts
-  .filter((trial) => {
+  const filteredTryouts = tryOuts.filter((trial) => {
     const sportMatch =
       filters.sport === "all" ||
       trial.sport?.toLowerCase() === filters.sport.toLowerCase();
@@ -85,47 +84,20 @@ const Page = () => {
       trial.level?.toLowerCase() === filters.level.toLowerCase();
 
     return sportMatch && levelMatch;
-  })
-  .sort((a, b) => {
-    const today = new Date();
-
-    const aExpired = new Date(a.deadline) < today;
-    const bExpired = new Date(b.deadline) < today;
-
-    
-    if (aExpired !== bExpired) {
-      return aExpired ? 1 : -1;
-    }
-
-    
-    return new Date(a.deadline) - new Date(b.deadline);
   });
 
   if (loading) {
     return (
       <div className="space-y-10 max-w-4xl px-4 md:px-6 py-12 mx-auto">
-       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-      <div className="space-y-3">
-        <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-          Discover Tryouts
-        </h1>
+        <div className="space-y-3">
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
+            Discover Tryouts
+          </h1>
 
-        <p className="text-gray-500 text-sm">
-          Explore available sports tryouts and filter by sport or level.
-        </p>
-      </div>
-      <div className="text-base text-gray-600 font-medium cursor-pointer hover:text-teal-600 transition-colors">
-      {user?.role === "Scout" ? (  
-              <Link href="/userfeed/tryout/manageTryout">
-                Manage Tryouts
-              </Link>
-          ) : (
-             <Link href="/userfeed/tryout/myApplication">
-                My Applications
-              </Link>
-          )}
-      </div>
-      </div>
+          <p className="text-gray-500 text-sm">
+            Explore available sports tryouts and filter by sport or level.
+          </p>
+        </div>
 
         <div className="px-4 space-y-6">
           <TryoutSearch query={query} setQuery={setQuery} />
@@ -189,7 +161,6 @@ const Page = () => {
 
   return (
     <div className="space-y-10 max-w-4xl px-4 md:px-6 py-12 mx-auto">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
       <div className="space-y-3">
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
           Discover Tryouts
@@ -198,18 +169,6 @@ const Page = () => {
         <p className="text-gray-500 text-sm">
           Explore available sports tryouts and filter by sport or level.
         </p>
-      </div>
-      <div className="text-base text-gray-600 font-medium cursor-pointer hover:text-teal-600 transition-colors">
-      {user?.role === "Scout" ? (  
-               <Link href="/userfeed/tryout/manageTryout">
-                Manage Tryouts
-              </Link>
-          ) : (
-             <Link href="/userfeed/tryout/myApplication">
-                My Applications
-              </Link>
-          )}
-      </div>
       </div>
 
       <div className="px-4 space-y-6">

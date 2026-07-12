@@ -1,16 +1,18 @@
 "use client"
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import Slider from '@mui/material/Slider';
 import PlacesAutocomplete from "../../../components/PlacesAutocomplete";
 import Select from 'react-select'
 import { useState, useEffect, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { positionsBySport } from "../../onboarding/page";
 import { MdEdit, MdArrowBack, MdExpandMore, MdCheck } from "react-icons/md";
 import { AiOutlinePlus } from "react-icons/ai";
 import { IoCloudUploadOutline } from "react-icons/io5";
 import { IoTrash } from "react-icons/io5";
-import { useUserStore } from "../../../lib/userStore";
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "../../../components/ui/accordion";
 import { profileSections } from "./profileSections";
 import { PhoneInput } from 'react-international-phone';
@@ -20,11 +22,27 @@ import { createPortal } from "react-dom";
 import { Checkbox } from "../../../components/ui/checkbox"
 import { Label } from "../../../components/ui/label"
 import ExperienceSection from "../../components/Experience";
+import { useUpdateProfileMutation, useGetMyProfileQuery } from "../../redux/api/profileApi";
+import { setProfile, updateProfile as updateProfileLocal } from "../../redux/features/profile/profileSlice";
 
 export default function EditProfile() {
-  const user = useUserStore((state) => state.user);
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.profile.profile);
   const userType = user?.role;
   const [errors, setErrors] = useState({});
+  const router = useRouter();
+
+  const [updateProfile, { isLoading: isSaving }] = useUpdateProfileMutation();
+  const { data: myProfile, isSuccess: profileFetched } = useGetMyProfileQuery();
+
+  // Hydrate the Redux store with the user's saved profile on mount so the
+  // edit form reflects current data rather than whatever was left in
+  // the store from a previous screen (e.g. onboarding).
+  useEffect(() => {
+    if (profileFetched && myProfile) {
+      dispatch(setProfile(myProfile));
+    }
+  }, [profileFetched, myProfile, dispatch]);
 
   const handleChange = (e) => {
   const { name, value } = e.target;
@@ -35,16 +53,16 @@ export default function EditProfile() {
     return !isNaN(t);
   };
 
-  const getUser = () => useUserStore.getState().user;
+  const getUser = () => user;
 
   
   if (name === "expPrimarySport") {
-    useUserStore.getState().setUser({ [name]: value, expAthletePosition: "" });
+    dispatch(updateProfileLocal({ [name]: value, expAthletePosition: "" }));
     return;
   }
 
   if (name === "primarySport") {
-    useUserStore.getState().setUser({ [name]: value, athletePosition: "" });
+    dispatch(updateProfileLocal({ [name]: value, athletePosition: "" }));
     return;
   }
 
@@ -58,10 +76,10 @@ export default function EditProfile() {
       });
     }
 
-    useUserStore.getState().setUser({
+    dispatch(updateProfileLocal({
       expCurrent: value,
       ...(value ? { expEnd: "" } : {})
-    });
+    }));
 
     return;
   }
@@ -75,17 +93,17 @@ export default function EditProfile() {
       });
     }
 
-    useUserStore.getState().setUser({
+    dispatch(updateProfileLocal({
       current: value,
       ...(value ? { end: "" } : {})
-    });
+    }));
 
     return;
   }
 
   
   if (name === "expEnd" || name === "end") {
-    useUserStore.getState().setUser({ [name]: value });
+    dispatch(updateProfileLocal({ [name]: value }));
     setErrors((p) => {
       const c = { ...p };
       delete c[name];
@@ -98,7 +116,7 @@ export default function EditProfile() {
   if (name === "expStart" || name === "start") {
     // Update start and clear any existing end-date error while editing.
     const endField = name === "expStart" ? "expEnd" : "end";
-    useUserStore.getState().setUser({ [name]: value });
+    dispatch(updateProfileLocal({ [name]: value }));
     setErrors((p) => {
       const c = { ...p };
       delete c[endField];
@@ -108,13 +126,13 @@ export default function EditProfile() {
   }
 
   
-  useUserStore.getState().setUser({ [name]: value });
+  dispatch(updateProfileLocal({ [name]: value }));
 };
 
   const handleAddExperience = (e) => {
   e.preventDefault();
 
-  const userState = useUserStore.getState().user;
+  const userState = user;
 
   const academy =
     userType?.toLowerCase() === "athlete"
@@ -157,7 +175,7 @@ export default function EditProfile() {
 
   const allExperience = userState.experienceList || [];
 
-  useUserStore.getState().setUser({
+  dispatch(updateProfileLocal({
     experienceList: [...allExperience, experience],
     expAcademy: "",
     expPrimarySport: "",
@@ -165,7 +183,7 @@ export default function EditProfile() {
     expStart: "",
     expEnd: "",
     expCurrent: false,
-  });
+  }));
 
   setErrors((p) => {
     const c = { ...p };
@@ -176,18 +194,25 @@ export default function EditProfile() {
    // ADD THESE DEBUG LOGS
   console.log("✅ Experience added:", experience);
   console.log("✅ Full experienceList:", [...allExperience, experience]);
-  console.log("✅ Store after update:", useUserStore.getState().user);
 };
 
 // const handleDeleteExperience = (index) => {
 //   const allExperience = user?.experienceList || [];
 //   const updatedList = allExperience.filter((_, i) => i !== index);
-//   useUserStore.getState().setUser({ experienceList: updatedList });
+//   dispatch(updateProfileLocal({ experienceList: updatedList }));
 // };
 
     
-  const handleSubmit = (e) => {
-      e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await updateProfile(user).unwrap();
+      toast.success("Profile updated successfully");
+      router.push("/profile/123");
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile.");
+    }
   }
   
     return(
@@ -198,16 +223,9 @@ export default function EditProfile() {
         <form onSubmit={handleSubmit}>
           <div className="flex items-center justify-between mb-8">
             <Link href="/profile/123"><MdArrowBack/></Link>
-            <Link href="/profile/123">
-            <button type="submit" disabled='' className="bg-teal-600 text-white text-sm font-medium px-3 py-2 rounded-md">
-              Save changes
-              {/* {isLoading ? (
-                <Spinner className="w-5 h-5" />
-              ) : (
-                <MdOutlineCheck className="text-blue-500 w-6 h-6" />
-              )} */}
+            <button type="submit" disabled={isSaving} className="bg-teal-600 text-white text-sm font-medium px-3 py-2 rounded-md">
+              {isSaving ? "Saving..." : "Save changes"}
             </button>
-            </Link>
           </div>
             <label
               htmlFor="profilePicture"
@@ -521,44 +539,6 @@ function AddBtn({onAdd, error}) {
     </div>    
   )
 }
-// function ExperienceSection ({experienceList}) {
-//   return(
-//     <div>
-//       {experienceList.map((exp, index) => (
-//         <div key={index} className="my-4 p-4 border border-gray-200 rounded-md">
-//           <div className="flex">
-//             <p>
-//               Played
-//             </p>
-//             {exp.primarySport && (
-//             <p className="text-gray-500 text-sm mt-1">{exp.primarySport}</p>
-//           )}
-//           <p>at</p>
-//           </div>
-//           <div className="flex justify-between items-center mb-2"> 
-//           <div className="font-semibold text-xl flex ">
-//           <h3 className="ml-2">{exp.Academy}</h3>
-//           </div>
-//           <div className="flex gap-2">
-
-//           <MdEdit className="text-gray-500 w-5 h-5 cursor-pointer"/>
-//           <IoTrash className="text-red-500 w-5 h-5 cursor-pointer" onClick={() => handleDeleteExperience(index)}/>
-//           </div>
-//           </div>
-//           <div className="flex items-center">
-//           {exp.athletePosition && (
-//             <p>{exp.athletePosition}</p>
-//           )}
-//           <p className="text-gray-600">
-//             {formatDate(exp.start)} - {formatDate(exp.end)}
-//           </p>
-//           </div>
-          
-//         </div>
-//       ))}
-//     </div>
-//   )
-// }
 
 
 }
@@ -962,85 +942,6 @@ function Nationality({ label, name, value, onChange }) {
     </div>
   );
 }
-// function HeightField({ label, name, value, onChange, defaultValue = 150 }) {
-//   const [isOpen, setIsOpen] = useState(false);
-//   const popupRef = useRef(null);
-//   const inputRef = useRef(null);
-  
-//   const numValue = value ? Number(value) : defaultValue;
-
- 
-//   useEffect(() => {
-//     function handleClickOutside(event) {
-//       if (popupRef.current && !popupRef.current.contains(event.target) && 
-//           inputRef.current && !inputRef.current.contains(event.target)) {
-//         setIsOpen(false);
-//       }
-//     }
-
-//     if (isOpen) {
-//       document.addEventListener('mousedown', handleClickOutside);
-//       return () => document.removeEventListener('mousedown', handleClickOutside);
-//     }
-//   }, [isOpen]);
-
-//   const handleHeightChange = (newHeight) => {
-//     onChange({ target: { name, value: newHeight } });
-//   };
-
-//   return (
-//     <div className="flex flex-col w-full relative">
-//       <label className="relative py-2" htmlFor={name}>
-//         <span className="text-gray-700 font-medium">
-//           {label}
-//         </span>
-//       </label>
-
-     
-//       <div
-//         ref={inputRef}
-//         onClick={() => setIsOpen(true)}
-//         className="border border-gray-300 rounded-md p-2.5 px-3 focus:outline-none focus:border-teal-500 transition-colors w-full cursor-pointer bg-white"
-//       >
-//         <span className="text-gray-900">
-//           {numValue} cm
-//         </span>
-//       </div>
-
-   
-//       {isOpen && (
-//         <div 
-//           ref={popupRef}
-//           className="absolute left-1/2 -translate-x-1/2 bg-white border border-gray-300 rounded-md shadow-xl z-[9999] p-4 mt-2"
-//         >
-     
-//           <div 
-//             className="text-center mb-2 text-sm font-medium text-gray-700 cursor-pointer"
-//             onClick={() => setIsOpen(false)}
-//           >
-//             {/* {numValue} cm */}Select Height
-//           </div>
-// <div className="length-picker-container border border-gray-300 rounded-md p-2 focus-within:border-teal-500" onClick={() => setIsOpen(false)}>
-
-//           <LengthPicker
-//             unit="metric"
-//             length={numValue}
-//             onLengthChange={handleHeightChange}
-//             metricMin={79}
-//             metricMax={400}
-//             metricStep={1}
-//             imperialMin={118}
-//             imperialMax={157}
-//             imperialStep={1}
-//             containerHeight={150}
-//             containerWidth={70}
-//           />
-// </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
 function HeightField({ label, name, value, onChange, defaultValue = 79 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [unit, setUnit] = useState('cm'); // 'cm' or 'inches'
@@ -1115,17 +1016,6 @@ function HeightField({ label, name, value, onChange, defaultValue = 79 }) {
             >
               cm
             </button>
-            {/* <button
-              type="button"
-              onClick={() => setUnit('inches')}
-              className={`px-4 py-1 rounded-md text-sm font-medium transition-colors ${
-                unit === 'inches' 
-                  ? 'bg-teal-500 text-white' 
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-              }`}
-            >
-              inches
-            </button> */}
           </div>
 
           <div className="max-h-48 overflow-y-auto border border-gray-200 rounded-md">
@@ -1320,7 +1210,6 @@ function CoreSkillField({ label, name, value, onChange }){
         
       },
     });
-    useUserStore.getState().setUser({ [name]: updated });
   };
 
 
@@ -1416,7 +1305,6 @@ function TechnicalSkillField({ label, name, value, onChange }){
         value: updated,
       },
     });
-        useUserStore.getState().setUser({ [name]: updated });
 
   };
 
@@ -1486,6 +1374,3 @@ function MediaUploadField({ label, name, value, onChange, accept = "image/*,vide
     </div>
   );
 }
-
-
-

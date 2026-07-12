@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import toast from "react-hot-toast"; // Added this import
 import { MdArrowBack } from "react-icons/md";
 import { CalendarIcon } from "lucide-react";
@@ -25,6 +25,7 @@ import { useCreateTryoutMutation, useGetTryoutByIdQuery, useUpdateTryoutMutation
 
 export default function TryoutForm({ mode = "create", tryoutId }) {
     const params = useParams();
+    const router = useRouter();
 
 const id = tryoutId || params?.id;
 
@@ -148,6 +149,8 @@ const [
       if(mode==="create"){
 
  await createTryout(finalPayload).unwrap();
+ toast.success("Tryout successfully created");
+ router.back();
 
 }else{
 
@@ -155,6 +158,8 @@ const [
     id:tryoutId,
     data:finalPayload
  }).unwrap();
+ toast.success("Tryout successfully updated");
+ router.back();
 
 }
     } catch (error) {
@@ -324,4 +329,3 @@ const [
     </div>
   );
 };
-
