@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import PostCard from "../../../components/PostCard";
-// import { useGetPostByIdQuery } from "../../userfeed/redux/api/postApi";
+import { useGetPostByIdQuery } from "../../../redux/api/feedApi";
 
 export default function SinglePost() {
   const { id } = useParams();
@@ -32,7 +32,7 @@ export default function SinglePost() {
   }
 
 
-  const post = data?.data?.post;
+  const post = data?.data;
 
 
   return (

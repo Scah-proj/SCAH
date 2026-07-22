@@ -4,6 +4,57 @@ import { FaMedal } from "react-icons/fa";
 import { GrNotes } from "react-icons/gr";
 import { FaRegStar } from "react-icons/fa";
 
+
+const SPORTS = [
+  "Football",
+  "Soccer",
+  "Basketball",
+  "Tennis",
+  "Athletics",
+  "Swimming",
+  "Volleyball",
+  "Handball",
+  "Rugby",
+  "Cricket",
+  "Baseball",
+  "Hockey",
+  "Badminton",
+  "Table Tennis",
+  "Golf",
+  "Boxing",
+  "Martial Arts",
+  "Cycling",
+  "Other",
+];
+const sportOptions = SPORTS.map((s) => ({ label: s, value: s }));
+
+// Both schemas use the same 4-value GENDERS enum. Previously only 2 of the
+// 4 were offered as options.
+const GENDERS = ["Male", "Female", "Other", "Prefer not to say"];
+const genderOptions = GENDERS.map((g) => ({ label: g, value: g }));
+
+// Athlete.currentPlayingLevel
+const PLAYING_LEVELS = [
+  "Local Clubs",
+  "School Teams",
+  "Academy Programs",
+  "Semi-Professionals",
+  "Professional",
+  "Just starting",
+];
+const playingLevelOptions = PLAYING_LEVELS.map((l) => ({ label: l, value: l }));
+
+// Scout.scoutingLevel
+const SCOUTING_LEVELS = [
+  "Local Clubs",
+  "School Teams",
+  "Academy Programs",
+  "Semi-Professionals",
+  "Professional",
+  "Just starting",
+];
+const scoutingLevelOptions = SCOUTING_LEVELS.map((l) => ({ label: l, value: l }));
+
 export const profileSections = [
   {
     id: "basic-info",
@@ -27,10 +78,8 @@ export const profileSections = [
         type: "select",
         label: "Gender",
         name: "gender",
-        options: [
-          { label: "Male", value: "Male" },
-          { label: "Female", value: "Female" },
-        ],
+      
+        options: genderOptions,
       },
       { type: "nationality", label: "Nationality", name: "nationality" },
       { type: "location", label: "Residence", name: "residence" },
@@ -58,6 +107,8 @@ export const profileSections = [
           { label: "Federation", value: "Federation" },
         ],
       },
+      
+      { type: "textarea", label: "Bio", name: "bio" },
     ],
   },
 
@@ -71,13 +122,18 @@ export const profileSections = [
         type: "select",
         label: "Primary Sport",
         name: "primarySport",
-        options: [
-          { label: "Soccer", value: "Soccer" },
-          { label: "Football", value: "Football" },
-          { label: "Basketball", value: "Basketball" },
-        ],
+        // FIXED: full SPORTS enum, "Soccer" removed (invalid value).
+        options: sportOptions,
       },
       { type: "select", label: "Position", name: "athletePosition", options: [] },
+      // ADDED: Athlete.currentPlayingLevel — already whitelisted on the
+      // backend, previously had no UI at all.
+      {
+        type: "select",
+        label: "Current Playing Level",
+        name: "currentPlayingLevel",
+        options: playingLevelOptions,
+      },
       { type: "height", label: "Height (cm)", name: "height" },
       { type: "weight", label: "Weight (kg/lbs)", name: "weight" },
 
@@ -189,22 +245,24 @@ export const profileSections = [
       type: "select",
       label: "Sport",
       name: "scoutingSport",
-      options: [
-        { label: "Soccer", value: "Soccer" },
-        { label: "Football", value: "Football" },
-        { label: "Basketball", value: "Basketball" },
-      ],
+      // FIXED: full SPORTS enum, "Soccer" removed (invalid value).
+      options: sportOptions,
     },
     { type: "scoutPosition", label: "Position", name: "scoutingPosition", options: [] },
+      // ADDED: Scout.scoutingLevel — already whitelisted on the backend,
+      // previously had no UI at all.
+      {
+        type: "select",
+        label: "Scouting Level",
+        name: "scoutingLevel",
+        options: scoutingLevelOptions,
+      },
       {
         type: "select",
         label: "Preferred Gender",
         name: "preferredGender",
-        options: [
-          { label: "Male", value: "Male" },
-          { label: "Female", value: "Female" },
-          { label: "Other", value: "Other" },
-        ],
+        // FIXED: was missing "Prefer not to say" from the shared GENDERS enum.
+        options: genderOptions,
       },
       {
         type: "select",
@@ -230,17 +288,7 @@ export const profileSections = [
         ],
       },
 
-      // {
-      //   type: "checkbox",
-      //   label: "Specific Talent Needs",
-      //   name: "talent",
-      //   options: [
-      //     { label: "Optional", value: "Optional" },
-      //     { label: "Position", value: "Position" },
-      //     { label: "Skill Type", value: "Skill Type" },
-      //     { label: "Playing Style", value: "Playing Style" },
-      //   ],
-      // },
+      
     ],
   },
 
@@ -276,35 +324,57 @@ export const profileSections = [
     ],
   },
 
- {
-  id: "experience",
-  title: "Experience",
-  icon: <GrNotes size={24} color="teal" />,
-  fields: [
-    { type: "text", label: "Club/Academy", name: "expAcademy", userType: "athlete" },
-    { type: "text", label: "Organization/Club", name: "expOrganization", userType: "scout" },
-    {
-      type: "select",
-      label: "Primary Sport",
-      name: "expPrimarySport",
-      options: [
-        { label: "Soccer", value: "Soccer" },
-        { label: "Football", value: "Football" },
-        { label: "Basketball", value: "Basketball" },
-      ],
-    },
-    { type: "select", label: "Position", name: "expAthletePosition", options: [] },
-    { type: "date", label: "Start Date", name: "expStart" },
-    { type: "date", label: "End Date", name: "expEnd" },
-    { 
-      type: "checkbox", 
-      name: "expCurrent", 
-      options: [
-        { label: "Currently in this club", value: "current" },
-      ],
-    },
-  ],
-},
+
+  {
+    id: "experience",
+    title: "Experience",
+    icon: <GrNotes size={24} color="teal" />,
+    fields: [
+      // ---- Athlete-only ----
+      { type: "text", label: "Club/Academy", name: "expClubName", userType: "athlete" },
+      {
+        type: "select",
+        label: "Sport",
+        name: "expSport",
+        userType: "athlete",
+        options: sportOptions,
+      },
+      { type: "select", label: "Position", name: "expPosition", userType: "athlete", options: [] },
+      {
+        type: "checkbox",
+        name: "expCurrent",
+        userType: "athlete",
+        options: [{ label: "Currently playing here", value: "current" }],
+      },
+      {
+        type: "textarea",
+        label: "Description (optional)",
+        name: "expDescription",
+        userType: "athlete",
+      },
+
+      // ---- Scout-only ----
+      { type: "text", label: "Organization/Club", name: "expOrganization", userType: "scout" },
+      { type: "text", label: "Role/Position", name: "expRolePosition", userType: "scout" },
+      {
+        type: "number",
+        label: "Years of Experience",
+        name: "expYearsOfExperience",
+        userType: "scout",
+      },
+      { type: "text", label: "Location", name: "expLocation", userType: "scout" },
+      {
+        type: "textarea",
+        label: "Notable Talents Discovered",
+        name: "expNotableTalents",
+        userType: "scout",
+      },
+
+      // ---- Shared by both (startDate/endDate exist on both sub-schemas) ----
+      { type: "date", label: "Start Date", name: "expStart" },
+      { type: "date", label: "End Date", name: "expEnd" },
+    ],
+  },
 
   {
     id: "additional",
@@ -318,8 +388,8 @@ export const profileSections = [
         title: "Coach / Teammates Endorsement Reference",
         name: "endorsement",
         fields: [
-          { type: "email", label: "Email", name: "linkedin" },
-          { type: "text", label: "LinkedIn", name: "height" },
+          { type: "email", label: "Email", name: "endorsementEmail" },
+          { type: "text", label: "LinkedIn", name: "endorsementLinkedin" },
         ],
       },
 
@@ -341,7 +411,7 @@ export const profileSections = [
           },
 
           {
-            type: "checkbox",
+            type: "select",
             label: "Open to relocate",
             name: "relocate",
             options: [
@@ -355,7 +425,7 @@ export const profileSections = [
       {
     title: "Media and Verification",
     name: "media",
-    role: "athlete",
+    userType: "athlete",
     fields: [
       { type: "file", label: "Upload action photo/videos", name: "media" },
       { type: "file", label: "Endorse video (Coach/teammate)", name: "endorseVideo" },

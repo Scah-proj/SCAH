@@ -7,6 +7,8 @@ import {
   useViewStoryMutation,
 } from "../../redux/api/storyApi";
 
+import { useGetPublicProfileQuery } from "../../redux/api/profileApi";
+
 export default function ViewStory({
   user,
   onClose,
@@ -20,6 +22,11 @@ export default function ViewStory({
     skip: !user?.userId,
   });
 
+  // NEW
+  const { data: publicProfile } = useGetPublicProfileQuery(user?.userId, {
+    skip: !user?.userId,
+  });
+
   const [viewStory] = useViewStoryMutation();
 
   const userStories = data?.data?.stories || [];
@@ -29,6 +36,14 @@ export default function ViewStory({
       viewStory(userStories[0]._id);
     }
   }, [userStories, viewStory]);
+
+  // NEW
+  const profilePicture =
+    publicProfile?.profile?.profilePicture ||
+    publicProfile?.profilePicture ||
+    user.profilePicture ||
+    user.picture ||
+    "/default-avatar.png";
 
   const stories = useMemo(() => {
     return userStories.map((story) => ({
@@ -40,23 +55,16 @@ export default function ViewStory({
             className="w-full h-full object-cover"
           />
 
-          {/* Header */}
           <div className="absolute top-4 left-4 right-4 flex items-center gap-3 z-20">
             <img
-              src={
-                user.profilePicture ||
-                user.picture ||
-                "/default-avatar.png"
-              }
+              src={profilePicture}
               alt="avatar"
               className="w-10 h-10 rounded-full object-cover border border-white"
             />
 
             <div>
               <p className="text-white font-semibold text-sm">
-                {`${user.firstName || ""} ${
-                  user.lastName || ""
-                }`.trim()}
+                {`${user.firstName || ""} ${user.lastName || ""}`.trim()}
               </p>
 
               <p className="text-gray-300 text-xs">
@@ -65,7 +73,6 @@ export default function ViewStory({
             </div>
           </div>
 
-          {/* Caption */}
           {story.caption && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/60 to-transparent p-5 z-20">
               <p className="text-white text-sm">
@@ -76,11 +83,9 @@ export default function ViewStory({
         </div>
       ),
 
-      onStoryStart: () => {
-        viewStory(story._id);
-      },
+      onStoryStart: () => viewStory(story._id),
     }));
-  }, [userStories, user, viewStory]);
+  }, [userStories, user, profilePicture, viewStory]);
 
   if (isLoading) {
     return (
@@ -105,18 +110,7 @@ export default function ViewStory({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-      <div
-        className="
-          relative
-          bg-black
-          w-full
-          h-full
-          sm:w-[420px]
-          sm:h-[740px]
-          sm:rounded-xl
-          overflow-hidden
-        "
-      >
+      <div className="relative bg-black w-full h-full sm:w-[420px] sm:h-[740px] sm:rounded-xl overflow-hidden">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 z-50 text-xl text-white"

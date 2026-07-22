@@ -18,11 +18,6 @@ export const navroutes = [
         icon: <ListTodo/>,
     },
     {
-        label: "Chats",
-        path: "/userfeed/chats",
-        icon: <MessageCircle/>,
-    },
-    {
         label: "Notifications",
         path: "/userfeed/notifications",
         icon: <BellPlus/>,

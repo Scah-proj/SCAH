@@ -11,7 +11,7 @@ const NotificationByGroup = ({ title, notifications }) => {
 
       <div className="space-y-1">
         {notifications.map((notif) => (
-          <Notification key={notif.id} notification={notif} />
+          <Notification key={notif._id} notification={notif} />
         ))}
       </div>
     </div>

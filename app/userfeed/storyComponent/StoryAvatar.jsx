@@ -1,5 +1,5 @@
-import Image from 'next/image';
-import { AiOutlinePlus } from 'react-icons/ai';
+import Image from "next/image";
+import { AiOutlinePlus } from "react-icons/ai";
 
 export default function StoryAvatar({
   onClick,
@@ -22,16 +22,16 @@ export default function StoryAvatar({
       >
         <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border">
           <Image
-            src={avatar}
+            src={avatar || "/default-avatar.png"}
             alt="Profile"
             width={48}
             height={48}
-            className="object-cover"
+            className="object-cover w-full h-full"
           />
         </div>
 
         {owner && !hasStory && (
-          <span className="absolute bottom-0 right-0 w-5 h-5 bg-teal-500 text-white rounded-full flex items-center justify-center text-sm">
+          <span className="absolute bottom-0 right-0 w-5 h-5 bg-teal-500 text-white rounded-full flex items-center justify-center text-sm border-2 border-white">
             <AiOutlinePlus />
           </span>
         )}

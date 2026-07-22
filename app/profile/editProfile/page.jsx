@@ -25,19 +25,86 @@ import ExperienceSection from "../../components/Experience";
 import { useUpdateProfileMutation, useGetMyProfileQuery } from "../../redux/api/profileApi";
 import { setProfile, updateProfile as updateProfileLocal } from "../../redux/features/profile/profileSlice";
 
+
+function canAccess(requiredRole, userType) {
+  if (!requiredRole) return true;
+  return requiredRole.toLowerCase() === userType?.toLowerCase();
+}
+
+
+function getAllowedFieldNames(userType) {
+  const names = new Set();
+
+  const walkFields = (fields = []) => {
+    fields
+      .filter((f) => canAccess(f.userType, userType))
+      .forEach((f) => {
+        if (f.name) names.add(f.name);
+        if (f.fields) walkFields(f.fields);
+      });
+  };
+
+  profileSections
+    .filter((section) => canAccess(section.role, userType))
+    .forEach((section) => walkFields(section.fields));
+
+  return names;
+}
+
+
+const ALWAYS_ALLOWED_FIELDS = ["experienceList", "profilePicture"];
+
+function buildScopedPayload(user, userType) {
+  const allowed = getAllowedFieldNames(userType);
+  ALWAYS_ALLOWED_FIELDS.forEach((f) => allowed.add(f));
+
+  const scoped = {};
+  Object.keys(user || {}).forEach((key) => {
+    if (allowed.has(key)) {
+      scoped[key] = user[key];
+    }
+  });
+
+  scoped.role = userType;
+  scoped._id = user?._id;
+
+  return scoped;
+}
+
 export default function EditProfile() {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.profile.profile);
-  const userType = user?.role;
+
+  
+  const authUser = useSelector((state) => state.auth.user);
+  const userType = authUser?.role || user?.role;
+
   const [errors, setErrors] = useState({});
   const router = useRouter();
+
+  const [selectedProfileFile, setSelectedProfileFile] = useState(null);
+  const [pendingPhotoPreview, setPendingPhotoPreview] = useState(null);
+
+  useEffect(() => {
+    if (selectedProfileFile instanceof File) {
+      const objectUrl = URL.createObjectURL(selectedProfileFile);
+      setPendingPhotoPreview(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+    setPendingPhotoPreview(null);
+  }, [selectedProfileFile]);
+
+  const savedPhotoUrl =
+    typeof user?.profilePicture === "string"
+      ? user.profilePicture
+      : user?.media?.profilePicture;
+
+  const profilePhotoSrc = pendingPhotoPreview || savedPhotoUrl || "/wen.webp";
 
   const [updateProfile, { isLoading: isSaving }] = useUpdateProfileMutation();
   const { data: myProfile, isSuccess: profileFetched } = useGetMyProfileQuery();
 
-  // Hydrate the Redux store with the user's saved profile on mount so the
-  // edit form reflects current data rather than whatever was left in
-  // the store from a previous screen (e.g. onboarding).
+  
   useEffect(() => {
     if (profileFetched && myProfile) {
       dispatch(setProfile(myProfile));
@@ -45,7 +112,13 @@ export default function EditProfile() {
   }, [profileFetched, myProfile, dispatch]);
 
   const handleChange = (e) => {
-  const { name, value } = e.target;
+  const { name, value, files, type } = e.target;
+
+  if (type === "file" && name === "profilePicture") {
+    const file = files?.[0] || null;
+    setSelectedProfileFile(file);
+    return;
+  }
 
   const isValidDate = (d) => {
     if (!d) return false;
@@ -56,8 +129,8 @@ export default function EditProfile() {
   const getUser = () => user;
 
   
-  if (name === "expPrimarySport") {
-    dispatch(updateProfileLocal({ [name]: value, expAthletePosition: "" }));
+  if (name === "expSport") {
+    dispatch(updateProfileLocal({ [name]: value, expPosition: "" }));
     return;
   }
 
@@ -133,25 +206,32 @@ export default function EditProfile() {
   e.preventDefault();
 
   const userState = user;
+  const isAthlete = canAccess("athlete", userType);
 
-  const academy =
-    userType?.toLowerCase() === "athlete"
-      ? userState?.expAcademy
-      : userState?.expOrganization;
-
-  if (!academy || !userState?.expStart) {
-    setErrors((p) => ({
-      ...p,
-      experience: "Please fill in Club/Academy and Start Date",
-    }));
-    return;
-  }
-
-  const start = userState.expStart;
-  const end = userState.expEnd;
-  const isCurrent = userState.expCurrent === true;
+  const start = userState?.expStart;
+  const end = userState?.expEnd;
+  
+  const isCurrent = isAthlete && userState?.expCurrent === true;
 
   const isValidDate = (d) => !isNaN(new Date(d).getTime());
+
+  if (isAthlete) {
+    if (!userState?.expClubName || !start) {
+      setErrors((p) => ({
+        ...p,
+        experience: "Please fill in Club/Academy and Start Date",
+      }));
+      return;
+    }
+  } else {
+    if (!userState?.expOrganization || !start) {
+      setErrors((p) => ({
+        ...p,
+        experience: "Please fill in Organization and Start Date",
+      }));
+      return;
+    }
+  }
 
   if (!isCurrent && start && end) {
     if (isValidDate(start) && isValidDate(end)) {
@@ -165,21 +245,41 @@ export default function EditProfile() {
     }
   }
 
-  const experience = {
-    Academy: academy || "",
-    primarySport: userState.expPrimarySport || "",
-    athletePosition: userState.expAthletePosition || "",
-    start: start || "",
-    end: isCurrent ? "Present" : (end || ""),
-  };
+  const experience = isAthlete
+    ? {
+        clubName: userState.expClubName || "",
+        sport: userState.expSport || "",
+        position: userState.expPosition || "",
+        startDate: start || undefined,
+        endDate: isCurrent ? undefined : (end || undefined),
+        currentlyPlaying: isCurrent,
+        description: userState.expDescription || "",
+      }
+    : {
+        organization: userState.expOrganization || "",
+        rolePosition: userState.expRolePosition || "",
+        yearsOfExperience: userState.expYearsOfExperience
+          ? Number(userState.expYearsOfExperience)
+          : undefined,
+        startDate: start || undefined,
+        endDate: end || undefined,
+        location: userState.expLocation || "",
+        notableTalents: userState.expNotableTalents || "",
+      };
 
   const allExperience = userState.experienceList || [];
 
   dispatch(updateProfileLocal({
     experienceList: [...allExperience, experience],
-    expAcademy: "",
-    expPrimarySport: "",
-    expAthletePosition: "",
+    expClubName: "",
+    expSport: "",
+    expPosition: "",
+    expDescription: "",
+    expOrganization: "",
+    expRolePosition: "",
+    expYearsOfExperience: "",
+    expLocation: "",
+    expNotableTalents: "",
     expStart: "",
     expEnd: "",
     expCurrent: false,
@@ -191,26 +291,28 @@ export default function EditProfile() {
     delete c.experience;
     return c;
   });
-   // ADD THESE DEBUG LOGS
-  console.log("✅ Experience added:", experience);
-  console.log("✅ Full experienceList:", [...allExperience, experience]);
 };
 
-// const handleDeleteExperience = (index) => {
-//   const allExperience = user?.experienceList || [];
-//   const updatedList = allExperience.filter((_, i) => i !== index);
-//   dispatch(updateProfileLocal({ experienceList: updatedList }));
-// };
-
-    
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    console.log("🟡 handleSubmit fired");
     try {
-      await updateProfile(user).unwrap();
+      const scopedPayload = buildScopedPayload(user, userType);
+      if (selectedProfileFile) {
+        scopedPayload.profilePicture = selectedProfileFile;
+      }
+      console.log("Redux experienceList:", user?.experienceList);
+      console.log("Length:", user?.experienceList?.length);
+      console.log("🟡 scopedPayload about to send:", scopedPayload);
+
+      const result = await updateProfile(scopedPayload).unwrap();
+      console.log("🟢 updateProfile resolved with:", result);
+
       toast.success("Profile updated successfully");
-      router.push("/profile/123");
+     
     } catch (error) {
-      console.error("Error updating profile:", error);
+      console.error("🔴 Error updating profile:", error);
       toast.error("Failed to update profile.");
     }
   }
@@ -232,11 +334,12 @@ export default function EditProfile() {
               className="text-teal-500 font-small cursor-pointer"
             >
               <Image
-                src='/wen.webp'
+                src={profilePhotoSrc}
                 width={180}
                 height={180}
                 alt='Profile Picture'
                 className="w-24 !h-24 mb-2 rounded-full object-cover"
+                unoptimized={Boolean(pendingPhotoPreview)}
               />
               Edit Profile Photo
               <input
@@ -250,7 +353,7 @@ export default function EditProfile() {
 
   <div className="w-full flex items-center justify-center flex-col gap-3 mt-4">
           {profileSections
-  .filter(section => !section.role || section.role.toLowerCase() === userType?.toLowerCase())
+  .filter(section => canAccess(section.role, userType))
   .map((section) => (
     <Accordion key={section.id} type="single" className="w-full pb-8 p-4 my-2 shadow-sm overflow-visible" collapsible>
       <AccordionItem value={section.title}>
@@ -261,13 +364,10 @@ export default function EditProfile() {
         </div>
         
         <AccordionContent >
-          <div className="w-full " key={section.id === "experience"}>
-            {section.id === "experience" ? <AddBtn onAdd={handleAddExperience} error={errors?.experience} /> : null}
-        </div>
         <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-visible">
 
           {section.fields
-            .filter(field => !field.userType || field.userType.toLowerCase() === userType?.toLowerCase())
+            .filter(field => canAccess(field.userType, userType))
             .map((field, i) => {
               if (field.fields) {
                 return (
@@ -278,7 +378,7 @@ export default function EditProfile() {
                       <AccordionTrigger>{field.title}</AccordionTrigger>
                       <AccordionContent className="mt-3 space-y-2">
                        {field.fields
-  .filter(subField => !subField.userType || subField.userType.toLowerCase() === userType?.toLowerCase())
+  .filter(subField => canAccess(subField.userType, userType))
   .map((subField, j) => (
     <div key={`${section.id}-${field.title}-${subField.name || j}`} className="w-full">
       {/* Check if subField also has nested fields (triple nesting) */}
@@ -288,7 +388,7 @@ export default function EditProfile() {
             <AccordionTrigger className="text-sm">{subField.title}</AccordionTrigger>
             <AccordionContent className="mt-2 space-y-2">
               {subField.fields
-                .filter(innerField => !innerField.userType || innerField.userType.toLowerCase() === userType?.toLowerCase())
+                .filter(innerField => canAccess(innerField.userType, userType))
                 .map((innerField, k) => (
                   <div key={`${section.id}-${field.title}-${subField.title}-${innerField.name || k}`}>
                     { innerField.type === "technicalSkill" ? (
@@ -359,8 +459,8 @@ export default function EditProfile() {
         <SelectField
           {...subField}
           options={
-            (subField.name === "athletePosition" || subField.name === "expAthletePosition")
-              ? (positionsBySport[subField.name === "expAthletePosition" ? user?.expPrimarySport : user?.primarySport] || []).map((pos) => ({
+            (subField.name === "athletePosition" || subField.name === "expPosition")
+              ? (positionsBySport[subField.name === "expPosition" ? user?.expSport : user?.primarySport] || []).map((pos) => ({
                   value: pos.id,
                   label: pos.title,
                 }))
@@ -461,8 +561,8 @@ export default function EditProfile() {
                     <SelectField
                       {...field}
                       options={
-                      (field.name === "athletePosition" || field.name === "expAthletePosition")
-                        ? (positionsBySport[field.name === "expAthletePosition" ? user?.expPrimarySport : user?.primarySport] || []).map((pos) => ({
+                      (field.name === "athletePosition" || field.name === "expPosition")
+                        ? (positionsBySport[field.name === "expPosition" ? user?.expSport : user?.primarySport] || []).map((pos) => ({
                             value: pos.id,
                             label: pos.title,
                           }))
@@ -516,6 +616,11 @@ export default function EditProfile() {
         </div>
         <div>
           {section.id === "experience" && (
+            <AddBtn onAdd={handleAddExperience} error={errors?.experience} />
+          )}
+        </div>
+        <div>
+          {section.id === "experience" && (
 <ExperienceSection experienceList={user?.experienceList || []} isOwnProfile={true} mode="edit" />          )}
         </div>
         </AccordionContent>
@@ -532,7 +637,7 @@ export default function EditProfile() {
 function AddBtn({onAdd, error}) {
   return(
     <div className="text-right mb-4">
-          <button onClick={onAdd} className="cursor-pointer">
+          <button type="button" onClick={onAdd} className="cursor-pointer">
             <AiOutlinePlus className="text-gray-500 w-5 h-5"/>
           </button>
           {error ? <p className="text-red-600 text-sm mt-1">{error}</p> : null}
@@ -754,12 +859,17 @@ function ScoutPositionField({ label, name, value = [], onChange, options = [] })
 }
 function CheckboxField({ label, name, value = [], onChange, options = [] }) {
   const isSingleCheckbox = name === "current" || name === "expCurrent"; 
-  
+
+  const validValues = options.map((opt) => (typeof opt === 'object' ? opt.value : opt));
+  const cleanValue = isSingleCheckbox
+    ? value
+    : (Array.isArray(value) ? value.filter((v) => validValues.includes(v)) : []);
+
   const handleCheckboxChange = (optionValue, checked) => {
     if (isSingleCheckbox) {
       onChange({ target: { name, value: checked } });
     } else {
-      let updatedValues = Array.isArray(value) ? [...value] : [];
+      let updatedValues = Array.isArray(cleanValue) ? [...cleanValue] : [];
       if (checked) {
         updatedValues.push(optionValue);
       } else {
@@ -781,8 +891,8 @@ function CheckboxField({ label, name, value = [], onChange, options = [] }) {
           const optionDescription = typeof opt === 'object' ? opt.description : '';
           
           const isChecked = isSingleCheckbox 
-            ? value 
-            : (Array.isArray(value) && value.includes(optionValue));
+            ? cleanValue 
+            : (Array.isArray(cleanValue) && cleanValue.includes(optionValue));
           
           return (
             <Label 
@@ -1192,22 +1302,24 @@ function CoreSkillField({ label, name, value, onChange }){
 { value: 'positive_attitude', label: 'Positive Attitude' },
 
 ]
+  const validValues = options.map((o) => o.value);
+  const cleanValue = Array.isArray(value)
+    ? value.filter((v) => validValues.includes(v))
+    : [];
+
   const handleToggle = (val) => {
     let updated;
 
-    if (value.includes(val)) {
-      
-      updated = value.filter((v) => v !== val);
+    if (cleanValue.includes(val)) {
+      updated = cleanValue.filter((v) => v !== val);
     } else {
-      
-      updated = [...value, val];
+      updated = [...cleanValue, val];
     }
 
     onChange({
       target: {
         name,
         value: updated,
-        
       },
     });
   };
@@ -1221,7 +1333,7 @@ function CoreSkillField({ label, name, value, onChange }){
 
     <div className=" rounded-md focus:ring-0 w-full flex flex-wrap gap-3">
       {options.map((opt) => {
-        const selected = value.includes(opt.value);
+        const selected = cleanValue.includes(opt.value);
 
         return (
           <button
@@ -1288,15 +1400,20 @@ function TechnicalSkillField({ label, name, value, onChange }){
 { value: 'set_piece_delivery', label: 'Free-Kick / Set-Piece Delivery' },
 
 ]
+
+  // Same defensive sanitation as CoreSkillField — see comment there.
+  const validValues = options.map((o) => o.value);
+  const cleanValue = Array.isArray(value)
+    ? value.filter((v) => validValues.includes(v))
+    : [];
+
   const handleToggle = (val) => {
     let updated;
 
-    if (value.includes(val)) {
-      
-      updated = value.filter((v) => v !== val);
+    if (cleanValue.includes(val)) {
+      updated = cleanValue.filter((v) => v !== val);
     } else {
-      
-      updated = [...value, val];
+      updated = [...cleanValue, val];
     }
 
     onChange({
@@ -1316,7 +1433,7 @@ function TechnicalSkillField({ label, name, value, onChange }){
 
     <div className=" rounded-md focus:ring-0 w-full flex flex-wrap gap-3">
       {options.map((opt) => {
-        const selected = value.includes(opt.value);
+        const selected = cleanValue.includes(opt.value);
 
         return (
           <button

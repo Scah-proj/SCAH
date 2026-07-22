@@ -19,14 +19,11 @@ import { useCommentStore } from "../../lib/commentStore";
 import { MoreHorizontalIcon } from "lucide-react"
 import { Button } from "../../components/ui/button"
 import { Checkbox } from "../../components/ui/checkbox"
+import { useRouter } from "next/navigation";
 import {
   Field,
-  FieldDescription,
   FieldGroup,
   FieldLabel,
-  FieldLegend,
-  FieldSeparator,
-  FieldSet,
 } from "../../components/ui/field"
 import {
   Dialog,
@@ -42,16 +39,16 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu"
 import { timeAgo } from "../../components/timeAgo"
-import { 
-  useToggleLikePostMutation, 
+import {  
+  useToggleLikePostMutation,  
   useToggleSavePostMutation,
   useAddCommentMutation,
   useGetCommentsQuery
 } from "../redux/api/feedApi";
+import { useGetPublicProfileQuery } from "../redux/api/profileApi";
 
 
 export default function PostCard({ post }) {
@@ -65,19 +62,67 @@ export default function PostCard({ post }) {
   const [addComment] = useAddCommentMutation();
   
   // Conditional query execution: Only fetch data when comments panel is expanded
+  const router = useRouter();
+
+  const authorId =
+    post.author?._id ||
+    post.author?.id ||
+    post.user_id;
+
+  useGetPublicProfileQuery(authorId, {
+    skip: !authorId,
+  });
+
+  const handleAvatarClick = (e) => {
+    e.stopPropagation();
+
+    if (authorId) {
+      router.push(`/profile/${authorId}`);
+    }
+  };
+
+  const handleOpenPost = () => {
+    router.push(`/profile/Posts/${post.id}`);
+  };
+
   const [showComments, setShowComments] = useState(false);
   const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsQuery(post.id, {
     skip: !showComments,
   });
 
+  // `post.likes` / `post.comments` arrive as {count} objects from the
+  // backend's enrichPosts(), not raw numbers.
+  const initialLikesCount =
+    typeof post.likes === "object" ? post.likes?.count ?? 0 : post.likes ?? 0;
+
   // FIX: Initialize state from the post data directly so your likes persist on page refresh
-  const [likes, setLikes] = useState(post.likes ?? 0);
-  const [liked, setLiked] = useState(!!(post.liked || post.isLiked));
+  const [likes, setLikes] = useState(initialLikesCount);
+  const [liked, setLiked] = useState(!!(post.hasLiked || post.liked || post.isLiked));
   const [reposts, setReposts] = useState(post.reposts ?? 0);
   const [reposted, setReposted] = useState(!!(post.reposted || post.isReposted));
   const [shares, setShares] = useState(post.shares ?? 0);
-  const [saved, setSaved] = useState(!!(post.saved || post.isSaved));
+  const [saved, setSaved] = useState(!!(post.hasSaved || post.saved || post.isSaved));
   const [isShareOpen, setIsShareOpen] = useState(false);
+
+  
+  const authorName = (() => {
+    if (typeof post.author === "string" && post.author.trim()) {
+      return post.author;
+    }
+    if (post.author && typeof post.author === "object") {
+      const fullName = `${post.author.firstName || ""} ${post.author.lastName || ""}`.trim();
+      return fullName || "Unknown";
+    }
+    return "Unknown";
+  })();
+
+  const authorIsVerified =
+    typeof post.author === "object" && post.author?.isVerified;
+
+  const authorAvatarSrc =
+    (typeof post.authorAvatar === "string" && post.authorAvatar) ||
+    (typeof post.author === "object" && post.author?.avatar) ||
+    "/default-avatar.png";
   
   // Raw incoming payload list
   const rawComments = commentsData?.data?.comments || [];
@@ -114,7 +159,8 @@ export default function PostCard({ post }) {
   const [showFeedback, setShowFeedback] = useState(false)
 
   // Real backend sync for liking
-  const handleLikeClick = async () => {
+  const handleLikeClick = async (e) => {
+    e.stopPropagation();
     const previousLiked = liked;
     const previousLikesCount = likes;
     setLikes(liked ? likes - 1 : likes + 1);
@@ -133,7 +179,8 @@ export default function PostCard({ post }) {
   };
 
   // Real backend sync for saving
-  const handleSaveClick = async () => {
+  const handleSaveClick = async (e) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const previousSaved = saved;
     setSaved(!saved);
 
@@ -160,23 +207,32 @@ export default function PostCard({ post }) {
 
   return (
     <div className="max-w-2xl mx-auto mb-6">
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xl mb-2 transition hover:shadow-2xl">
+      <div 
+      onClick={handleOpenPost} 
+      className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xl mb-2 transition hover:shadow-2xl">
+        
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden border">
+            <div
+              onClick={handleAvatarClick}
+              className="w-10 h-10 rounded-full overflow-hidden border cursor-pointer"
+            >
               <Image
-                src={post.authorAvatar || "/default-avatar.png"}
-                alt={post.author || "Author"}
+                src={authorAvatarSrc}
+                alt={authorName}
                 width={40}
                 height={40}
                 className="object-cover"
               />
             </div>
 
-            <div>
+            <div
+              onClick={handleAvatarClick}
+              className="cursor-pointer"
+            >
               <p className="text-sm font-semibold text-gray-900">
-                {post.author || "Unknown"} •  
+                {authorName}{authorIsVerified ? " ✓" : ""} •  
                 <span className="text-xs mx-2 font-semibold text-teal-600">
             {post.status || "Active"}
           </span>
@@ -187,8 +243,8 @@ export default function PostCard({ post }) {
             </div>
           </div>
 
-         <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild>
+          <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
           <Button variant="outline" aria-label="Open menu" size="icon-sm">
             <MoreHorizontalIcon />
           </Button>
@@ -278,7 +334,7 @@ export default function PostCard({ post }) {
           </FieldGroup>
         
           <DialogFooter>
-           
+            
             <Button onClick={() => setShowFeedback(true)} type="submit">
               <DialogClose>Submit</DialogClose>
             </Button>
@@ -293,7 +349,7 @@ export default function PostCard({ post }) {
               We use these reports to show you less of this kind of content in the future.
             </DialogDescription>
           </DialogHeader>
-         
+          
         
           <DialogFooter>
             <DialogClose asChild>
@@ -305,19 +361,19 @@ export default function PostCard({ post }) {
 
         </div>
 
-        {/* Title */}
-        {post.title && (
+        {/* Caption */}
+        {post.caption && (
           <div className="px-4 pb-2">
             <h2 className="text-base text-gray-900">
-              {post.title}
+              {post.caption}
             </h2>
           </div>
         )}
 
         {/* Hashtags */}
-        {post.hashtags?.length > 0 && (
+        {post.tags?.length > 0 && (
           <div className="px-4 pb-3 flex flex-wrap gap-2">
-            {post.hashtags.map((tag, i) => (
+            {post.tags.map((tag, i) => (
               <span
                 key={i}
                 className="text-sm text-teal-600 font-medium"
@@ -328,23 +384,59 @@ export default function PostCard({ post }) {
           </div>
         )}
 
-        {/* Post Image */}
-        {post.image && (
-          <div className="relative w-full aspect-square bg-gray-100">
-            <Image
-              src={post.image}
-              alt="Post"
-              fill
-              className="object-cover"
-            />
-          </div>
-        )}
+        {/* Post Media */}
+        {post.media?.length > 0 && (() => {
+          const primaryMedia = post.media[0];
+          const isImage = primaryMedia.mimetype?.startsWith("image/");
+          const isVideo = primaryMedia.mimetype?.startsWith("video/");
+
+          if (isImage) {
+            return (
+              <div className="relative w-full aspect-square bg-gray-100">
+                <Image
+                  src={primaryMedia.url}
+                  alt="Post"
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            );
+          }
+
+          if (isVideo) {
+            return (
+              <div className="relative w-full aspect-square bg-black">
+                <video
+                  src={primaryMedia.url}
+                  controls
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            );
+          }
+
+          return (
+            <a
+              href={primaryMedia.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mx-4 mb-3 flex items-center gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 transition"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gray-100 text-xs font-semibold text-gray-500 uppercase">
+                {primaryMedia.mimetype?.split("/")[1]?.slice(0, 3) || "file"}
+              </div>
+              <span className="text-sm text-gray-700 truncate">
+                {primaryMedia.path?.split("/").pop() || "Attachment"}
+              </span>
+            </a>
+          );
+        })()}
 
         {/* Actions */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-5">
             {/* Like */}
-            <div className="flex items-center">       
+            <div className="flex items-center">        
             <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleLikeClick}>
               <Heart
                 size={22}
@@ -362,11 +454,16 @@ export default function PostCard({ post }) {
 
             {/* Comment */}
             <div className="flex items-center">
-             <button onClick={() => setShowComments(prev => !prev)}  className="flex space-y-1 mr-1 cursor-pointer">
+             <button
+              className="flex space-y-1 mr-1 cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowComments((prev) => !prev);
+              }}
+            >
               <MessageCircle
                 size={22}
                 className="text-gray-600 hover:text-teal-600"
-                
               />
             </button>
                 <span>{commentCount > 0 && <span>{commentCount}</span>}</span>
@@ -374,7 +471,7 @@ export default function PostCard({ post }) {
 
             {/* Repost */}
             <div className="flex items-center">
-            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setReposts(reposted ? reposts - 1 : reposts + 1) || setReposted(!reposted)}>
+            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setReposts(reposted ? reposts - 1 : reposts + 1); setReposted(!reposted); }}>
               <Repeat2
                 size={22}
                 className={`transition ${
@@ -389,12 +486,11 @@ export default function PostCard({ post }) {
 
             {/* Share */}
             <div className="flex items-center">
-            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setIsShareOpen(true)}>
+            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsShareOpen(true); }}>
               <Send
                 size={22}
                 className="text-gray-600 hover:text-teal-600"
               />
-                
             </button>
             <span>{shares > 0 && <span>{shares}</span>}</span>
             </div>
@@ -412,10 +508,11 @@ export default function PostCard({ post }) {
             />
           </button>
         </div>
-        <div className="text-xs text-gray-500 px-4 mb-2">{timeAgo(post.createdAt)}
-
+        <div className="text-xs text-gray-500 px-4 mb-2">
+          {timeAgo(post.created_at || post.createdAt)}
         </div>
-           
+
+            
         {showComments && (
           <PostComments
             postId={post.id}
@@ -425,7 +522,7 @@ export default function PostCard({ post }) {
           />
         )}
       </div>
-       
+        
         {isShareOpen && (
         <SharePost postId={post.id} onClose={() => setIsShareOpen(false)} />
       )

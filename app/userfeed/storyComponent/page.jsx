@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+
 import StoryAvatar from "./StoryAvatar";
 import ViewStory from "./ViewStory";
 import CreateStory from "./CreateStory";
 
 import { useGetFeedStoriesQuery } from "../../redux/api/storyApi";
+import { useGetMyProfileQuery } from "../../redux/api/profileApi";
 
 import {
   setFeedStories,
@@ -20,6 +22,9 @@ export default function StoryComponent() {
   const [activeIndex, setActiveIndex] = useState(null);
   const [viewedUsers, setViewedUsers] = useState({});
   const [openCreateStory, setOpenCreateStory] = useState(false);
+
+  // Logged-in user profile
+  const { data: myProfile } = useGetMyProfileQuery();
 
   const {
     data,
@@ -76,6 +81,13 @@ export default function StoryComponent() {
     setTimeout(goToNextUser, 0);
   };
 
+  // Logged-in user's profile picture
+  const myProfilePicture =
+    myProfile?.profile?.profilePicture ||
+    myProfile?.profilePicture ||
+    myProfile?.user?.profilePicture ||
+    "/default-avatar.png";
+
   if (isLoading) {
     return (
       <div className="flex p-3 space-x-4 overflow-x-auto">
@@ -105,7 +117,7 @@ export default function StoryComponent() {
           owner={true}
           hasStory={false}
           hasUnseenStories={false}
-          avatar="/default-avatar.png" // Replace with logged-in user's avatar
+          avatar={myProfilePicture}
           onClick={() => setOpenCreateStory(true)}
         />
 

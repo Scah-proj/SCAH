@@ -10,7 +10,7 @@ import { BellPlus, MessageCircle } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { mobileroutes } from "./components/sidenav/navroutes";
 import { AiOutlinePlus } from "react-icons/ai";
-import { useUserStore } from "../../lib/userStore";
+import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 
 
@@ -19,7 +19,11 @@ export default function FeedLayout({ children }) {
   // const handleNav = () => setNav(!nav);
   const router = useRouter();
   const pathname = usePathname();
-  const user = useUserStore((state) => state.user);
+
+  // Was: useUserStore((state) => state.user) — a Zustand store nothing in
+  // the app writes to. Login dispatches into the Redux authSlice
+  // (setCredentials), so we read from there instead, same as Sidenav.
+  const user = useSelector((state) => state.auth.user);
 console.log("Current user in layout:", user);
     const handleAddPost = () => {
     // Implement logic to add a new post

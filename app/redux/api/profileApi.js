@@ -1,5 +1,8 @@
 import { baseApi } from "../../redux/api/baseurl";
 
+
+const unwrap = (response) => response?.data ?? response;
+
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Upload only profile picture
@@ -14,6 +17,7 @@ export const profileApi = baseApi.injectEndpoints({
           body: formData,
         };
       },
+      transformResponse: unwrap,
       invalidatesTags: ["Profile"],
     }),
 
@@ -23,6 +27,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: "/api/profile",
         method: "GET",
       }),
+      transformResponse: unwrap,
       providesTags: ["Profile"],
     }),
 
@@ -32,6 +37,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/api/profile/${userId}`,
         method: "GET",
       }),
+      transformResponse: unwrap,
       providesTags: ["Profile"],
     }),
 
@@ -64,6 +70,7 @@ export const profileApi = baseApi.injectEndpoints({
           body: formData,
         };
       },
+      transformResponse: unwrap,
       invalidatesTags: ["Profile"],
     }),
 
@@ -74,6 +81,7 @@ export const profileApi = baseApi.injectEndpoints({
         method: "PATCH",
         body: data,
       }),
+      transformResponse: unwrap,
       invalidatesTags: ["Profile"],
     }),
 
@@ -83,6 +91,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: "/api/profile/completeness",
         method: "GET",
       }),
+      transformResponse: unwrap,
       providesTags: ["Profile"],
     }),
 
@@ -93,6 +102,7 @@ export const profileApi = baseApi.injectEndpoints({
         method: "POST",
         body: data,
       }),
+      transformResponse: unwrap,
       invalidatesTags: ["Profile"],
     }),
 
@@ -103,6 +113,7 @@ export const profileApi = baseApi.injectEndpoints({
         method: "PUT",
         body: data,
       }),
+      transformResponse: unwrap,
       invalidatesTags: ["Profile"],
     }),
 
@@ -112,6 +123,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/api/profile/experience/${id}`,
         method: "DELETE",
       }),
+      transformResponse: unwrap,
       invalidatesTags: ["Profile"],
     }),
 
@@ -121,6 +133,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: "/api/scouts",
         method: "GET",
       }),
+      transformResponse: unwrap,
       providesTags: ["Profile"],
     }),
   }),
