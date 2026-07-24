@@ -52,7 +52,7 @@ export default function ProfileGallery({ profile }) {
           <TabsList className="mb-4 flex justify-between w-full">
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
-            <TabsTrigger value="community">Community</TabsTrigger>
+            {/* <TabsTrigger value="community">Community</TabsTrigger> */}
           </TabsList>
 
           <div className="w-full">
@@ -134,10 +134,10 @@ export default function ProfileGallery({ profile }) {
               )}
             </TabsContent>
 
-            {/* COMMUNITY */}
+            {/* COMMUNITY
             <TabsContent value="community">
               Be a part of a Community
-            </TabsContent>
+            </TabsContent> */}
           </div>
         </Tabs>
       </div>
