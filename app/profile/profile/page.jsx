@@ -58,9 +58,11 @@ export default function Profile({
       <ProfileInfo
         profile={profile}
         isOwnProfile={isOwnProfile}
+        followers={followers}
+        following={following}
       />
 
-      <div className="flex justify-center gap-8 py-3 border-y border-gray-200">
+      {/* <div className="flex justify-center gap-8 py-3 border-y border-gray-200">
         <div className="text-center">
           <p className="text-lg font-semibold text-gray-900">
             {followers}
@@ -78,7 +80,7 @@ export default function Profile({
             Following
           </p>
         </div>
-      </div>
+      </div> */}
 
       <div className="mx-4 flex justify-center items-center">
         <div>
