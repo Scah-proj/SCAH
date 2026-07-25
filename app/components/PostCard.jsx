@@ -69,7 +69,7 @@ export default function PostCard({ post }) {
     post.author?.id ||
     post.user_id;
 
-  useGetPublicProfileQuery(authorId, {
+  const { data: authorProfileData } = useGetPublicProfileQuery(authorId, {
     skip: !authorId,
   });
 
@@ -119,9 +119,15 @@ export default function PostCard({ post }) {
   const authorIsVerified =
     typeof post.author === "object" && post.author?.isVerified;
 
+  const fetchedAuthorPicture =
+    authorProfileData?.profile?.profilePicture ||
+    authorProfileData?.profile?.media?.profilePicture;
+
   const authorAvatarSrc =
     (typeof post.authorAvatar === "string" && post.authorAvatar) ||
-    (typeof post.author === "object" && post.author?.avatar) ||
+    (typeof post.author === "object" &&
+      (post.author?.picture || post.author?.avatar)) ||
+    fetchedAuthorPicture ||
     "/default-avatar.png";
   
   // Raw incoming payload list

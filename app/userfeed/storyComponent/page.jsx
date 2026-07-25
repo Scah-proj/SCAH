@@ -91,9 +91,7 @@ export default function StoryComponent() {
   if (isLoading) {
     return (
       <div className="flex p-3 space-x-4 overflow-x-auto">
-        <p className="text-sm text-gray-500">
-          Loading stories...
-        </p>
+        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-teal-600 animate-spin"></div>
       </div>
     );
   }

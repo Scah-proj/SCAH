@@ -1,11 +1,32 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Check, X } from "lucide-react";
+import toast from "react-hot-toast";
 
-import { useGetTryoutApplicantsQuery } from "../../../../../redux/api/tryoutApi";
+import {
+  useGetTryoutApplicantsQuery,
+  useUpdateApplicationStatusMutation,
+} from "../../../../../redux/api/tryoutApi";
+
+const STATUS_STYLES = {
+  pending: "bg-yellow-50 text-yellow-700",
+  accepted: "bg-green-50 text-green-700",
+  rejected: "bg-red-50 text-red-700",
+  withdrawn: "bg-gray-100 text-gray-500",
+};
+
+function StatusBadge({ status }) {
+  const style = STATUS_STYLES[status] || STATUS_STYLES.pending;
+  return (
+    <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium capitalize ${style}`}>
+      {status || "pending"}
+    </span>
+  );
+}
 
 export default function ApplicantsPage() {
   const { id } = useParams();
@@ -17,7 +38,32 @@ export default function ApplicantsPage() {
     error,
   } = useGetTryoutApplicantsQuery(id);
 
+  const [updateApplicationStatus] = useUpdateApplicationStatusMutation();
+
+  // Tracks which specific application is currently being acted on, so only
+  // that row's buttons show a loading state instead of the whole table.
+  const [actingId, setActingId] = useState(null);
+
   const applicants = data?.data?.applicants || [];
+
+  const handleDecision = async (applicationId, status) => {
+    setActingId(applicationId);
+    try {
+      await updateApplicationStatus({
+        id,
+        applicationId,
+        status,
+      }).unwrap();
+      toast.success(`Application ${status}`);
+    } catch (err) {
+      console.error("Failed to update application status:", err);
+      toast.error(
+        err?.data?.error?.message || `Failed to ${status === "accepted" ? "accept" : "reject"} application`
+      );
+    } finally {
+      setActingId(null);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -92,57 +138,105 @@ export default function ApplicantsPage() {
                   <th className="px-6 py-4 text-center font-semibold">
                     Applied
                   </th>
+
+                  <th className="px-6 py-4 text-center font-semibold">
+                    Status
+                  </th>
+
+                  <th className="px-6 py-4 text-center font-semibold">
+                    Actions
+                  </th>
                 </tr>
               </thead>
 
               <tbody>
-                {applicants.map((applicant) => (
-                  <tr
-                    key={applicant._id}
-                    className="border-b hover:bg-gray-50"
-                  >
-                    <td className="px-6 py-5">
-                      <div>
-                        <h3 className="font-semibold">
-                          {applicant.athleteId.firstName}{" "}
-                          {applicant.athleteId.lastName}
-                        </h3>
+                {applicants.map((applicant) => {
+                  const isPending = (applicant.status || "pending") === "pending";
+                  const isActing = actingId === applicant._id;
 
-                        <p className="text-xs text-gray-500">
-                          {applicant.athleteId._id}
-                        </p>
-                      </div>
-                    </td>
+                  return (
+                    <tr
+                      key={applicant._id}
+                      className="border-b hover:bg-gray-50"
+                    >
+                      <td className="px-6 py-5">
+                        <div>
+                          <h3 className="font-semibold">
+                            {applicant.athleteId.firstName}{" "}
+                            {applicant.athleteId.lastName}
+                          </h3>
 
-                    <td className="px-6 py-5">
-                      {applicant.athleteId.email}
-                    </td>
+                          <p className="text-xs text-gray-500">
+                            {applicant.athleteId._id}
+                          </p>
+                        </div>
+                      </td>
 
-                    <td className="px-6 py-5">
-                      {applicant.notes || "-"}
-                    </td>
+                      <td className="px-6 py-5">
+                        {applicant.athleteId.email}
+                      </td>
 
-                    <td className="px-6 py-5">
-                      {applicant.highlightVideo ? (
-                        <a
-                          href={applicant.highlightVideo}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-teal-600 hover:underline"
-                        >
-                          Watch Video
-                          <ExternalLink size={15} />
-                        </a>
-                      ) : (
-                        "-"
-                      )}
-                    </td>
+                      <td className="px-6 py-5">
+                        {applicant.notes || "-"}
+                      </td>
 
-                    <td className="px-6 py-5 text-center">
-                      {new Date(applicant.createdAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
+                      <td className="px-6 py-5">
+                        {applicant.highlightVideo ? (
+                          <a
+                            href={applicant.highlightVideo}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-teal-600 hover:underline"
+                          >
+                            Watch Video
+                            <ExternalLink size={15} />
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+
+                      <td className="px-6 py-5 text-center">
+                        {new Date(applicant.createdAt).toLocaleDateString()}
+                      </td>
+
+                      <td className="px-6 py-5 text-center">
+                        <StatusBadge status={applicant.status} />
+                      </td>
+
+                      <td className="px-6 py-5">
+                        {isPending ? (
+                          <div className="flex items-center justify-center gap-2">
+                            <button
+                              type="button"
+                              disabled={isActing}
+                              onClick={() => handleDecision(applicant._id, "accepted")}
+                              className="inline-flex items-center gap-1 rounded-md bg-teal-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                              <Check size={14} />
+                              Accept
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isActing}
+                              onClick={() => handleDecision(applicant._id, "rejected")}
+                              className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                            >
+                              <X size={14} />
+                              Reject
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="text-center text-xs text-gray-400">
+                            {applicant.status === "withdrawn"
+                              ? "Withdrawn"
+                              : "Decision made"}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

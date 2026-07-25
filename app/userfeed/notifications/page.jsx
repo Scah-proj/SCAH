@@ -2,9 +2,10 @@
 
 import { useState, useMemo } from "react";
 
-import Categories from "./Categories";
+import NotificationPills from "./Categories";
 import NotificationByGroup from "./NotificationByGroup";
 import { groupNotifications } from "../../../lib/groupedNotification";
+import { getNotificationCategory } from "./notificationCategories";
 
 import { useGetNotificationsQuery } from "../../redux/api/connectionApi";
 
@@ -19,7 +20,7 @@ const Page = () => {
     if (active === "all") return notifications;
 
     return notifications.filter(
-      (notification) => notification.type === active
+      (notification) => getNotificationCategory(notification.type) === active
     );
   }, [active, notifications]);
 
@@ -33,7 +34,7 @@ const Page = () => {
       <div className="max-w-2xl mx-auto px-4 py-8 pb-24 space-y-8">
         <h1 className="text-2xl font-bold">Notifications</h1>
 
-        <Categories active={active} setActive={setActive} />
+        <NotificationPills active={active} setActive={setActive} />
 
         <div className="flex justify-center items-center py-20">
           <div className="flex flex-col items-center gap-4">
@@ -60,9 +61,9 @@ const Page = () => {
     <div className="max-w-2xl mx-auto px-4 py-8 pb-24 space-y-8">
       <h1 className="text-2xl font-bold">Notifications</h1>
 
-      <Categories active={active} setActive={setActive} />
+      <NotificationPills active={active} setActive={setActive} />
 
-      {notifications.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           No notifications yet.
         </div>

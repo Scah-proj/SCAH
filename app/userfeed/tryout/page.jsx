@@ -130,9 +130,14 @@ const Page = () => {
             </div>
 
             {user?.role === "Scout" && (
-              <Button className="bg-teal-600" disabled>
-                Post Tryout
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" disabled>
+                  Manage Tryouts
+                </Button>
+                <Button className="bg-teal-600" disabled>
+                  Post Tryout
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -212,11 +217,18 @@ const Page = () => {
           </div>
 
           {user?.role === "Scout" && (
-            <Button className="bg-teal-600">
-              <Link href="/userfeed/tryout/newTryout">
-                Post Tryout
+            <div className="flex items-center gap-3">
+              <Link href="/userfeed/tryout/manageTryout">
+                <Button variant="outline">
+                  Manage Tryouts
+                </Button>
               </Link>
-            </Button>
+              <Button className="bg-teal-600">
+                <Link href="/userfeed/tryout/newTryout">
+                  Post Tryout
+                </Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>

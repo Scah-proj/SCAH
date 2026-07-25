@@ -40,12 +40,7 @@ const Notification = ({ notification }) => {
     notification.sender?.name ||
     "User";
 
-  // Avatar click always goes to the sender's profile, regardless of what
-  // kind of notification this is — separate from handleClick below, which
-  // routes based on notification.type (post, tryout, etc). Previously the
-  // whole row shared one handler, so clicking the avatar on e.g. a
-  // "post_like" notification took you to the post, not the person who
-  // liked it.
+  
   const handleAvatarClick = (e) => {
     e.stopPropagation();
     if (senderId) {

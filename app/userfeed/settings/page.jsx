@@ -3,10 +3,17 @@ import { settingsSections } from "./navroutes";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import SearchSettings from "../../components/Search/SearchSettings"
-import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useUserStore } from "../../../lib/userStore";
 
 const Page = () => {
+    const router = useRouter();
+    const logout = useUserStore((state) => state.logout);
+
+    const handleLogout = () => {
+        logout();
+        router.push("/");
+    };
     return(
         <div className="space-y-10 max-w-4xl px-4 md:px-6 py-12 mx-auto">
              <div className="space-y-3">
@@ -48,7 +55,13 @@ const Page = () => {
             </div>
             <div className="font-semibold">
                 <p className="text-teal-700">Add account</p>
-                <p className="text-red-700">Log out</p>
+                <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="text-red-700 text-left"
+                >
+                    Log out
+                </button>
             </div>
             </div>
         </div>

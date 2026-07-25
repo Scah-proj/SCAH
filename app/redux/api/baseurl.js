@@ -25,7 +25,8 @@ export const baseApi = createApi({
     "Tryout","TryoutApplicants",
     "Story",
     "Connection",
-    "Notification",],
+    "Notification",
+    "Recommendations",],
 
   endpoints: () => ({}),
 });

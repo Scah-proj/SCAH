@@ -95,13 +95,15 @@ export default function Profile({
             />
           </div>
 
-          <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
-            <p className="font-semibold text-lg">
-              Explore Scout Profiles
-            </p>
+          {!isScout && (
+            <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
+              <p className="font-semibold text-lg">
+                Explore Scout Profiles
+              </p>
 
-            <ScoutProfileConnect />
-          </div>
+              <ScoutProfileConnect />
+            </div>
+          )}
 
           {isScout ? (
             <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">

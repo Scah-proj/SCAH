@@ -11,6 +11,15 @@ export const tryoutApi = baseApi.injectEndpoints({
       providesTags: ["Tryout"],
     }),
 
+   
+    getMyTryouts: builder.query({
+      query: () => ({
+        url: "/api/tryout/my",
+        method: "GET",
+      }),
+      providesTags: ["Tryout"],
+    }),
+
     // Search tryouts
     searchTryouts: builder.query({
       query: ({ q = "", sport = "" }) => ({
@@ -139,6 +148,7 @@ getLatestTryout: builder.query({
 
 export const {
   useGetTryoutsQuery,
+  useGetMyTryoutsQuery,
   useSearchTryoutsQuery,
   useGetTryoutByIdQuery,
   useGetLatestTryoutQuery,

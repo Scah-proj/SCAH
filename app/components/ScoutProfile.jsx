@@ -1,9 +1,12 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function ScoutProfile({ profile }) {
-  const user = profile?.userId || {};
+  const router = useRouter();
+
+  const user = profile?.userId || profile?.user || {};
 
   const name =
     `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
@@ -19,6 +22,22 @@ export default function ScoutProfile({ profile }) {
     profile?.orgType ||
     profile?.sport ||
     "Scout";
+
+  const userId =
+    user?.userId ||
+    user?._id ||
+    user?.id ||
+    profile?.userId ||
+    profile?._id ||
+    profile?.id ||
+    profile?.userId?._id ||
+    profile?.userId?.id;
+
+  const handleViewProfile = () => {
+    if (userId) {
+      router.push(`/profile/${userId}`);
+    }
+  };
 
   return (
     <div className="flex items-center justify-between py-4 rounded-lg">
@@ -44,7 +63,10 @@ export default function ScoutProfile({ profile }) {
         </div>
       </div>
 
-      <button className="border rounded-sm px-3 py-1 text-xs font-semibold text-teal-600">
+      <button
+        onClick={handleViewProfile}
+        className="border rounded-sm px-3 py-1 text-xs font-semibold text-teal-600"
+      >
         View Profile
       </button>
     </div>
