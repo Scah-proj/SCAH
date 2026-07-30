@@ -6,6 +6,8 @@ import feedReducer from "./features/feed/feedSlice";
 import tryoutReducer from "./features/tryout/tryoutSlice";
 import storyReducer from "./features/story/storySlice";
 import connectionReducer from "./features/connection/connectionSlice";
+import onboardingReducer from "./features/onboarding/onboardingSlice"; // Update this path to where your onboardingSlice is saved
+import settingsReducer from "./features/settings/settingSlice";
 
 import { baseApi } from "./api/baseurl";
 
@@ -17,6 +19,8 @@ export const store = configureStore({
     tryout: tryoutReducer,
     story: storyReducer,
     connection: connectionReducer,
+    onboarding: onboardingReducer,
+    settings: settingsReducer,
 
     [baseApi.reducerPath]: baseApi.reducer,
   },

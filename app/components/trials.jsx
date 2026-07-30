@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, Users } from "lucide-react";
 import { BiFootball, BiBasketball } from "react-icons/bi";
 import { CiFootball } from "react-icons/ci";
 import Image from "next/image";
@@ -67,7 +67,7 @@ export default function Trials({ trial }) {
     ? `${scout.firstName || ""} ${scout.lastName || ""}`.trim()
     : "Unknown";
 
-  const deadlineInfo = getDeadlineStatus(trial.deadline);
+  const deadlineInfo = getDeadlineStatus(trial?.deadline);
 
   return (
     <div className="mb-4">
@@ -78,45 +78,49 @@ export default function Trials({ trial }) {
             className={`flex items-center justify-center gap-1 rounded-full text-xs font-semibold whitespace-nowrap transition px-2 py-1 text-white mb-2 ${sport.bg}`}
           >
             {sport.Icon && <sport.Icon size={14} />}
-            <span className="mx-1">{trial.sport}</span>
+            <span className="mx-1">{trial?.sport}</span>
           </span>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 border">
-              <Image
-                src={trial.badge || "/images/avatar.png"}
-                alt="Tryout"
-                width={34}
-                height={34}
-                className="object-cover"
-              />
+            <span className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border flex items-center justify-center shrink-0">
+              {trial?.badge ? (
+                <Image
+                  src={trial.badge}
+                  alt="Tryout"
+                  width={34}
+                  height={34}
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <Users className="w-4 h-4 text-gray-500" />
+              )}
             </span>
 
             <div>
               <p className="font-semibold text-gray-900 text-sm line-clamp-2">
-                {trial.title}
+                {trial?.title}
               </p>
             </div>
           </div>
 
           <p className="text-sm text-gray-500">
             <MapPin className="inline-block mr-1 mb-1 w-4 h-4 text-gray-400" />
-            {trial.venue}, {trial.city}
+            {trial?.venue}, {trial?.city}
           </p>
 
           <p
             className={`mt-2 px-3 py-2 rounded-md text-xs font-medium inline-block ${deadlineInfo.color}`}
           >
             {deadlineInfo.text} ·{" "}
-            {new Date(trial.deadline).toLocaleDateString()}
+            {trial?.deadline ? new Date(trial.deadline).toLocaleDateString() : ""}
           </p>
         </div>
 
         <div className="mt-4 flex justify-center">
           <Link
-            href={`/userfeed/tryout/application/${trial._id}`}
+            href={`/userfeed/tryout/application/${trial?._id}`}
             className="w-full max-w-sm bg-teal-600 text-white font-medium text-sm flex justify-center py-2.5 rounded-lg hover:bg-teal-700 transition focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             View Details

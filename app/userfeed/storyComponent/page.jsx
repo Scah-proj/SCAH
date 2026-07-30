@@ -84,9 +84,9 @@ export default function StoryComponent() {
   // Logged-in user's profile picture
   const myProfilePicture =
     myProfile?.profile?.profilePicture ||
+    myProfile?.profile?.media?.profilePicture ||
     myProfile?.profilePicture ||
-    myProfile?.user?.profilePicture ||
-    "/default-avatar.png";
+    myProfile?.user?.profilePicture;
 
   if (isLoading) {
     return (
@@ -120,21 +120,23 @@ export default function StoryComponent() {
         />
 
         {/* Feed Stories */}
-        {users.map((user, index) => (
-          <StoryAvatar
-            key={user.userId}
-            avatar={
-              user.profilePicture ||
-              user.picture ||
-              user.stories?.[0]?.media?.url ||
-              "/default-avatar.png"
-            }
-            owner={false}
-            hasStory={user.stories?.length > 0}
-            hasUnseenStories={!viewedUsers[user.userId]}
-            onClick={() => setActiveIndex(index)}
-          />
-        ))}
+        {users.map((user, index) => {
+          const userAvatar =
+            user.profilePicture ||
+            user.picture ||
+            user.stories?.[0]?.media?.url;
+
+          return (
+            <StoryAvatar
+              key={user.userId}
+              avatar={userAvatar}
+              owner={false}
+              hasStory={user.stories?.length > 0}
+              hasUnseenStories={!viewedUsers[user.userId]}
+              onClick={() => setActiveIndex(index)}
+            />
+          );
+        })}
 
         {activeUser && (
           <ViewStory
@@ -148,8 +150,7 @@ export default function StoryComponent() {
               avatar:
                 activeUser.profilePicture ||
                 activeUser.picture ||
-                activeUser.stories?.[0]?.media?.url ||
-                "/default-avatar.png",
+                activeUser.stories?.[0]?.media?.url,
             }}
             onClose={closeStories}
             onNextUser={markViewedAndGoNext}

@@ -1,4 +1,3 @@
-
 'use client'
 
 import * as React from 'react'
@@ -8,7 +7,6 @@ import "react-datepicker/dist/react-datepicker.css"
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ChevronLeftIcon } from 'lucide-react'
-import { create } from 'zustand'
 import { cn } from '../../lib/utils'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
@@ -16,23 +14,6 @@ import { Progress } from '../../components/ui/progress'
 import { Country, State, City } from 'country-state-city'
 import { positionsBySport } from './page'
 
-
-const useFormStore = create((set) => ({
-  currentStep: 0,
-  selections: {},
-  setStep: (step) => set({ currentStep: step }),
-  setSelection: (step, selection) =>
-    set((state) => ({
-      selections: { 
-      ...state.selections, 
-      [step]: {
-        ...state.selections[step],
-        ...selection
-      }
-      }
-    })),
-  reset: () => set({ currentStep: 0, selections: {} }),
-}))
 
 const OptionCard = React.forwardRef(({ title, description, icon: Icon, selected, onClick }, ref) => {
   return (
@@ -66,12 +47,8 @@ const OptionCard = React.forwardRef(({ title, description, icon: Icon, selected,
 })
 OptionCard.displayName = 'OptionCard'
 
-const FormCard = React.forwardRef(({ options}, ref) => {
+const FormCard = React.forwardRef(({ options, currentStep, selections, setSelection }, ref) => {
 
-  
-  const currentStep = useFormStore((state) => state.currentStep)
-  const selections = useFormStore((state) => state.selections)
-  const setSelection = useFormStore((state) => state.setSelection)
   const userType = selections[0]?.selection;
   const [showManualLocation, setShowManualLocation] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState("")
@@ -131,32 +108,44 @@ const FormCard = React.forwardRef(({ options}, ref) => {
   return;
 }
 
+    if (option.id === "temporary-location") {
+      setShowManualLocation(true)
+      return;
+    }
+
     // Toggle selection for regular options
     const currentSelection = selections[currentStep]
     const newValue = (currentSelection?.selection === option.id) ? null : option.id
     setSelection(currentStep, {selection: newValue})
   }
+
   const handleManualLocationSubmit = () => {
-  if (selectedCountry && selectedState && selectedCity) {
-    const countryName = Country.getCountryByCode(selectedCountry)?.name || selectedCountry
-    const stateName = State.getStateByCodeAndCountry(selectedState, selectedCountry)?.name || selectedState
-    const cityName = City.getCityByNameAndStateAndCountry(selectedCity, selectedState, selectedCountry)?.name || selectedCity
-    
-    const manualAddress = { city: cityName,
-      state: stateName,
-      country: countryName,}
-    setSelection(currentStep, manualAddress)
-    setShowManualLocation(false)
+    if (selectedCountry && selectedState && selectedCity) {
+      const countryName = Country.getCountryByCode(selectedCountry)?.name || selectedCountry
+      const stateName = State.getStateByCodeAndCountry(selectedState, selectedCountry)?.name || selectedState
+      
+      // Fix: Find city name from state cities array instead of calling non-existent function
+      const citiesInState = City.getCitiesOfState(selectedCountry, selectedState)
+      const foundCity = citiesInState.find(c => c.name === selectedCity)
+      const cityName = foundCity?.name || selectedCity
+      
+      const manualAddress = { 
+        city: cityName,
+        state: stateName,
+        country: countryName,
+      }
+      setSelection(currentStep, manualAddress)
+      setShowManualLocation(false)
+    }
   }
-}
 
  const filteredOptions = options.filter(
   (opt) => !(opt.id === "position" && userType === "Scout")
 )
 
   const isMultiDropdownStep = filteredOptions && filteredOptions.length > 0 && filteredOptions[0].options !== undefined
-  const hasLocationOption = filteredOptions.some(opt => opt.id === "current-location")
-  const locationIsSet = hasLocationOption && selections[currentStep] && typeof selections[currentStep] === 'object'
+  const hasLocationOption = filteredOptions.some(opt => opt.id === "current-location" || opt.id === "temporary-location")
+  const locationIsSet = hasLocationOption && selections[currentStep] && typeof selections[currentStep] === 'object' && selections[currentStep]?.city
 
   return (
     <div ref={ref} className="space-y-4 max-w-md mx-auto">
@@ -196,7 +185,7 @@ const FormCard = React.forwardRef(({ options}, ref) => {
     onChange={(e) =>{
       setSelection(currentStep, {
   ...selections[currentStep], 
-  [dropdown.id]: e.target.value          
+  [dropdown.id]: e.target.value         
 })
     }}
     className="w-full border border-gray-300 rounded-lg p-3 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all cursor-pointer hover:border-gray-400 appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 24 24%27 fill=%27none%27 stroke=%27currentColor%27 stroke-width=%272%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27%3e%3cpolyline points=%276 9 12 15 18 9%27%3e%3c/polyline%3e%3c/svg%3e')] bg-[length:1.25rem] bg-[right_0.75rem_center] bg-no-repeat pr-10"
@@ -215,8 +204,8 @@ const positions = positionsBySport[selectedSport] || [];
     })()}
   </select>
 
-   
-  
+    
+ 
 ) : (
   
   <select
@@ -239,8 +228,8 @@ const positions = positionsBySport[selectedSport] || [];
   
 
 
+    
    
-  
 
 )}
             </div>
@@ -249,14 +238,14 @@ const positions = positionsBySport[selectedSport] || [];
             <OptionCard
   key={option.id}
   title={
-    selections[currentStep] && option.id === "current-location"
+    selections[currentStep] && (option.id === "current-location" || option.id === "temporary-location") && selections[currentStep].city
       ? `${selections[currentStep].city}, ${selections[currentStep].state}, ${selections[currentStep].country}`
       : option.title
   }
   description={option.description}
   icon={option.icon}
   selected={
-    option.id === "current-location"
+    option.id === "current-location" || option.id === "temporary-location"
       ? typeof selections[currentStep] === "object" && selections[currentStep]?.city
       : selections[currentStep]?.selection === option.id
   }
@@ -375,9 +364,19 @@ FormCard.displayName = 'FormCard'
 
 
 const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, userType, positionsBySport, className, ...otherProps }, ref) => {
-  const { currentStep, setStep, selections } = useFormStore()
+  const [currentStep, setStep] = useState(0)
+  const [selections, setSelections] = useState({})
   const [isCompleting, setIsCompleting] = React.useState(false)
 
+  const setSelection = (step, selection) => {
+    setSelections((prev) => ({
+      ...prev,
+      [step]: {
+        ...prev[step],
+        ...selection
+      }
+    }))
+  }
 
   const selectedUserType = selections[0]?.selection;
 
@@ -522,7 +521,12 @@ console.log("Step", currentStep, "Selections", selections[currentStep], "Has sel
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.15 }}
             >
-             <FormCard options={currentStepData?.items || []} userType={userType} />
+             <FormCard
+               options={currentStepData?.items || []}
+               currentStep={currentStep}
+               selections={selections}
+               setSelection={setSelection}
+             />
             </motion.div>
           </AnimatePresence>
 

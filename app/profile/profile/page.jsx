@@ -12,14 +12,29 @@ import AthleteProfileConnect from "../athleteConnect";
 import ScoutProfileConnect from "../followScout";
 
 import { useGetMyProfileQuery } from "../../redux/api/profileApi";
+import { useGetMyPostsQuery } from "../../redux/api/feedApi"; // 1. Import My Posts query
 
 export default function Profile({
   profile: profileProp,
   isOwnProfile = false,
+  posts: passedPosts,          // Posts passed from dynamic route [id]
+  isLoadingPosts: passedLoading,
 }) {
   const { data: myProfile } = useGetMyProfileQuery(undefined, {
     skip: !isOwnProfile,
   });
+
+
+  const { 
+    data: myPostsData, 
+    isLoading: isLoadingMyPosts 
+  } = useGetMyPostsQuery(undefined, {
+    skip: !isOwnProfile || Boolean(passedPosts),
+  });
+
+  // 3. Resolve posts and loading states
+  const posts = passedPosts ?? (myPostsData?.data?.posts || myPostsData?.data || myPostsData?.posts || []);
+  const isLoadingPosts = passedLoading ?? isLoadingMyPosts;
 
   const profile = isOwnProfile
     ? myProfile
@@ -27,17 +42,12 @@ export default function Profile({
         ...(profileProp?.user || {}),
         ...(profileProp?.profile || {}),
 
-        // Preserve the actual USER id for follow/profile actions
-        _id: profileProp?.user?._id,
+        _id: profileProp?.user?._id || profileProp?.profile?.userId,
         userId:
           profileProp?.profile?.userId ||
           profileProp?.user?._id,
       };
 
-  // Both getMyProfile and getPublicProfile now reliably include `role` on
-  // the returned profile, so we can trust it directly here regardless of
-  // whether this is the logged-in user's own profile or someone else's —
-  // no need to cross-reference the separate auth slice.
   const isScout = profile?.role?.toLowerCase() === "scout";
 
   const connections = isOwnProfile
@@ -62,29 +72,10 @@ export default function Profile({
         following={following}
       />
 
-      {/* <div className="flex justify-center gap-8 py-3 border-y border-gray-200">
-        <div className="text-center">
-          <p className="text-lg font-semibold text-gray-900">
-            {followers}
-          </p>
-          <p className="text-xs text-gray-500">
-            Followers
-          </p>
-        </div>
-
-        <div className="text-center">
-          <p className="text-lg font-semibold text-gray-900">
-            {following}
-          </p>
-          <p className="text-xs text-gray-500">
-            Following
-          </p>
-        </div>
-      </div> */}
-
       <div className="mx-4 flex justify-center items-center">
         <div>
-          <ProfileGallery />
+          {/* Now posts work everywhere! */}
+          <ProfileGallery posts={posts} isLoading={isLoadingPosts} />
 
           <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
             <p className="font-semibold text-lg">

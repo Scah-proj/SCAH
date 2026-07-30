@@ -66,6 +66,23 @@ export const feedApi = baseApi.injectEndpoints({
       providesTags: ["Feed"],
     }),
 
+    getProfileFeed: builder.query({
+      query: (userId) => ({
+        url: `/api/feed/profile/${userId}`,
+        method: "GET",
+      }),
+      providesTags: ["Feed"],
+    }),
+
+    getSavedPosts: builder.query({
+      query: (params) => ({
+        url: "/api/feed/saved",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["SavedPosts"],
+    }),
+
     getPostById: builder.query({
       query: (postId) => ({
         url: `/api/feed/${postId}`,
@@ -119,6 +136,7 @@ export const feedApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, postId) => [
         { type: "Feed", id: postId },
         "Feed",
+        "SavedPosts",
       ],
     }),
 
@@ -132,7 +150,8 @@ export const feedApi = baseApi.injectEndpoints({
     }),
   }),
 
-  overrideExisting: false,
+  // Allows fast-refresh during dev without throwing duplicate-endpoint errors
+  overrideExisting: process.env.NODE_ENV !== "production",
 });
 
 export const {
@@ -141,6 +160,8 @@ export const {
   useGetDiscoverFeedQuery,
   useGetTrendingPostsQuery,
   useGetMyPostsQuery,
+  useGetProfileFeedQuery,
+  useGetSavedPostsQuery, 
   useGetPostByIdQuery,
   useGetCommentsQuery,
   useAddCommentMutation,

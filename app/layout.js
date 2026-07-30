@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "react-hot-toast"; // 1. Import Toaster
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
 import Providers from "./redux/provider";
 
@@ -32,10 +33,12 @@ export default function RootLayout({ children }) {
         ></script>
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          <Toaster position="top-right" /> 
-          {children}
-        </Providers>
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+          <Providers>
+            <Toaster position="top-right" /> 
+            {children}
+          </Providers>
+        </GoogleOAuthProvider>
       </body>
     </html>
   );

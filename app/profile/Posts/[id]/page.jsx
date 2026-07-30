@@ -1,6 +1,7 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useParams, useRouter, usePathname } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
 import PostCard from "../../../components/PostCard";
 import { useGetPostByIdQuery } from "../../../redux/api/feedApi";
@@ -8,14 +9,28 @@ import { useGetPostByIdQuery } from "../../../redux/api/feedApi";
 export default function SinglePost() {
   const { id } = useParams();
   const router = useRouter();
+  const pathname = usePathname();
 
+  // RTK Query hook gives us access to error status
   const {
     data,
     isLoading,
-    isError
+    isError,
+    error
   } = useGetPostByIdQuery(id);
 
   const post = data?.data;
+
+  // Check if the query returned a 401 Unauthorized status
+  const isUnauthorized = isError && error?.status === 401;
+
+  useEffect(() => {
+  // If the API fails due to unauthenticated session (or 401), send user to /auth/login
+  if (isUnauthorized) {
+    const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`;
+    router.replace(loginUrl);
+  }
+}, [isUnauthorized, pathname, router]);
 
   return (
     <div className="w-full flex justify-center">
@@ -33,7 +48,7 @@ export default function SinglePost() {
         </div>
 
         {/* Body */}
-        {isLoading ? (
+        {isLoading || isUnauthorized ? (
           <div className="animate-pulse divide-y divide-gray-100">
             <div className="flex gap-3 px-4 py-4">
               <div className="h-10 w-10 rounded-full bg-gray-200" />

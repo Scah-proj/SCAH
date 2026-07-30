@@ -1,15 +1,24 @@
-'use client'
+'use client';
 
 import MultiStepForm from "./onboardingform";
 import { useRouter } from 'next/navigation';
-import { postRequest } from "../api";
-import { 
-  Trophy, 
-  Target, 
-  Zap, 
-  Mountain, 
+import { useDispatch } from 'react-redux';
+import {
+  Trophy,
+  Target,
+  Zap,
+  Mountain,
 } from "lucide-react";
-import { useUserStore } from "../../lib/userStore";
+import {
+  useSelectRoleMutation,
+  useUpdateBasicInfoMutation,
+  useUpdateLocationMutation,
+  useUpdatePlayingLevelMutation,
+  useUpdateScoutingLevelMutation,
+  useUpdateActivityLevelMutation,
+  useCompleteOnboardingMutation,
+} from "../redux/api/onboardingApi";
+import { updateOnboardingStatus } from "../redux/features/auth/authSlice";
 
 export const positionsBySport = {
   Football: [
@@ -35,11 +44,21 @@ export const positionsBySport = {
     { id: "forward", title: "Forward" },
   ],
 };
+
 export default function FormContainer() {
-  const updateProfile = useUserStore((state)=> state.updateProfile);
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  const [selectRole] = useSelectRoleMutation();
+  const [updateBasicInfo] = useUpdateBasicInfoMutation();
+  const [updateLocation] = useUpdateLocationMutation();
+  const [updatePlayingLevel] = useUpdatePlayingLevelMutation();
+  const [updateScoutingLevel] = useUpdateScoutingLevelMutation();
+  const [updateActivityLevel] = useUpdateActivityLevelMutation();
+  const [completeOnboarding] = useCompleteOnboardingMutation();
+
   const formSteps = [
-  {
+    {
       id: 'step-1',
       title: 'Welcome to SCAH CLUB',
       description: 'Select your role to get personalized recommendations',
@@ -56,227 +75,197 @@ export default function FormContainer() {
           description: '',
           icon: Target,
         },
-        
-       
-       
       ],
     },
     {
-        id: 'step-2',
-        title: 'Profile Details',
-        description: '',
-        items: [
-          
-          {
-            id: 'gender',
-            title: 'Gender',
-            options: [
-              {id: 'Male', title: 'Male', description: '', icon: ''},
-              {id: 'Female', title: 'Female', description: '', icon: ''},
-              
-            ]
-          },
-          {
-            id: 'dateOfBirth',
-            title: 'Date of Birth',
-            options: [
-              
-            ]
-          },
-          {
-            id: 'sport',
-            title: 'Sport',
-            options: [
-              {id: 'Soccer', title: 'Soccer', description: '', icon: Zap},
-              {id: 'Football', title: 'Football', description: '', icon: Zap},
-              {id: 'Basketball', title: 'Basketball', description: '', icon: Mountain},
-              
-            ]
-          },
-          {
-            id: 'position',
-            title: 'Position',
-          },
-        ]
-      },
-      {
-        id: 'step-3',
-        title: 'Where do you currently train',
-        description: '',
-        items: [
-          {
-            id: 'current-location',
-            title: 'Use my current location',
-            description: '',
-            icon: '',
-          },
-         
-        ]
-      },
-      {
-        id: 'step-4',
-        title: 'What is your current playing level',
-        description: '',
-        items: [
-          {
-            id: 'local Clubs',
-            title: 'Local Clubs',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'School Teams',
-            title: 'School Teams',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'Academy Programs',
-            title: 'Academy Programs',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'Semi-Professionals',
-            title: 'Semi-Professionals',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'Professional',
-            title: 'Professional',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'Just starting',
-            title: 'Just Starting',
-            description: '',
-            icon: '',
-          },
-        ]
-      },
-      {
-        id: 'step-5',
-        title: 'How actively are you seeking opportunities',
-        description: '',
-        items: [
-          {
-            id: 'Actively seeking opportunities',
-            title: 'Actively seeking opportunities',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'Open to the right opportunities',
-            title: 'Open to the right opportunities',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'Building profile for futures',
-            title: 'Building profile for futures',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'Just networking and Learning',
-            title: 'Just networking and Learning',
-            description: '',
-            icon: '',
-          },
-          {
-            id: 'not sure',
-            title: 'Not sure',
-            description: '',
-            icon: '',
-          },
-          
-        ]
-      },
-    ];
-  
-  
+      id: 'step-2',
+      title: 'Profile Details',
+      description: '',
+      items: [
+        {
+          id: 'gender',
+          title: 'Gender',
+          options: [
+            {id: 'Male', title: 'Male', description: '', icon: ''},
+            {id: 'Female', title: 'Female', description: '', icon: ''},
+          ]
+        },
+        {
+          id: 'dateOfBirth',
+          title: 'Date of Birth',
+          options: []
+        },
+        {
+          id: 'sport',
+          title: 'Sport',
+          options: [
+            {id: 'Soccer', title: 'Soccer', description: '', icon: Zap},
+            {id: 'Football', title: 'Football', description: '', icon: Zap},
+            {id: 'Basketball', title: 'Basketball', description: '', icon: Mountain},
+          ]
+        },
+        {
+          id: 'position',
+          title: 'Position',
+        },
+      ]
+    },
+    {
+      id: 'step-3',
+      title: 'Where do you currently train',
+      description: '',
+      items: [
+        {
+          id: 'current-location',
+          title: 'Use my current location',
+          description: 'Detect via GPS or enter manually',
+          icon: '',
+        },
+        {
+          id: 'temporary-location',
+          title: 'Set temporary location',
+          description: 'Select a temporary training location',
+          icon: '',
+        },
+      ]
+    },
+    {
+      id: 'step-4',
+      title: 'What is your current playing level',
+      description: '',
+      items: [
+        {
+          id: 'Local Clubs',
+          title: 'Local Clubs',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'School Teams',
+          title: 'School Teams',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'Academy Programs',
+          title: 'Academy Programs',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'Semi-Professionals',
+          title: 'Semi-Professionals',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'Professional',
+          title: 'Professional',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'Just starting',
+          title: 'Just Starting',
+          description: '',
+          icon: '',
+        },
+      ]
+    },
+    {
+      id: 'step-5',
+      title: 'How actively are you seeking opportunities',
+      description: '',
+      items: [
+        {
+          id: 'Actively seeking opportunities',
+          title: 'Actively seeking opportunities',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'Open to the right opportunities',
+          title: 'Open to the right opportunities',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'Building profile for futures',
+          title: 'Building profile for futures',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'Just networking and Learning',
+          title: 'Just networking and Learning',
+          description: '',
+          icon: '',
+        },
+        {
+          id: 'not sure',
+          title: 'Not sure',
+          description: '',
+          icon: '',
+        },
+      ]
+    },
+  ];
 
-  const handleComplete = async (selections) => {    
-  console.log('All selections:', selections);
- 
-  try {
-  await postRequest('/api/onboarding/role', {
-  role: selections[0]?.selection
-});
+  const handleComplete = async (selections) => {
+    console.log('All selections:', selections);
 
-await postRequest('/api/onboarding/basic-info', {
-  gender: selections[1]?.gender,
-  dateOfBirth: selections[1]?.dateOfBirth,
-  sport: selections[1]?.sport,
-  ...(selections[1]?.position && {
-    position: selections[1]?.position
-  })
-});
+    try {
+      await selectRole({
+        role: selections[0]?.selection
+      }).unwrap();
 
-await postRequest('/api/onboarding/location', {
-  country: selections[2]?.country,
-  state: selections[2]?.state,
-  city: selections[2]?.city,
-});
+      await updateBasicInfo({
+        gender: selections[1]?.gender,
+        dateOfBirth: selections[1]?.dateOfBirth,
+        sport: selections[1]?.sport,
+        ...(selections[1]?.position && {
+          position: selections[1]?.position
+        })
+      }).unwrap();
 
-if (selections[0]?.selection === 'Athlete') {
-  await postRequest('/api/onboarding/playing-level', {
-    currentPlayingLevel: selections[3]?.selection
-  });
+      await updateLocation({
+        country: selections[2]?.country,
+        state: selections[2]?.state,
+        city: selections[2]?.city,
+      }).unwrap();
 
-  await postRequest('/api/onboarding/activity-level', {
-    activityLevel: selections[4]?.selection
-  });
-} else {
-  await postRequest('/api/onboarding/scouting-level', {
-    scoutingLevel: selections[3]?.selection
-  });
-}
-  await postRequest('/api/onboarding/complete');
-  console.log('Onboarding fully complete');
-  // const onboardingData = {
-  //     role: selections[0]?.selection,
-  //     gender: selections[1]?.gender,
-  //     dateOfBirth: selections[1]?.dateOfBirth,
-  //     sport: selections[1]?.sport,
-  //     position: selections[1]?.position,
-  //     country: selections[2]?.country,
-  //     state: selections[2]?.state,
-  //     city: selections[2]?.city,
-  //     ...(selections[0]?.selection === "Athlete"
-  //       ? {
-  //           currentPlayingLevel: selections[3]?.selection,
-  //           activityLevel: selections[4]?.selection,
-  //         }
-  //       : {
-  //           scoutingLevel: selections[3]?.selection,
-  //         }),
-  //   };
-  // updateProfile(onboardingData);
-  router.push('/userfeed');
-} catch (error) {
-  console.error('Error during onboarding submission:', error);
-}
+      if (selections[0]?.selection === 'Athlete') {
+        await updatePlayingLevel({
+          currentPlayingLevel: selections[3]?.selection
+        }).unwrap();
 
+        await updateActivityLevel({
+          activityLevel: selections[4]?.selection
+        }).unwrap();
+      } else {
+        await updateScoutingLevel({
+          scoutingLevel: selections[3]?.selection
+        }).unwrap();
+      }
 
+      await completeOnboarding().unwrap();
+      console.log('Onboarding fully complete');
 
+      dispatch(updateOnboardingStatus({
+        requiresOnboarding: false,
+        onboarding: { onboardingCompleted: true },
+      }));
 
+      router.push('/userfeed');
+    } catch (error) {
+      console.error('Error during onboarding submission:', error);
     }
-    const handleSkip = () => {
-        console.log('Onboarding skipped by user');
-        
-        
-        const skipData = {
-            skipped: true,
-           
-        };
-        
-        //keep track of skips?
-
-        router.push('/userfeed');
-    };
-
-return <MultiStepForm formSteps={formSteps} onComplete={handleComplete} onSkip={handleSkip} positionsBySport={positionsBySport} />;
   }
+
+  const handleSkip = () => {
+    console.log('Onboarding skipped by user');
+    router.push('/userfeed');
+  };
+
+  return <MultiStepForm formSteps={formSteps} onComplete={handleComplete} onSkip={handleSkip} positionsBySport={positionsBySport} />;
+}

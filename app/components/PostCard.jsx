@@ -8,23 +8,24 @@ import {
   Bookmark,
   Send,
   Star,
-  UserX2,
   Copy,
   CircleSlash,
-  MessageSquareWarning
+  MessageSquareWarning,
+  User,
+  MoreHorizontalIcon,
+  Check // Optional: to show a success icon briefly
 } from "lucide-react";
 import PostComments from "./comment/CommentSection";
 import SharePost from "./SharePost";
 import { useCommentStore } from "../../lib/commentStore";
-import { MoreHorizontalIcon } from "lucide-react"
-import { Button } from "../../components/ui/button"
-import { Checkbox } from "../../components/ui/checkbox"
+import { Button } from "../../components/ui/button";
+import { Checkbox } from "../../components/ui/checkbox";
 import { useRouter } from "next/navigation";
 import {
   Field,
   FieldGroup,
   FieldLabel,
-} from "../../components/ui/field"
+} from "../../components/ui/field";
 import {
   Dialog,
   DialogClose,
@@ -33,23 +34,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../../components/ui/dialog"
+} from "../../components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../components/ui/dropdown-menu"
-import { timeAgo } from "../../components/timeAgo"
-import {  
-  useToggleLikePostMutation,  
+} from "../../components/ui/dropdown-menu";
+import { timeAgo } from "../../components/timeAgo";
+import { 
+  useToggleLikePostMutation, 
   useToggleSavePostMutation,
   useAddCommentMutation,
   useGetCommentsQuery
 } from "../redux/api/feedApi";
 import { useGetPublicProfileQuery } from "../redux/api/profileApi";
-
 
 export default function PostCard({ post }) {
   if (!post) {
@@ -61,7 +61,6 @@ export default function PostCard({ post }) {
   const [toggleSavePost] = useToggleSavePostMutation();
   const [addComment] = useAddCommentMutation();
   
-  // Conditional query execution: Only fetch data when comments panel is expanded
   const router = useRouter();
 
   const authorId =
@@ -90,12 +89,9 @@ export default function PostCard({ post }) {
     skip: !showComments,
   });
 
-  // `post.likes` / `post.comments` arrive as {count} objects from the
-  // backend's enrichPosts(), not raw numbers.
   const initialLikesCount =
     typeof post.likes === "object" ? post.likes?.count ?? 0 : post.likes ?? 0;
 
-  // FIX: Initialize state from the post data directly so your likes persist on page refresh
   const [likes, setLikes] = useState(initialLikesCount);
   const [liked, setLiked] = useState(!!(post.hasLiked || post.liked || post.isLiked));
   const [reposts, setReposts] = useState(post.reposts ?? 0);
@@ -103,8 +99,13 @@ export default function PostCard({ post }) {
   const [shares, setShares] = useState(post.shares ?? 0);
   const [saved, setSaved] = useState(!!(post.hasSaved || post.saved || post.isSaved));
   const [isShareOpen, setIsShareOpen] = useState(false);
-
   
+  // Track copy feedback state
+  const [isCopied, setIsCopied] = useState(false);
+
+  // Track avatar error state for fallback icon
+  const [hasAvatarError, setHasAvatarError] = useState(false);
+
   const authorName = (() => {
     if (typeof post.author === "string" && post.author.trim()) {
       return post.author;
@@ -127,13 +128,10 @@ export default function PostCard({ post }) {
     (typeof post.authorAvatar === "string" && post.authorAvatar) ||
     (typeof post.author === "object" &&
       (post.author?.picture || post.author?.avatar)) ||
-    fetchedAuthorPicture ||
-    "/default-avatar.png";
-  
-  // Raw incoming payload list
+    fetchedAuthorPicture;
+
   const rawComments = commentsData?.data?.comments || [];
   
-  // Maps both legacy property schemas ('text'/'author') and new normalized schemas ('content'/'user')
   const commentsList = rawComments.map(comment => {
     const fullName = comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : "Unknown User";
     return {
@@ -156,15 +154,29 @@ export default function PostCard({ post }) {
 
   const commentsByPost = useCommentStore(state => state.commentsByPost);
   
-  // Count counts real current parsed array elements gracefully
   const commentCount = commentsList.length > 0 
     ? commentsList.length 
     : (commentsByPost[post.id] || []).length;
 
-  const [showReportDialog, setShowReportDialog] = useState(false)
-  const [showFeedback, setShowFeedback] = useState(false)
+  const [showReportDialog, setShowReportDialog] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
 
-  // Real backend sync for liking
+  // Copy Link Handler
+  const handleCopyLink = async (e) => {
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+
+  // The direct URL to the post
+  const postUrl = `${window.location.origin}/profile/Posts/${post.id}`;
+
+  try {
+    await navigator.clipboard.writeText(postUrl);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  } catch (err) {
+    console.error("Failed to copy post link:", err);
+  }
+};
+
   const handleLikeClick = async (e) => {
     e.stopPropagation();
     const previousLiked = liked;
@@ -184,7 +196,6 @@ export default function PostCard({ post }) {
     }
   };
 
-  // Real backend sync for saving
   const handleSaveClick = async (e) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
     const previousSaved = saved;
@@ -200,7 +211,6 @@ export default function PostCard({ post }) {
     }
   };
 
-  // Callback context logic matching payload properties properly
   const handleCommentAdded = async (content) => {
     try {
       const res = await addComment({ postId: post.id, content }).unwrap();
@@ -214,23 +224,28 @@ export default function PostCard({ post }) {
   return (
     <div className="max-w-2xl mx-auto mb-6">
       <div 
-      onClick={handleOpenPost} 
-      className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xl mb-2 transition hover:shadow-2xl">
-        
+        onClick={handleOpenPost} 
+        className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xl mb-2 transition hover:shadow-2xl"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
             <div
               onClick={handleAvatarClick}
-              className="w-10 h-10 rounded-full overflow-hidden border cursor-pointer"
+              className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 flex items-center justify-center bg-gray-100 cursor-pointer"
             >
-              <Image
-                src={authorAvatarSrc}
-                alt={authorName}
-                width={40}
-                height={40}
-                className="object-cover"
-              />
+              {authorAvatarSrc && !hasAvatarError ? (
+                <Image
+                  src={authorAvatarSrc}
+                  alt={authorName}
+                  width={40}
+                  height={40}
+                  className="object-cover w-full h-full"
+                  onError={() => setHasAvatarError(true)}
+                />
+              ) : (
+                <User className="w-5 h-5 text-gray-400" />
+              )}
             </div>
 
             <div
@@ -240,8 +255,8 @@ export default function PostCard({ post }) {
               <p className="text-sm font-semibold text-gray-900">
                 {authorName}{authorIsVerified ? " ✓" : ""} •  
                 <span className="text-xs mx-2 font-semibold text-teal-600">
-            {post.status || "Active"}
-          </span>
+                  {post.status || "Active"}
+                </span>
               </p>
               <p className="text-xs text-gray-500">
                 {post.sport} • {post.position}
@@ -250,121 +265,115 @@ export default function PostCard({ post }) {
           </div>
 
           <DropdownMenu modal={false}>
-        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-          <Button variant="outline" aria-label="Open menu" size="icon-sm">
-            <MoreHorizontalIcon />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-40" align="end">
-          <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={handleSaveClick}>
-              <Bookmark/>
-              Save
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Star/>
-            Add to Favourites
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <UserX2/>
-            Unfollow
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Copy/>
-            Copy link to post
-            </DropdownMenuItem>
-            <DropdownMenuItem >
-              < CircleSlash/>
-              Not Interested
-              </DropdownMenuItem>
-            <DropdownMenuItem onSelect={() => setShowReportDialog(true)} className="text-red">
-              <MessageSquareWarning color="red"/>
-              Report post
-              </DropdownMenuItem>
-          </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Why are you reporting this post?</DialogTitle>
-            <DialogDescription>
-              Your report is anonymous. If someone is in immediate danger , call the local emergency service
-              , don't wait.
-            </DialogDescription>
-          </DialogHeader>
-          <FieldGroup>
-          <Field orientation="horizontal">
-              <Checkbox id="report-1" />
-              <FieldLabel htmlFor="report-1" className="font-normal" defaultChecked>
-                I just don't like it
-              </FieldLabel>
-            </Field>
-          <Field orientation="horizontal">
-              <Checkbox id="report-2" />
-              <FieldLabel htmlFor="report-2" className="font-normal" defaultChecked>
-                Bullying or unwanted contact
-              </FieldLabel>
-            </Field>
-          <Field orientation="horizontal">
-              <Checkbox id="report-3" />
-              <FieldLabel htmlFor="report-3" className="font-normal" defaultChecked>
-                Suicide, self-injury or eating disorders
-              </FieldLabel>
-            </Field>
-          <Field orientation="horizontal">
-              <Checkbox id="report-4" />
-              <FieldLabel htmlFor="report-4" className="font-normal" defaultChecked>
-                Violence, hate or exploitation
-              </FieldLabel>
-            </Field>
-          <Field orientation="horizontal">
-              <Checkbox id="report-5" />
-              <FieldLabel htmlFor="report-5" className="font-normal" defaultChecked>
-                Selling or promoting restricted items
-              </FieldLabel>
-            </Field>
-          <Field orientation="horizontal">
-              <Checkbox id="report-6" />
-              <FieldLabel htmlFor="report-6" className="font-normal" defaultChecked>
-                Nudity or sexual activity
-              </FieldLabel>
-            </Field>
-          <Field orientation="horizontal">
-              <Checkbox id="report-7" />
-              <FieldLabel htmlFor="report-7" className="font-normal" defaultChecked>
-                Scam, fraud or spam
-              </FieldLabel>
-            </Field>
-          
-          </FieldGroup>
-        
-          <DialogFooter>
-            
-            <Button onClick={() => setShowFeedback(true)} type="submit">
-              <DialogClose>Submit</DialogClose>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Thanks for your feedback</DialogTitle>
-            <DialogDescription>
-              We use these reports to show you less of this kind of content in the future.
-            </DialogDescription>
-          </DialogHeader>
-          
-        
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Done</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+              <Button variant="outline" aria-label="Open menu" size="icon-sm">
+                <MoreHorizontalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-40" align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem onSelect={handleSaveClick}>
+                  <Bookmark/>
+                  Save
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Star/>
+                  Add to Favourites
+                </DropdownMenuItem>
+                
+                {/* Updated Copy Link Item */}
+                <DropdownMenuItem onSelect={handleCopyLink}>
+                  {isCopied ? <Check className="text-teal-600" /> : <Copy />}
+                  {isCopied ? "Copied!" : "Copy link to post"}
+                </DropdownMenuItem>
+                
+                <DropdownMenuItem>
+                  <CircleSlash/>
+                  Not Interested
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setShowReportDialog(true)} className="text-red-600">
+                  <MessageSquareWarning color="red"/>
+                  Report post
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
+          <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Why are you reporting this post?</DialogTitle>
+                <DialogDescription>
+                  Your report is anonymous. If someone is in immediate danger, call the local emergency service, don't wait.
+                </DialogDescription>
+              </DialogHeader>
+              <FieldGroup>
+                <Field orientation="horizontal">
+                  <Checkbox id="report-1" />
+                  <FieldLabel htmlFor="report-1" className="font-normal">
+                    I just don't like it
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <Checkbox id="report-2" />
+                  <FieldLabel htmlFor="report-2" className="font-normal">
+                    Bullying or unwanted contact
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <Checkbox id="report-3" />
+                  <FieldLabel htmlFor="report-3" className="font-normal">
+                    Suicide, self-injury or eating disorders
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <Checkbox id="report-4" />
+                  <FieldLabel htmlFor="report-4" className="font-normal">
+                    Violence, hate or exploitation
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <Checkbox id="report-5" />
+                  <FieldLabel htmlFor="report-5" className="font-normal">
+                    Selling or promoting restricted items
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <Checkbox id="report-6" />
+                  <FieldLabel htmlFor="report-6" className="font-normal">
+                    Nudity or sexual activity
+                  </FieldLabel>
+                </Field>
+                <Field orientation="horizontal">
+                  <Checkbox id="report-7" />
+                  <FieldLabel htmlFor="report-7" className="font-normal">
+                    Scam, fraud or spam
+                  </FieldLabel>
+                </Field>
+              </FieldGroup>
+              <DialogFooter>
+                <Button onClick={() => setShowFeedback(true)} type="submit">
+                  <DialogClose>Submit</DialogClose>
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Thanks for your feedback</DialogTitle>
+                <DialogDescription>
+                  We use these reports to show you less of this kind of content in the future.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Done</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* Caption */}
@@ -442,20 +451,20 @@ export default function PostCard({ post }) {
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-5">
             {/* Like */}
-            <div className="flex items-center">        
-            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleLikeClick}>
-              <Heart
-                size={22}
-                className={`transition ${
-                  liked
-                    ? "fill-red-500 text-red-500"
-                    : "text-gray-600 hover:text-red-500"
-                }`}
-              />
-            </button>
-            <span>
-              {likes > 0 && <span>{likes}</span>}
-            </span>
+            <div className="flex items-center">    
+              <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleLikeClick}>
+                <Heart
+                  size={22}
+                  className={`transition ${
+                    liked
+                      ? "fill-red-500 text-red-500"
+                      : "text-gray-600 hover:text-red-500"
+                  }`}
+                />
+              </button>
+              <span>
+                {likes > 0 && <span>{likes}</span>}
+              </span>
             </div>
 
             {/* Comment */}
@@ -477,28 +486,28 @@ export default function PostCard({ post }) {
 
             {/* Repost */}
             <div className="flex items-center">
-            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setReposts(reposted ? reposts - 1 : reposts + 1); setReposted(!reposted); }}>
-              <Repeat2
-                size={22}
-                className={`transition ${
-                  reposted
-                    ? "text-teal-500"
-                    : "text-gray-600 hover:text-teal-500"
-                }`}
-              />
-            </button>
-            <span>{reposts > 0 && <span>{reposts}</span>}</span>
+              <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setReposts(reposted ? reposts - 1 : reposts + 1); setReposted(!reposted); }}>
+                <Repeat2
+                  size={22}
+                  className={`transition ${
+                    reposted
+                      ? "text-teal-500"
+                      : "text-gray-600 hover:text-teal-500"
+                  }`}
+                />
+              </button>
+              <span>{reposts > 0 && <span>{reposts}</span>}</span>
             </div>
 
             {/* Share */}
             <div className="flex items-center">
-            <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsShareOpen(true); }}>
-              <Send
-                size={22}
-                className="text-gray-600 hover:text-teal-600"
-              />
-            </button>
-            <span>{shares > 0 && <span>{shares}</span>}</span>
+              <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsShareOpen(true); }}>
+                <Send
+                  size={22}
+                  className="text-gray-600 hover:text-teal-600"
+                />
+              </button>
+              <span>{shares > 0 && <span>{shares}</span>}</span>
             </div>
           </div>
 
@@ -514,10 +523,10 @@ export default function PostCard({ post }) {
             />
           </button>
         </div>
+
         <div className="text-xs text-gray-500 px-4 mb-2">
           {timeAgo(post.created_at || post.createdAt)}
         </div>
-
             
         {showComments && (
           <PostComments
@@ -529,10 +538,9 @@ export default function PostCard({ post }) {
         )}
       </div>
         
-        {isShareOpen && (
+      {isShareOpen && (
         <SharePost postId={post.id} onClose={() => setIsShareOpen(false)} />
-      )
-        }
+      )}
     </div>
   );
 }

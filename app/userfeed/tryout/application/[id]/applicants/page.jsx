@@ -19,6 +19,14 @@ const STATUS_STYLES = {
   withdrawn: "bg-gray-100 text-gray-500",
 };
 
+const FILTER_OPTIONS = [
+  { label: "All", value: "all" },
+  { label: "Pending", value: "pending" },
+  { label: "Accepted", value: "accepted" },
+  { label: "Rejected", value: "rejected" },
+  { label: "Withdrawn", value: "withdrawn" },
+];
+
 function StatusBadge({ status }) {
   const style = STATUS_STYLES[status] || STATUS_STYLES.pending;
   return (
@@ -40,11 +48,29 @@ export default function ApplicantsPage() {
 
   const [updateApplicationStatus] = useUpdateApplicationStatusMutation();
 
+  // Tracks current selected status filter
+  const [selectedStatus, setSelectedStatus] = useState("all");
+
   // Tracks which specific application is currently being acted on, so only
   // that row's buttons show a loading state instead of the whole table.
   const [actingId, setActingId] = useState(null);
 
   const applicants = data?.data?.applicants || [];
+
+  // Filter applicants based on selected status tab
+  const filteredApplicants = applicants.filter((applicant) => {
+    if (selectedStatus === "all") return true;
+    const currentStatus = applicant.status || "pending";
+    return currentStatus === selectedStatus;
+  });
+
+  // Calculate total counts per status for filter tab badges
+  const getCountByStatus = (statusValue) => {
+    if (statusValue === "all") return applicants.length;
+    return applicants.filter(
+      (a) => (a.status || "pending") === statusValue
+    ).length;
+  };
 
   const handleDecision = async (applicationId, status) => {
     setActingId(applicationId);
@@ -103,18 +129,51 @@ export default function ApplicantsPage() {
         </div>
       </div>
 
-      {!applicants.length ? (
+      {/* Filter Bar */}
+      <div className="mb-6 flex items-center gap-2 border-b border-gray-200 pb-2 overflow-x-auto">
+        {FILTER_OPTIONS.map((option) => {
+          const count = getCountByStatus(option.value);
+          const isActive = selectedStatus === option.value;
+
+          return (
+            <button
+              key={option.value}
+              onClick={() => setSelectedStatus(option.value)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-sm text-sm font-medium transition cursor-pointer whitespace-nowrap ${
+                isActive
+                  ? "bg-teal-600 text-white shadow-sm"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+              }`}
+            >
+              <span>{option.label}</span>
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs ${
+                  isActive
+                    ? "bg-teal-700 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {!filteredApplicants.length ? (
         <div className="rounded-xl border bg-white p-12 text-center">
           <h2 className="text-xl font-semibold">
-            No Applicants Yet
+            No {selectedStatus !== "all" ? selectedStatus : ""} Applicants Found
           </h2>
 
           <p className="mt-2 text-gray-500">
-            Athletes who apply will appear here.
+            {selectedStatus === "all"
+              ? "Athletes who apply will appear here."
+              : `There are no applicants with the status "${selectedStatus}".`}
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+        <div className="overflow-hidden border bg-white shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b bg-gray-50">
@@ -150,7 +209,7 @@ export default function ApplicantsPage() {
               </thead>
 
               <tbody>
-                {applicants.map((applicant) => {
+                {filteredApplicants.map((applicant) => {
                   const isPending = (applicant.status || "pending") === "pending";
                   const isActing = actingId === applicant._id;
 
@@ -162,18 +221,14 @@ export default function ApplicantsPage() {
                       <td className="px-6 py-5">
                         <div>
                           <h3 className="font-semibold">
-                            {applicant.athleteId.firstName}{" "}
-                            {applicant.athleteId.lastName}
+                            {applicant.athleteId?.firstName}{" "}
+                            {applicant.athleteId?.lastName}
                           </h3>
-
-                          <p className="text-xs text-gray-500">
-                            {applicant.athleteId._id}
-                          </p>
                         </div>
                       </td>
 
                       <td className="px-6 py-5">
-                        {applicant.athleteId.email}
+                        {applicant.athleteId?.email}
                       </td>
 
                       <td className="px-6 py-5">

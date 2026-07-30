@@ -11,6 +11,15 @@ export const connectionApi = baseApi.injectEndpoints({
       invalidatesTags: ["Connection", "Notification"],
     }),
 
+    // Unfollow User
+    unfollowUser: builder.mutation({
+      query: (userId) => ({
+        url: `/api/connections/${userId}/unfollow`,
+        method: "DELETE", // Changed to DELETE to match standard REST conventions
+      }),
+      invalidatesTags: ["Connection", "Notification"],
+    }),
+
     // Get Connection Status
     getConnectionStatus: builder.query({
       query: (userId) => ({
@@ -42,7 +51,16 @@ export const connectionApi = baseApi.injectEndpoints({
       providesTags: ["Connection"],
     }),
 
-    // Get Mutual Followers
+    // Get My Mutuals (Users who follow me and I follow back)
+    getMutuals: builder.query({
+      query: () => ({
+        url: "/api/connections/mutuals",
+        method: "GET",
+      }),
+      providesTags: ["Connection"],
+    }),
+
+    // Get Mutual Followers with another specific user
     getMutualFollowers: builder.query({
       query: (userId) => ({
         url: `/api/connections/${userId}/mutual`,
@@ -112,14 +130,16 @@ export const connectionApi = baseApi.injectEndpoints({
     }),
   }),
 
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
   useFollowUserMutation,
+  useUnfollowUserMutation,
   useGetConnectionStatusQuery,
   useGetConnectionCountsQuery,
   useGetSuggestionsQuery,
+  useGetMutualsQuery,
   useGetMutualFollowersQuery,
   useGetFollowersQuery,
   useGetFollowingQuery,

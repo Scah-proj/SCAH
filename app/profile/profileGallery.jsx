@@ -8,39 +8,12 @@ import {
 } from "../../components/ui/tabs";
 import Link from "next/link";
 import PostGrid from "../components/PostGrid";
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
 
-import { useGetMyPostsQuery } from "../../app/redux/api/feedApi";
-import {
-  setMyPosts,
-  setLoadingMyPosts,
-  setMyPostsError,
-} from "../../app/redux/features/feed/feedSlice";
-
-export default function ProfileGallery({ profile }) {
-  const dispatch = useDispatch();
-
-  const {
-    data,
-    isLoading,
-    error,
-  } = useGetMyPostsQuery();
-
-  useEffect(() => {
-    dispatch(setLoadingMyPosts(isLoading));
-
-    if (data?.data?.posts) {
-      dispatch(setMyPosts(data.data.posts));
-    }
-
-    if (error) {
-      dispatch(setMyPostsError(error));
-    }
-  }, [data, isLoading, error, dispatch]);
-
-  const posts = data?.data?.posts || [];
-
+export default function ProfileGallery({
+  posts = [],
+  isLoading = false,
+  error = null,
+}) {
   const mediaPosts = posts.filter(
     (post) => Array.isArray(post.media) && post.media.length > 0
   );
@@ -52,7 +25,6 @@ export default function ProfileGallery({ profile }) {
           <TabsList className="mb-4 flex justify-between w-full">
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="media">Media</TabsTrigger>
-            {/* <TabsTrigger value="community">Community</TabsTrigger> */}
           </TabsList>
 
           <div className="w-full">
@@ -72,10 +44,10 @@ export default function ProfileGallery({ profile }) {
                 </div>
               ) : (
                 <>
-                  <div className="max-w-2xl grid grid-cols-3">
+                  <div className="max-w-2xl grid grid-cols-3 gap-2">
                     {posts.slice(0, 6).map((post) => (
                       <PostGrid
-                        key={post.id}
+                        key={post._id || post.id}
                         post={post}
                       />
                     ))}
@@ -111,10 +83,10 @@ export default function ProfileGallery({ profile }) {
                 </div>
               ) : (
                 <>
-                  <div className="max-w-2xl grid grid-cols-3">
+                  <div className="max-w-2xl grid grid-cols-3 gap-2">
                     {mediaPosts.slice(0, 6).map((post) => (
                       <PostGrid
-                        key={post.id}
+                        key={post._id || post.id}
                         post={post}
                       />
                     ))}
@@ -133,11 +105,6 @@ export default function ProfileGallery({ profile }) {
                 </>
               )}
             </TabsContent>
-
-            {/* COMMUNITY
-            <TabsContent value="community">
-              Be a part of a Community
-            </TabsContent> */}
           </div>
         </Tabs>
       </div>
