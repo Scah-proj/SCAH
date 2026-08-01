@@ -4,6 +4,7 @@ const ACTIVITY_TYPES = [
   "post_like",
   "post_comment",
   "comment_reply",
+  "post_tag",
   "follow",
   "connection_request",
   "connection_accepted",
@@ -35,12 +36,26 @@ const TRYOUT_NOTIFICATION_ALIASES = {
   ],
 };
 
+const POST_NOTIFICATION_ALIASES = {
+  post_tag: [
+    "post_tag",
+    "post_tagged",
+    "tagged_in_post",
+    "mentioned_in_post",
+    "post_mention",
+  ],
+};
+
 export function normalizeNotificationType(type) {
   const value = typeof type === "string" ? type.trim().toLowerCase() : "";
 
   if (!value) return "";
 
   for (const [normalized, aliases] of Object.entries(TRYOUT_NOTIFICATION_ALIASES)) {
+    if (aliases.includes(value)) return normalized;
+  }
+
+  for (const [normalized, aliases] of Object.entries(POST_NOTIFICATION_ALIASES)) {
     if (aliases.includes(value)) return normalized;
   }
 

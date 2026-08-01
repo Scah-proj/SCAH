@@ -32,6 +32,7 @@ export const baseApi = createApi({
     "Recommendations",
     "Onboarding",
     "Settings",
+    "Sessions",
     "SavedPosts", 
   ],
 

@@ -9,8 +9,7 @@ export const loginChecks = [
         path: "/userfeed/settings/account/security/passwordChange" , },
       { label: "Two-factor authentication", 
         path: "/userfeed/settings/account/security/twoFA" , },
-      { label: "Saved login", 
-        path: "/userfeed/settings/account/security/savedLogins" , },
+      
     ],
   },
  
@@ -23,10 +22,8 @@ export const securityChecks = [
     items: [
       { label: "Where you're logged in",
         path: "/userfeed/settings/account/security/loggedIn" , },
-      { label: "Recent emails",
-        path: "/userfeed/settings/account/security/recentEmails" , },
-      { label: "Security Checkup",
-        path: "/userfeed/settings/account/security/checkup" , },
+      
+     
     ],
   },
  

@@ -54,7 +54,7 @@ const Notification = ({ notification }) => {
 
     // Post notifications
     if (
-      ["post_like", "post_comment", "comment_reply"].includes(
+      ["post_like", "post_comment", "comment_reply", "post_tag"].includes(
         normalizedType
       ) &&
       notification.relatedPost

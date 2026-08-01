@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,10 +10,14 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "../../../lib/userStore";
 
 import { useDispatch } from "react-redux";
 import { useCreatePostMutation } from "../../redux/api/feedApi";
+import {
+  useGetMyProfileQuery,
+  useGetAllProfilesQuery,
+  useLazySearchUsersQuery,
+} from "../../redux/api/profileApi";
 
 import {
   setCreatingPost,
@@ -21,25 +25,78 @@ import {
   setCreatePostError,
 } from "../../redux/features/feed/feedSlice";
 
+const normalizeProfiles = (payload) => {
+  if (!payload) return [];
+
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.users)) return payload.users;
+  if (Array.isArray(payload?.profiles)) return payload.profiles;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.results)) return payload.results;
+
+  return [];
+};
+
+const escapeRegExp = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export default function CreatePost() {
-  const user = useUserStore((state) => state.user);
   const router = useRouter();
   const dispatch = useDispatch();
 
   const [createPost] = useCreatePostMutation();
+  const { data: profile } = useGetMyProfileQuery();
+  const { data: allProfilesResponse } = useGetAllProfilesQuery({
+    page: 1,
+    limit: 20,
+  });
+  const [triggerSearchUsers, { data: searchUsersResponse }] =
+    useLazySearchUsersQuery();
 
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
 
   const [type, setType] = useState("highlight");
   const [sport, setSport] = useState("Football");
-  const [tags, setTags] = useState("");
+  const [tags] = useState("");
+  const [taggedUsers, setTaggedUsers] = useState([]);
+  const [mentionQuery, setMentionQuery] = useState("");
+  const [showMentionDropdown, setShowMentionDropdown] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [privacy, setPrivacy] = useState("everyone");
   const [showPrivacy, setShowPrivacy] = useState(false);
+
+  const profilePicture =
+    profile?.profilePicture ||
+    profile?.picture ||
+    profile?.profile?.profilePicture ||
+    profile?.profile?.media?.profilePicture ||
+    "/defaultImage.jpg";
+
+  const profileLocation =
+    profile?.location ||
+    profile?.profile?.location ||
+    profile?.athleteProfile?.location ||
+    {};
+
+  useEffect(() => {
+    if (!mentionQuery.trim()) return;
+
+    const timeoutId = setTimeout(() => {
+      triggerSearchUsers(mentionQuery.trim());
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [mentionQuery, triggerSearchUsers]);
+
+  const allProfiles = normalizeProfiles(allProfilesResponse);
+  const searchProfiles = normalizeProfiles(searchUsersResponse);
+  const tagSuggestions = mentionQuery.trim()
+    ? searchProfiles
+    : allProfiles;
 
   const canPost =
     content.trim().length > 0 ||
@@ -64,9 +121,10 @@ export default function CreatePost() {
         type,
         sport,
         tags,
+        taggedUsers,
         location: {
-          city: user?.location?.city || "",
-          country: user?.location?.country || "",
+          city: profileLocation?.city || "",
+          country: profileLocation?.country || "",
         },
         media: images.map((img) => img.file),
       }).unwrap();
@@ -109,6 +167,46 @@ export default function CreatePost() {
     }));
 
     setImages((prev) => [...prev, ...previews]);
+  };
+
+  const handleContentChange = (e) => {
+    const nextValue = e.target.value;
+    setContent(nextValue);
+
+    const lastAtIndex = nextValue.lastIndexOf("@");
+    if (lastAtIndex === -1) {
+      setShowMentionDropdown(false);
+      setMentionQuery("");
+      return;
+    }
+
+    const afterAt = nextValue.slice(lastAtIndex + 1);
+    const mentionValue = afterAt.split("\n")[0];
+
+    setMentionQuery(mentionValue);
+    setShowMentionDropdown(Boolean(mentionValue));
+  };
+
+  const addTaggedUser = (user) => {
+    const fullName =
+      [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+      user?.name ||
+      user?.username ||
+      "User";
+    const userId = user?._id || user?.id;
+
+    if (userId) {
+      setTaggedUsers((prev) =>
+        prev.includes(userId) ? prev : [...prev, userId]
+      );
+    }
+
+    setContent((prev) => {
+      const pattern = new RegExp(`@${escapeRegExp(mentionQuery || "")}$`);
+      return prev.replace(pattern, `@${fullName}`);
+    });
+    setShowMentionDropdown(false);
+    setMentionQuery("");
   };
 
   return (
@@ -160,7 +258,7 @@ export default function CreatePost() {
       <div className="flex gap-3">
         <div className="w-12 h-12 rounded-full overflow-hidden border">
           <Image
-            src={user?.profilePicture || "/defaultImage.jpg"}
+            src={profilePicture}
             alt="Profile"
             width={48}
             height={48}
@@ -203,12 +301,50 @@ export default function CreatePost() {
           </p>
 
           {/* Textarea */}
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind?"
-            className="w-full min-h-[120px] resize-none text-sm outline-none"
-          />
+          <div className="relative">
+            <textarea
+              value={content}
+              onChange={handleContentChange}
+              placeholder="What's on your mind?"
+              className="w-full min-h-[120px] resize-none text-sm outline-none"
+            />
+
+            {showMentionDropdown && (
+              <div className="absolute z-20 mt-2 max-h-44 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+                {tagSuggestions.length > 0 ? (
+                  tagSuggestions.map((user, index) => {
+                    const fullName =
+                      [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+                      user?.name ||
+                      user?.username ||
+                      "User";
+                    const userKey =
+                      user?._id ||
+                      user?.id ||
+                      `${fullName}-${index}`;
+
+                    return (
+                      <button
+                        key={userKey}
+                        type="button"
+                        onClick={() => addTaggedUser(user)}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
+                          {fullName.charAt(0).toUpperCase()}
+                        </div>
+                        <span>{fullName}</span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-3 py-2 text-sm text-gray-500">
+                    No people found
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Image previews */}
           {images.length > 0 && (

@@ -108,6 +108,37 @@ export const settingsApi = baseApi.injectEndpoints({
     }),
 
     // ─────────────────────────────────────────────────────────────────────────
+    // Logged-in devices / sessions
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // GET /api/settings/sessions
+    getSessions: builder.query({
+      query: () => ({
+        url: "/api/settings/sessions",
+        method: "GET",
+      }),
+      providesTags: ["Sessions"],
+    }),
+
+    // DELETE /api/settings/sessions/:sessionId — revoke one device
+    revokeSession: builder.mutation({
+      query: (sessionId) => ({
+        url: `/api/settings/sessions/${sessionId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sessions"],
+    }),
+
+    // DELETE /api/settings/sessions — revoke all other devices
+    revokeAllOtherSessions: builder.mutation({
+      query: () => ({
+        url: "/api/settings/sessions",
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Sessions"],
+    }),
+
+    // ─────────────────────────────────────────────────────────────────────────
     // Danger Zone
     // ─────────────────────────────────────────────────────────────────────────
 
@@ -144,6 +175,9 @@ export const {
   useUpdatePrivacySettingsMutation,
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
+  useGetSessionsQuery,
+  useRevokeSessionMutation,
+  useRevokeAllOtherSessionsMutation,
   useDeactivateAccountMutation,
   useDeleteAccountMutation,
 } = settingsApi;

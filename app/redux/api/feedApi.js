@@ -14,6 +14,10 @@ export const feedApi = baseApi.injectEndpoints({
           formData.append("tags", postData.tags);
         }
 
+        if (postData.taggedUsers?.length) {
+          formData.append("taggedUsers", postData.taggedUsers.join(","));
+        }
+
         if (postData.location) {
           formData.append(
             "location",
@@ -114,6 +118,7 @@ export const feedApi = baseApi.injectEndpoints({
       invalidatesTags: (result, error, { postId }) => [
         { type: "Comments", id: postId },
         { type: "Feed", id: postId },
+        "Feed",
       ],
     }),
 

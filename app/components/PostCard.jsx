@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import Image from "next/image";
 import {
   Heart,
@@ -51,6 +52,57 @@ import {
 } from "../redux/api/feedApi";
 import { useGetPublicProfileQuery } from "../redux/api/profileApi";
 
+const escapeRegExp = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const toBoolean = (value) => {
+  if (typeof value === "string") {
+    return value.toLowerCase() === "true" || value === "1";
+  }
+
+  return Boolean(value);
+};
+
+const getUserId = (user) => user?._id || user?.id || user?.user_id;
+
+const hasCurrentUserLiked = (post, currentUserId) => {
+  const explicitLikeState =
+    post.hasLiked ??
+    post.has_liked ??
+    post.liked ??
+    post.isLiked ??
+    post.is_liked ??
+    post.viewerHasLiked ??
+    post.viewer_has_liked ??
+    post.userHasLiked ??
+    post.user_has_liked ??
+    post.likes?.hasLiked ??
+    post.likes?.has_liked ??
+    post.likes?.isLiked ??
+    post.likes?.is_liked;
+
+  if (explicitLikeState !== undefined && explicitLikeState !== null) {
+    return toBoolean(explicitLikeState);
+  }
+
+  if (!currentUserId) return false;
+
+  const likerIds =
+    post.likedBy ??
+    post.liked_by ??
+    post.likerIds ??
+    post.liker_ids ??
+    post.likes?.users ??
+    post.likes?.userIds ??
+    post.likes?.user_ids ??
+    (Array.isArray(post.likes) ? post.likes : undefined) ??
+    [];
+
+  return Array.isArray(likerIds) && likerIds.some((liker) =>
+    String(typeof liker === "object" ? getUserId(liker) : liker) === String(currentUserId)
+  );
+};
+
 export default function PostCard({ post }) {
   if (!post) {
     return <p className="text-center text-gray-500">Loading post...</p>;
@@ -62,6 +114,8 @@ export default function PostCard({ post }) {
   const [addComment] = useAddCommentMutation();
   
   const router = useRouter();
+  const currentUser = useSelector((state) => state.auth.user);
+  const currentUserId = getUserId(currentUser);
 
   const authorId =
     post.author?._id ||
@@ -90,10 +144,22 @@ export default function PostCard({ post }) {
   });
 
   const initialLikesCount =
-    typeof post.likes === "object" ? post.likes?.count ?? 0 : post.likes ?? 0;
+    post.likesCount ??
+    post.likes?.count ??
+    post.likes?.total ??
+    (Array.isArray(post.likes) ? post.likes.length : undefined) ??
+    (typeof post.likes === "number" ? post.likes : 0);
+  const initialLiked = hasCurrentUserLiked(post, currentUserId);
+  const initialCommentCount =
+    post.commentsCount ??
+    post.commentCount ??
+    post.comments?.count ??
+    post.comments?.total ??
+    (Array.isArray(post.comments) ? post.comments.length : 0);
 
   const [likes, setLikes] = useState(initialLikesCount);
-  const [liked, setLiked] = useState(!!(post.hasLiked || post.liked || post.isLiked));
+  const [liked, setLiked] = useState(initialLiked);
+  const [commentCount, setCommentCount] = useState(initialCommentCount);
   const [reposts, setReposts] = useState(post.reposts ?? 0);
   const [reposted, setReposted] = useState(!!(post.reposted || post.isReposted));
   const [shares, setShares] = useState(post.shares ?? 0);
@@ -105,6 +171,14 @@ export default function PostCard({ post }) {
 
   // Track avatar error state for fallback icon
   const [hasAvatarError, setHasAvatarError] = useState(false);
+
+  // Keep the card aligned with refreshed RTK Query feed data. This makes
+  // persisted likes and comment totals visible after a reload or cache refresh.
+  useEffect(() => {
+    setLikes(initialLikesCount);
+    setLiked(initialLiked);
+    setCommentCount(initialCommentCount);
+  }, [initialCommentCount, initialLiked, initialLikesCount, post.id]);
 
   const authorName = (() => {
     if (typeof post.author === "string" && post.author.trim()) {
@@ -130,6 +204,60 @@ export default function PostCard({ post }) {
       (post.author?.picture || post.author?.avatar)) ||
     fetchedAuthorPicture;
 
+  const taggedUsers = Array.isArray(post.taggedUsers)
+    ? post.taggedUsers
+    : Array.isArray(post.tagged_users)
+      ? post.tagged_users
+      : [];
+
+  const taggedUserIds = new Set(
+    taggedUsers
+      .map((user) => (typeof user === "string" ? user : user?._id || user?.id))
+      .filter(Boolean)
+  );
+
+  const taggedUserNames = taggedUsers
+    .map((user) => {
+      if (!user || typeof user === "string") return null;
+
+      return [user.firstName, user.lastName].filter(Boolean).join(" ") ||
+        user.name ||
+        user.username ||
+        null;
+    })
+    .filter(Boolean);
+
+  const renderCaption = (caption) => {
+    const names = taggedUserNames.map((name) => `@${name}`);
+    const pattern = names.length
+      ? new RegExp(`(${names.map(escapeRegExp).join("|")})`, "gi")
+      : /(@[A-Za-z0-9_]+)/g;
+    const mentionNames = new Set(names.map((name) => name.toLowerCase()));
+
+    return String(caption).split(pattern).map((part, index) => {
+      const isTaggedName = mentionNames.has(part.toLowerCase()) ||
+        (!names.length && /^@[A-Za-z0-9_]+$/.test(part));
+
+      return isTaggedName ? (
+        <span key={index} className="font-medium text-teal-600">
+          {part}
+        </span>
+      ) : part;
+    });
+  };
+
+  const displayTags = (Array.isArray(post.tags)
+    ? post.tags
+    : typeof post.tags === "string"
+      ? post.tags.split(",")
+      : []
+  ).filter((tag) => {
+    const value = String(tag).trim();
+    const looksLikeUserId = /^(?:[a-f\d]{24}|[a-f\d]{8}-(?:[a-f\d]{4}-){3}[a-f\d]{12})$/i.test(value);
+
+    return value && !taggedUserIds.has(value) && !looksLikeUserId;
+  });
+
   const rawComments = commentsData?.data?.comments || [];
   
   const commentsList = rawComments.map(comment => {
@@ -154,9 +282,13 @@ export default function PostCard({ post }) {
 
   const commentsByPost = useCommentStore(state => state.commentsByPost);
   
-  const commentCount = commentsList.length > 0 
-    ? commentsList.length 
-    : (commentsByPost[post.id] || []).length;
+  const loadedCommentCount = commentsList.length;
+  const localCommentCount = (commentsByPost[post.id] || []).length;
+  const displayedCommentCount = Math.max(
+    commentCount,
+    loadedCommentCount,
+    localCommentCount
+  );
 
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -187,8 +319,14 @@ export default function PostCard({ post }) {
     try {
       const res = await toggleLikePost(post.id).unwrap();
       if (res?.success && res?.data) {
-        setLiked(res.data.liked);
-        setLikes(res.data.count);
+        setLiked(toBoolean(
+          res.data.liked ??
+          res.data.hasLiked ??
+          res.data.has_liked ??
+          res.data.isLiked ??
+          res.data.is_liked
+        ));
+        setLikes(res.data.count ?? res.data.likesCount ?? res.data.likes ?? likes);
       }
     } catch (err) {
       setLiked(previousLiked);
@@ -214,6 +352,18 @@ export default function PostCard({ post }) {
   const handleCommentAdded = async (content) => {
     try {
       const res = await addComment({ postId: post.id, content }).unwrap();
+      const nextCount =
+        res?.data?.commentsCount ??
+        res?.data?.commentCount ??
+        res?.data?.count ??
+        res?.commentsCount ??
+        res?.commentCount;
+
+      setCommentCount((current) =>
+        Number.isFinite(Number(nextCount))
+          ? Math.max(Number(nextCount), current + 1)
+          : current + 1
+      );
       return res; 
     } catch (err) {
       console.error("Failed to post comment:", err);
@@ -380,15 +530,15 @@ export default function PostCard({ post }) {
         {post.caption && (
           <div className="px-4 pb-2">
             <h2 className="text-base text-gray-900">
-              {post.caption}
+              {renderCaption(post.caption)}
             </h2>
           </div>
         )}
 
         {/* Hashtags */}
-        {post.tags?.length > 0 && (
+        {displayTags.length > 0 && (
           <div className="px-4 pb-3 flex flex-wrap gap-2">
-            {post.tags.map((tag, i) => (
+            {displayTags.map((tag, i) => (
               <span
                 key={i}
                 className="text-sm text-teal-600 font-medium"
@@ -481,7 +631,7 @@ export default function PostCard({ post }) {
                 className="text-gray-600 hover:text-teal-600"
               />
             </button>
-                <span>{commentCount > 0 && <span>{commentCount}</span>}</span>
+                <span>{displayedCommentCount > 0 && <span>{displayedCommentCount}</span>}</span>
             </div>
 
             {/* Repost */}

@@ -55,7 +55,15 @@ export default function ApplicantsPage() {
   // that row's buttons show a loading state instead of the whole table.
   const [actingId, setActingId] = useState(null);
 
-  const applicants = data?.data?.applicants || [];
+  const applicants = data?.data?.applicants || data?.applicants || [];
+  const reportedTotal =
+    data?.data?.totalApplicants ??
+    data?.data?.total ??
+    data?.totalApplicants ??
+    data?.total;
+  const totalApplicants = Number.isFinite(Number(reportedTotal))
+    ? Math.max(Number(reportedTotal), applicants.length)
+    : applicants.length;
 
   // Filter applicants based on selected status tab
   const filteredApplicants = applicants.filter((applicant) => {
@@ -124,7 +132,7 @@ export default function ApplicantsPage() {
           <h1 className="text-3xl font-bold">Tryout Applicants</h1>
 
           <p className="text-gray-500 mt-2">
-            Total Applicants: {data?.data?.total || 0}
+            Total Applicants: {totalApplicants}
           </p>
         </div>
       </div>
