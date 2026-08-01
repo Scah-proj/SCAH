@@ -168,7 +168,7 @@ const Sidenav = ({ onClose }) => {
       <div className="p-4 border-t border-gray-200">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-red-600 hover:bg-red-50 transition-colors font-medium text-sm"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-red-600 hover:bg-red-50 transition-colors font-medium text-sm"
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           <span>Logout</span>

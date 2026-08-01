@@ -102,6 +102,7 @@ getLatestTryout: builder.query({
       invalidatesTags: (result, error, { id }) => [
         { type: "Tryout", id },
         "TryoutApplicants",
+        "Notification",
       ],
     }),
 
@@ -139,6 +140,7 @@ getLatestTryout: builder.query({
       invalidatesTags: (result, error, { id }) => [
         { type: "TryoutApplicants", id },
         "TryoutApplicants",
+        "Notification",
       ],
     }),
   }),

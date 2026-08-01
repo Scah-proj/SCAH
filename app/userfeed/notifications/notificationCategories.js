@@ -1,6 +1,4 @@
-// Central place to decide which category a notification belongs to.
-// Keeping this as one shared source of truth avoids the categories
-// silently drifting apart if a new notification type gets added later.
+
 
 const ACTIVITY_TYPES = [
   "post_like",
@@ -18,11 +16,41 @@ const OPPORTUNITY_TYPES = [
   "tryout_application_status",
 ];
 
+const TRYOUT_NOTIFICATION_ALIASES = {
+  tryout_application: [
+    "tryout_application",
+    "tryout_application_created",
+    "new_tryout_application",
+    "application_submitted",
+    "application_created",
+    "new_application",
+    "tryout_application_request",
+  ],
+  tryout_application_status: [
+    "tryout_application_status",
+    "application_status_update",
+    "application_status_changed",
+    "application_decision",
+    "tryout_status_update",
+  ],
+};
+
+export function normalizeNotificationType(type) {
+  const value = typeof type === "string" ? type.trim().toLowerCase() : "";
+
+  if (!value) return "";
+
+  for (const [normalized, aliases] of Object.entries(TRYOUT_NOTIFICATION_ALIASES)) {
+    if (aliases.includes(value)) return normalized;
+  }
+
+  return value;
+}
+
 export function getNotificationCategory(type) {
-  if (OPPORTUNITY_TYPES.includes(type)) return "opportunities";
-  if (ACTIVITY_TYPES.includes(type)) return "activity";
-  // Unrecognized types default to Activity so nothing silently
-  // disappears from filtering if a new type is added later without
-  // updating this file.
+  const normalizedType = normalizeNotificationType(type);
+
+  if (OPPORTUNITY_TYPES.includes(normalizedType)) return "opportunities";
+  if (ACTIVITY_TYPES.includes(normalizedType)) return "activity";
   return "activity";
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ChevronRight, Loader2 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
 import FriendSearch from "../../../../components/Search/SearchFriends";
 import { useGetMutualsQuery } from "../../../../redux/api/connectionApi"; // Adjust path if needed
@@ -11,6 +12,7 @@ import { useGetMutualsQuery } from "../../../../redux/api/connectionApi"; // Adj
 const Page = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { data, isLoading, isError } = useGetMutualsQuery(undefined);
+  const router = useRouter();
 
   // Safely extract mutuals array from your backend payload structure
   const mutuals = data?.data?.mutuals || [];
@@ -20,6 +22,12 @@ const Page = () => {
     const friendName = friend?.name || "";
     return friendName.toLowerCase().includes(searchTerm.toLowerCase());
   });
+
+  const handleProfileClick = (friendId) => {
+    if (friendId) {
+      router.push(`/profile/${friendId}`);
+    }
+  };
 
   return (
     <div className="space-y-10 max-w-3xl px-4 md:px-6 py-12 mx-auto">
@@ -81,7 +89,10 @@ const Page = () => {
                   key={friend._id}
                   className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md hover:bg-gray-50 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
+                  <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => handleProfileClick(friend._id)}
+                  >
                     <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 border relative flex-shrink-0">
                       <Image
                         src={profilePic}

@@ -28,6 +28,7 @@ export const baseApi = createApi({
     "Story",
     "Connection",
     "Notification",
+    "NotificationSettings",
     "Recommendations",
     "Onboarding",
     "Settings",

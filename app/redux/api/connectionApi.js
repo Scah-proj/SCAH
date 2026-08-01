@@ -128,6 +128,43 @@ export const connectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Notification"],
     }),
+    getNotificationSettings: builder.query({
+      query: () => ({
+        url: "/api/connections/notifications/settings",
+        method: "GET",
+      }),
+      providesTags: ["NotificationSettings"],
+    }),
+ 
+    // Update Notification Settings (bulk/general update)
+    updateNotificationSettings: builder.mutation({
+      query: (settings) => ({
+        url: "/api/connections/notifications/settings",
+        method: "PUT",
+        body: settings,
+      }),
+      invalidatesTags: ["NotificationSettings"],
+    }),
+ 
+    // Toggle Pause All Notifications
+    togglePauseAllNotifications: builder.mutation({
+      query: (pauseAll) => ({
+        url: "/api/connections/notifications/settings/pause-all",
+        method: "PATCH",
+        body: { pauseAll },
+      }),
+      invalidatesTags: ["NotificationSettings"],
+    }),
+ 
+    // Toggle Sleep Mode Notifications
+    toggleSleepModeNotifications: builder.mutation({
+      query: (sleepMode) => ({
+        url: "/api/connections/notifications/settings/sleep-mode",
+        method: "PATCH",
+        body: { sleepMode },
+      }),
+      invalidatesTags: ["NotificationSettings"],
+    }),
   }),
 
   overrideExisting: true,
@@ -147,4 +184,8 @@ export const {
   useGetUnreadNotificationCountQuery,
   useReadAllNotificationsMutation,
   useDeleteAllNotificationsMutation,
+   useGetNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation,
+  useTogglePauseAllNotificationsMutation,
+  useToggleSleepModeNotificationsMutation,
 } = connectionApi;

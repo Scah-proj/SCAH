@@ -6,6 +6,7 @@ import { useDispatch } from "react-redux";
 
 import { feedApi } from "../../redux/api/feedApi";
 import { useGetPublicProfileQuery } from "../../redux/api/profileApi";
+import { normalizeNotificationType } from "./notificationCategories";
 
 function isValidPhotoUrl(url) {
   return typeof url === "string" && url.length > 0 && !url.toLowerCase().includes("fakepath");
@@ -49,10 +50,12 @@ const Notification = ({ notification }) => {
   };
 
   const handleClick = () => {
+    const normalizedType = normalizeNotificationType(notification.type);
+
     // Post notifications
     if (
       ["post_like", "post_comment", "comment_reply"].includes(
-        notification.type
+        normalizedType
       ) &&
       notification.relatedPost
     ) {
@@ -75,7 +78,7 @@ const Notification = ({ notification }) => {
     // Follow notifications
     if (
       ["follow", "connection_request", "connection_accepted"].includes(
-        notification.type
+        normalizedType
       ) &&
       notification.relatedUser
     ) {
@@ -85,7 +88,7 @@ const Notification = ({ notification }) => {
 
     // Scout
     if (
-      notification.type === "tryout_application" &&
+      normalizedType === "tryout_application" &&
       notification.relatedTryout
     ) {
       router.push(
@@ -96,7 +99,7 @@ const Notification = ({ notification }) => {
 
     // Athlete
     if (
-      notification.type === "tryout_application_status" &&
+      normalizedType === "tryout_application_status" &&
       notification.relatedTryout
     ) {
       router.push(`/userfeed/tryout/${notification.relatedTryout}`);

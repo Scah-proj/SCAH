@@ -6,7 +6,9 @@ import { useGetRecommendedAthletesQuery } from "../redux/api/recommendationApi";
 export default function Page() {
   const { data, isLoading, isError } = useGetRecommendedAthletesQuery();
 
-  const recommendations = data?.data?.recommendations || [];
+  const recommendations = (data?.data?.recommendations || []).filter(
+    (rec) => rec?.target?.name
+  );
 
   if (isLoading) {
     return (
@@ -51,5 +53,5 @@ export default function Page() {
         />
       ))}
     </div>
-    )
+  );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
 import PostCard from "../../../components/PostCard";
@@ -10,6 +10,9 @@ export default function SinglePost() {
   const { id } = useParams();
   const router = useRouter();
   const pathname = usePathname();
+  const [hasRedirected, setHasRedirected] = useState(false);
+  const hasToken =
+    typeof window !== "undefined" && Boolean(localStorage.getItem("token"));
 
   // RTK Query hook gives us access to error status
   const {
@@ -25,12 +28,13 @@ export default function SinglePost() {
   const isUnauthorized = isError && error?.status === 401;
 
   useEffect(() => {
-  // If the API fails due to unauthenticated session (or 401), send user to /auth/login
-  if (isUnauthorized) {
+   
+    if (!isUnauthorized || hasRedirected || hasToken) return;
+
+    setHasRedirected(true);
     const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`;
     router.replace(loginUrl);
-  }
-}, [isUnauthorized, pathname, router]);
+  }, [hasRedirected, hasToken, isUnauthorized, pathname, router]);
 
   return (
     <div className="w-full flex justify-center">
