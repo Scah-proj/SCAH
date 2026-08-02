@@ -14,7 +14,8 @@ import {
   MessageSquareWarning,
   User,
   MoreHorizontalIcon,
-  Check // Optional: to show a success icon briefly
+  Check, // Optional: to show a success icon briefly
+  ImageDown,
 } from "lucide-react";
 import PostComments from "./comment/CommentSection";
 import SharePost from "./SharePost";
@@ -258,6 +259,12 @@ export default function PostCard({ post }) {
     return value && !taggedUserIds.has(value) && !looksLikeUserId;
   });
 
+  // ── Image detection for the "..." menu's Save/Download options ─────────
+  const primaryImageMedia = Array.isArray(post.media)
+    ? post.media.find((m) => m?.mimetype?.startsWith("image/") && m?.url)
+    : null;
+  const hasImage = Boolean(primaryImageMedia);
+
   const rawComments = commentsData?.data?.comments || [];
   
   const commentsList = rawComments.map(comment => {
@@ -308,6 +315,34 @@ export default function PostCard({ post }) {
     console.error("Failed to copy post link:", err);
   }
 };
+
+  // "Save to Camera Roll" — downloads the post's primary image via a
+  // blob + <a download> link. Works consistently across every browser;
+  // on mobile this lands in the device's default Downloads/Files
+  // location, which the user can then save into their photo library.
+  const handleDownloadImage = async (e) => {
+    if (e && typeof e.stopPropagation === "function") e.stopPropagation();
+    if (!primaryImageMedia?.url) return;
+
+    try {
+      const response = await fetch(primaryImageMedia.url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+
+      const fileName =
+        primaryImageMedia.path?.split("/").pop() || `post-${post.id}.jpg`;
+
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error("Failed to download image:", err);
+    }
+  };
 
   const handleLikeClick = async (e) => {
     e.stopPropagation();
@@ -430,6 +465,14 @@ export default function PostCard({ post }) {
                   <Star/>
                   Add to Favourites
                 </DropdownMenuItem>
+
+                {/* Only shown when the post actually has an image */}
+                {hasImage && (
+                  <DropdownMenuItem onSelect={handleDownloadImage}>
+                    <ImageDown/>
+                    Save to Camera Roll
+                  </DropdownMenuItem>
+                )}
                 
                 {/* Updated Copy Link Item */}
                 <DropdownMenuItem onSelect={handleCopyLink}>

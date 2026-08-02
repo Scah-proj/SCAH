@@ -6,26 +6,48 @@ import { MdArrowBack } from "react-icons/md";
 import { Bookmark, ImageIcon } from "lucide-react";
 
 import PostGrid from "../../../../components/PostGrid";
+import Trials from "../../../../components/trials"; // Adjust path if needed
 import { useGetSavedPostsQuery } from "../../../../redux/api/feedApi";
+import { useGetSavedTryoutsQuery } from "../../../../redux/api/tryoutApi";
 
-const filters = ["All", "Posts", "Tryouts"];
+const filters = ["Posts", "Tryouts"];
 
 export default function SavedPage() {
-  const [active, setActive] = useState("All");
+  const [active, setActive] = useState("Posts");
 
-  const { data, isLoading, isError } = useGetSavedPostsQuery({
+  const {
+    data: postsData,
+    isLoading: postsLoading,
+    isError: postsError,
+  } = useGetSavedPostsQuery({
     page: 1,
     limit: 100,
   });
 
-  const posts = data?.data?.posts || [];
-
-  const filteredPosts = posts.filter((post) => {
-    if (active === "All") return true;
-    if (active === "Posts") return post.type !== "tryout";
-    if (active === "Tryouts") return post.type === "tryout";
-    return true;
+  const {
+    data: tryoutsData,
+    isLoading: tryoutsLoading,
+    isError: tryoutsError,
+  } = useGetSavedTryoutsQuery({
+    page: 1,
+    limit: 100,
   });
+
+  const posts = postsData?.data?.posts || [];
+  const tryouts = tryoutsData?.data?.tryouts || [];
+
+  // "Posts" here means saved feed posts that AREN'T themselves tagged as
+  // tryout-type posts — real Tryout documents come from a separate
+  // collection/endpoint entirely and are handled below.
+  const filteredPosts = posts.filter((post) => post.type !== "tryout");
+
+  const showTryouts = active === "Tryouts";
+  const showPosts = active === "Posts";
+
+  const isLoading = (showPosts && postsLoading) || (showTryouts && tryoutsLoading);
+  const isError = (showPosts && postsError) || (showTryouts && tryoutsError);
+
+  const totalCount = showPosts ? filteredPosts.length : tryouts.length;
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-6 py-10">
@@ -81,15 +103,15 @@ export default function SavedPage() {
         </div>
       )}
 
-      {isError && (
+      {!isLoading && isError && (
         <div className="flex flex-col items-center justify-center py-24">
           <p className="text-red-500 font-medium">
-            Failed to load saved posts.
+            Failed to load saved items.
           </p>
         </div>
       )}
 
-      {!isLoading && !isError && filteredPosts.length === 0 && (
+      {!isLoading && !isError && totalCount === 0 && (
         <div className="flex flex-col items-center justify-center py-24">
           <div className="w-20 h-20 rounded-full border-2 border-gray-300 flex items-center justify-center">
             <ImageIcon size={36} />
@@ -100,26 +122,43 @@ export default function SavedPage() {
           </h2>
 
           <p className="mt-2 text-gray-500 text-center max-w-sm">
-            Posts and tryouts you save will appear here.
+            {showPosts
+              ? "Posts you save will appear here."
+              : "Tryouts you save will appear here."}
           </p>
         </div>
       )}
 
-      {!isLoading && !isError && filteredPosts.length > 0 && (
+      {!isLoading && !isError && totalCount > 0 && (
         <>
           <div className="mb-5 text-sm text-gray-500">
-            {filteredPosts.length} saved item
-            {filteredPosts.length !== 1 ? "s" : ""}
+            {totalCount} saved item
+            {totalCount !== 1 ? "s" : ""}
           </div>
 
-          <div className="grid grid-cols-3 gap-1 md:gap-2">
-            {filteredPosts.map((post) => (
-              <PostGrid
-                key={post._id || post.id}
-                post={post}
-              />
-            ))}
-          </div>
+          {/* Saved posts — square thumbnail grid */}
+          {showPosts && (
+            <div className="grid grid-cols-3 gap-1 md:gap-2">
+              {filteredPosts.map((post) => (
+                <PostGrid
+                  key={post._id || post.id}
+                  post={post}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Saved tryouts — full-width stacked cards, matching Trials' own layout */}
+          {showTryouts && (
+            <div className="max-w-2xl mx-auto md:mx-0">
+              {tryouts.map((tryout) => (
+                <Trials
+                  key={tryout._id || tryout.id}
+                  trial={{ ...tryout, isSaved: true }}
+                />
+              ))}
+            </div>
+          )}
         </>
       )}
     </div>

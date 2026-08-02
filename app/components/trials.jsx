@@ -1,12 +1,27 @@
 "use client";
 
-import { Calendar, MapPin, Users } from "lucide-react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { Calendar, MapPin, Users, Bookmark } from "lucide-react";
 import { BiFootball, BiBasketball } from "react-icons/bi";
 import { CiFootball } from "react-icons/ci";
 import Image from "next/image";
 import Link from "next/link";
 
+import { useToggleSaveTryoutMutation } from "../redux/api/tryoutApi"; // Adjust path if needed
+import {
+  setSaving,
+  setSaveSuccess,
+  setSaveError,
+  updateTryoutSavedState,
+} from "../redux/features/tryout/tryoutSlice"; 
+
 export default function Trials({ trial }) {
+  const dispatch = useDispatch();
+  const [toggleSaveTryout] = useToggleSaveTryoutMutation();
+  const [saved, setSaved] = useState(!!trial?.isSaved);
+  const [isSaving, setIsSaving] = useState(false);
+
   const sportConfig = {
     football: {
       bg: "bg-teal-800/80",
@@ -69,9 +84,70 @@ export default function Trials({ trial }) {
 
   const deadlineInfo = getDeadlineStatus(trial?.deadline);
 
+  const handleSaveClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isSaving || !trial?._id) return;
+
+    const previousSaved = saved;
+    setSaved((prev) => !prev); // optimistic update
+    setIsSaving(true);
+
+    dispatch(setSaving(true));
+    dispatch(setSaveError(null));
+    dispatch(setSaveSuccess(false));
+
+    try {
+      const res = await toggleSaveTryout(trial._id).unwrap();
+      const nextSaved = res?.data?.saved ?? !previousSaved;
+      const nextCount = res?.data?.count;
+
+      setSaved(nextSaved);
+
+      dispatch(setSaveSuccess(true));
+      dispatch(
+        updateTryoutSavedState({
+          tryoutId: trial._id,
+          saved: nextSaved,
+          count: nextCount,
+        })
+      );
+    } catch (err) {
+      setSaved(previousSaved); // rollback on failure
+      console.error("Failed to toggle saved tryout:", err);
+
+      const message =
+        err?.data?.message ||
+        err?.data?.error ||
+        err?.message ||
+        "Failed to save tryout";
+      dispatch(setSaveError(message));
+    } finally {
+      setIsSaving(false);
+      dispatch(setSaving(false));
+    }
+  };
+
   return (
     <div className="mb-4">
-      <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm hover:shadow-md transition">
+      <div className="relative bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm hover:shadow-md transition">
+        {/* Bookmark */}
+        <button
+          onClick={handleSaveClick}
+          disabled={isSaving}
+          aria-label={saved ? "Remove from saved" : "Save tryout"}
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Bookmark
+            size={18}
+            className={`transition ${
+              saved
+                ? "fill-teal-600 text-teal-600"
+                : "text-gray-500 hover:text-gray-900"
+            }`}
+          />
+        </button>
+
         {/* Sport */}
         <div className="flex">
           <span
@@ -99,7 +175,7 @@ export default function Trials({ trial }) {
             </span>
 
             <div>
-              <p className="font-semibold text-gray-900 text-sm line-clamp-2">
+              <p className="font-semibold text-gray-900 text-sm line-clamp-2 pr-6">
                 {trial?.title}
               </p>
             </div>

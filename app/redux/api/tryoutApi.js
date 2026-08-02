@@ -143,6 +143,27 @@ getLatestTryout: builder.query({
         "Notification",
       ],
     }),
+
+    // Toggle save/unsave a tryout — mirrors post save behaviour
+    toggleSaveTryout: builder.mutation({
+      query: (id) => ({
+        url: `/api/tryout/${id}/save`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: "Tryout", id },
+        "Tryout",
+      ],
+    }),
+
+    // Get all tryouts saved by the current user
+    getSavedTryouts: builder.query({
+      query: ({ page = 1, limit = 20 } = {}) => ({
+        url: `/api/tryout/saved?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+      providesTags: ["Tryout"],
+    }),
   }),
 
   overrideExisting: false,
@@ -161,4 +182,6 @@ export const {
   useWithdrawApplicationMutation,
   useGetTryoutApplicantsQuery,
   useUpdateApplicationStatusMutation,
+  useToggleSaveTryoutMutation,
+  useGetSavedTryoutsQuery,
 } = tryoutApi;

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
   ImageIcon,
+  Camera,
   Smile,
   CalendarClock,
   ChevronDown,
@@ -55,6 +56,10 @@ export default function CreatePost() {
 
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraError, setCameraError] = useState("");
+  const videoRef = useRef(null);
+  const cameraStreamRef = useRef(null);
 
   const [type, setType] = useState("highlight");
   const [sport, setSport] = useState("Football");
@@ -107,6 +112,63 @@ export default function CreatePost() {
       prev.filter((_, i) => i !== index)
     );
   };
+
+  const closeCamera = () => {
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    cameraStreamRef.current = null;
+    setIsCameraOpen(false);
+    setCameraError("");
+  };
+
+  const openCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError("Camera access is not supported by this browser.");
+      setIsCameraOpen(true);
+      return;
+    }
+
+    setCameraError("");
+    setIsCameraOpen(true);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+      });
+
+      cameraStreamRef.current = stream;
+      if (videoRef.current) videoRef.current.srcObject = stream;
+    } catch (err) {
+      setCameraError(
+        err?.name === "NotAllowedError"
+          ? "Camera permission was denied. Please allow it and try again."
+          : "We couldn't access your camera."
+      );
+    }
+  };
+
+  const capturePhoto = () => {
+    const video = videoRef.current;
+    if (!video?.videoWidth || !video?.videoHeight) return;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+
+      const file = new File([blob], `camera-${Date.now()}.jpg`, {
+        type: "image/jpeg",
+      });
+      setImages((prev) => [...prev, { file, preview: URL.createObjectURL(file) }]);
+      closeCamera();
+    }, "image/jpeg", 0.92);
+  };
+
+  useEffect(() => () => {
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
 
   const handlePost = async () => {
     try {
@@ -167,6 +229,10 @@ export default function CreatePost() {
     }));
 
     setImages((prev) => [...prev, ...previews]);
+
+    // Allow selecting/capturing the same file again later
+    // (browsers won't fire onChange twice for an identical value).
+    e.target.value = "";
   };
 
   const handleContentChange = (e) => {
@@ -393,6 +459,17 @@ export default function CreatePost() {
               />
             </label>
 
+            {/* Camera — opens the device's native camera on mobile via
+                the `capture` attribute, instead of the photo gallery. */}
+            <button
+              type="button"
+              className="cursor-pointer"
+              onClick={openCamera}
+              aria-label="Open camera"
+            >
+              <Camera size={22} />
+            </button>
+
             {/* Emoji */}
             <button>
               <Smile size={22} />
@@ -403,6 +480,41 @@ export default function CreatePost() {
               <CalendarClock size={22} />
             </button>
           </div>
+
+          {isCameraOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+              <div className="w-full max-w-lg rounded-xl bg-white p-4 shadow-xl">
+                <div className="mb-3 flex items-center justify-between">
+                  <h2 className="font-semibold text-gray-900">Take a photo</h2>
+                  <button type="button" onClick={closeCamera} className="text-sm text-gray-600">
+                    Cancel
+                  </button>
+                </div>
+
+                {cameraError ? (
+                  <p className="py-8 text-center text-sm text-red-600">{cameraError}</p>
+                ) : (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="aspect-[3/4] w-full rounded-lg bg-black object-cover"
+                  />
+                )}
+
+                {!cameraError && (
+                  <button
+                    type="button"
+                    onClick={capturePhoto}
+                    className="mt-4 w-full rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700"
+                  >
+                    Capture photo
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
