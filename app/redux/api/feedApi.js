@@ -153,6 +153,129 @@ export const feedApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Feed"],
     }),
+
+    // Delete (soft-delete) a post
+    deletePost: builder.mutation({
+      query: (postId) => ({
+        url: `/api/feed/${postId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: (result, error, postId) => [
+        { type: "Feed", id: postId },
+        "Feed",
+        "DeletedPosts",
+      ],
+    }),
+
+    // Fetch soft-deleted posts history
+    getDeletedPosts: builder.query({
+      query: (params) => ({
+        url: "/api/feed/deleted",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["DeletedPosts"],
+    }),
+
+    // ── Reposts ──────────────────────────────────────────────────────────
+
+    toggleRepost: builder.mutation({
+      query: (postId) => ({
+        url: `/api/feed/${postId}/repost`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, postId) => [
+        { type: "Feed", id: postId },
+        "Feed",
+        "MyReposts", // Refreshes the user's repost feed when a post is reposted/unreposted
+      ],
+    }),
+
+    getReposts: builder.query({
+      query: ({ postId, page = 1, limit = 20 }) => ({
+        url: `/api/feed/${postId}/reposts`,
+        method: "GET",
+        params: { page, limit },
+      }),
+      providesTags: (result, error, { postId }) => [
+        { type: "Feed", id: `reposts-${postId}` },
+      ],
+    }),
+
+    getMyReposts: builder.query({
+      query: (params) => ({
+        url: "/api/feed/reposts/me",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["MyReposts"],
+    }),
+
+    // ── Archive ──────────────────────────────────────────────────────────
+
+    archivePost: builder.mutation({
+      query: (postId) => ({
+        url: `/api/feed/${postId}/archive`,
+        method: "PATCH",
+      }),
+      invalidatesTags: (result, error, postId) => [
+        { type: "Feed", id: postId },
+        "Feed",
+        "Archived",
+      ],
+    }),
+
+    getArchivedPosts: builder.query({
+      query: (params) => ({
+        url: "/api/feed/archived",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Archived"],
+    }),
+
+    // ── Comments (remaining) ─────────────────────────────────────────────
+
+    getReplies: builder.query({
+      query: ({ commentId, page = 1, limit = 10 }) => ({
+        url: `/api/feed/comments/${commentId}/replies`,
+        method: "GET",
+        params: { page, limit },
+      }),
+      providesTags: (result, error, { commentId }) => [
+        { type: "Comments", id: `replies-${commentId}` },
+      ],
+    }),
+
+    deleteComment: builder.mutation({
+      query: (commentId) => ({
+        url: `/api/feed/comments/${commentId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Comments", "Feed"],
+    }),
+
+    // ── Hashtags ─────────────────────────────────────────────────────────
+
+    getTrendingHashtags: builder.query({
+      query: ({ limit = 20, timeframe = 24 } = {}) => ({
+        url: "/api/feed/hashtags/trending",
+        method: "GET",
+        params: { limit, timeframe },
+      }),
+      providesTags: ["Feed"],
+    }),
+
+    searchByHashtag: builder.query({
+      query: ({ hashtag, page = 1, limit = 20 }) => ({
+        url: `/api/feed/hashtags/${hashtag}`,
+        method: "GET",
+        params: { page, limit },
+      }),
+      providesTags: (result, error, { hashtag }) => [
+        { type: "Feed", id: `hashtag-${hashtag}` },
+      ],
+    }),
   }),
 
   // Allows fast-refresh during dev without throwing duplicate-endpoint errors
@@ -166,11 +289,22 @@ export const {
   useGetTrendingPostsQuery,
   useGetMyPostsQuery,
   useGetProfileFeedQuery,
-  useGetSavedPostsQuery, 
+  useGetSavedPostsQuery,
   useGetPostByIdQuery,
   useGetCommentsQuery,
   useAddCommentMutation,
   useToggleLikePostMutation,
   useToggleSavePostMutation,
   useUpdatePostMutation,
+  useDeletePostMutation,
+  useGetDeletedPostsQuery,
+  useToggleRepostMutation,
+  useGetRepostsQuery,
+  useGetMyRepostsQuery, 
+  useArchivePostMutation,
+  useGetArchivedPostsQuery,
+  useGetRepliesQuery,
+  useDeleteCommentMutation,
+  useGetTrendingHashtagsQuery,
+  useSearchByHashtagQuery,
 } = feedApi;

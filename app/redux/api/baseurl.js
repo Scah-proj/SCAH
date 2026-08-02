@@ -33,7 +33,12 @@ export const baseApi = createApi({
     "Onboarding",
     "Settings",
     "Sessions",
-    "SavedPosts", 
+    "SavedPosts",
+    "Reposts",      
+    "RepostedPosts",
+    "Application",
+    "DeletedPosts",
+    "MyReposts",
   ],
 
   endpoints: () => ({}),

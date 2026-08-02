@@ -10,15 +10,25 @@ const initialState = {
   createPostSuccess: false,
   createPostError: null,
 
+  // Delete Post (ADDED)
+  deletingPost: false,
+  deletePostSuccess: false,
+  deletePostError: null,
+
   // My Posts
   myPosts: [],
   loadingMyPosts: false,
   myPostsError: null,
 
-  // Saved Posts (ADDED)
+  // Saved Posts
   savedPosts: [],
   loadingSavedPosts: false,
   savedPostsError: null,
+
+  // Reposted Posts
+  repostedPosts: [],
+  loadingRepostedPosts: false,
+  repostedPostsError: null,
 
   // Like Post
   likingPost: false,
@@ -29,6 +39,11 @@ const initialState = {
   savingPost: false,
   savePostSuccess: false,
   savePostError: null,
+
+  // Repost Post
+  repostingPost: false,
+  repostPostSuccess: false,
+  repostPostError: null,
 };
 
 const feedSlice = createSlice({
@@ -70,6 +85,22 @@ const feedSlice = createSlice({
     },
 
     // ======================
+    // Delete Post (ADDED)
+    // ======================
+
+    setDeletingPost: (state, action) => {
+      state.deletingPost = action.payload;
+    },
+
+    setDeletePostSuccess: (state, action) => {
+      state.deletePostSuccess = action.payload;
+    },
+
+    setDeletePostError: (state, action) => {
+      state.deletePostError = action.payload;
+    },
+
+    // ======================
     // My Posts
     // ======================
 
@@ -86,7 +117,7 @@ const feedSlice = createSlice({
     },
 
     // ======================
-    // Saved Posts (ADDED)
+    // Saved Posts
     // ======================
 
     setSavedPosts: (state, action) => {
@@ -99,6 +130,22 @@ const feedSlice = createSlice({
 
     setSavedPostsError: (state, action) => {
       state.savedPostsError = action.payload;
+    },
+
+    // ======================
+    // Reposted Posts
+    // ======================
+
+    setRepostedPosts: (state, action) => {
+      state.repostedPosts = action.payload;
+    },
+
+    setLoadingRepostedPosts: (state, action) => {
+      state.loadingRepostedPosts = action.payload;
+    },
+
+    setRepostedPostsError: (state, action) => {
+      state.repostedPostsError = action.payload;
     },
 
     // ======================
@@ -133,6 +180,22 @@ const feedSlice = createSlice({
       state.savePostError = action.payload;
     },
 
+    // ======================
+    // Repost Post
+    // ======================
+
+    setRepostingPost: (state, action) => {
+      state.repostingPost = action.payload;
+    },
+
+    setRepostPostSuccess: (state, action) => {
+      state.repostPostSuccess = action.payload;
+    },
+
+    setRepostPostError: (state, action) => {
+      state.repostPostError = action.payload;
+    },
+
     resetFeed: (state) => {
       state.activeFeed = "home";
       state.selectedPost = null;
@@ -143,6 +206,10 @@ const feedSlice = createSlice({
       state.createPostSuccess = false;
       state.createPostError = null;
 
+      state.deletingPost = false;
+      state.deletePostSuccess = false;
+      state.deletePostError = null;
+
       state.myPosts = [];
       state.loadingMyPosts = false;
       state.myPostsError = null;
@@ -151,6 +218,10 @@ const feedSlice = createSlice({
       state.loadingSavedPosts = false;
       state.savedPostsError = null;
 
+      state.repostedPosts = [];
+      state.loadingRepostedPosts = false;
+      state.repostedPostsError = null;
+
       state.likingPost = false;
       state.likePostSuccess = false;
       state.likePostError = null;
@@ -158,6 +229,10 @@ const feedSlice = createSlice({
       state.savingPost = false;
       state.savePostSuccess = false;
       state.savePostError = null;
+
+      state.repostingPost = false;
+      state.repostPostSuccess = false;
+      state.repostPostError = null;
     },
   },
 });
@@ -171,18 +246,27 @@ export const {
   setCreatingPost,
   setCreatePostSuccess,
   setCreatePostError,
+  setDeletingPost,
+  setDeletePostSuccess,
+  setDeletePostError,
   setMyPosts,
   setLoadingMyPosts,
   setMyPostsError,
   setSavedPosts,
   setLoadingSavedPosts,
   setSavedPostsError,
+  setRepostedPosts,
+  setLoadingRepostedPosts,
+  setRepostedPostsError,
   setLikingPost,
   setLikePostSuccess,
   setLikePostError,
   setSavingPost,
   setSavePostSuccess,
   setSavePostError,
+  setRepostingPost,
+  setRepostPostSuccess,
+  setRepostPostError,
 
   resetFeed,
 } = feedSlice.actions;

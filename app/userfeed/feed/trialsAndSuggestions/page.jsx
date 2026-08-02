@@ -36,7 +36,7 @@ export default function Suggestions() {
         <div className="flex justify-between mb-6">
           <p className="font-semibold">Upcoming Trials</p>
           <Link
-            href="/userfeed/tryOut"
+            href="/userfeed/tryout"
             className="text-teal-600 font-semibold cursor-pointer"
           >
             See All

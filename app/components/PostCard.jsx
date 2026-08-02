@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Image from "next/image";
 import {
   Heart,
@@ -14,8 +14,9 @@ import {
   MessageSquareWarning,
   User,
   MoreHorizontalIcon,
-  Check, // Optional: to show a success icon briefly
+  Check,
   ImageDown,
+  Trash2,
 } from "lucide-react";
 import PostComments from "./comment/CommentSection";
 import SharePost from "./SharePost";
@@ -48,10 +49,26 @@ import { timeAgo } from "../../components/timeAgo";
 import { 
   useToggleLikePostMutation, 
   useToggleSavePostMutation,
+  useToggleRepostMutation,
   useAddCommentMutation,
-  useGetCommentsQuery
+  useGetCommentsQuery,
+  useDeletePostMutation,
 } from "../redux/api/feedApi";
 import { useGetPublicProfileQuery } from "../redux/api/profileApi";
+import {
+  setLikingPost,
+  setLikePostSuccess,
+  setLikePostError,
+  setSavingPost,
+  setSavePostSuccess,
+  setSavePostError,
+  setRepostingPost,
+  setRepostPostSuccess,
+  setRepostPostError,
+  setDeletingPost,
+  setDeletePostSuccess,
+  setDeletePostError,
+} from "../redux/features/feed/feedSlice";
 
 const escapeRegExp = (value) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -109,19 +126,40 @@ export default function PostCard({ post }) {
     return <p className="text-center text-gray-500">Loading post...</p>;
   }
 
+  const dispatch = useDispatch();
+
   // API Hooks
   const [toggleLikePost] = useToggleLikePostMutation();
   const [toggleSavePost] = useToggleSavePostMutation();
+  const [toggleRepost] = useToggleRepostMutation();
   const [addComment] = useAddCommentMutation();
+  const [deletePost] = useDeletePostMutation();
   
   const router = useRouter();
   const currentUser = useSelector((state) => state.auth.user);
   const currentUserId = getUserId(currentUser);
 
+  const postId = post.id || post._id || post.postId;
+
   const authorId =
     post.author?._id ||
     post.author?.id ||
     post.user_id;
+
+  // Check if current user is the owner of this post
+  const isOwner = Boolean(
+    currentUserId && authorId && String(currentUserId) === String(authorId)
+  );
+
+  // A post fetched from the API is "deleted" if the backend's soft-delete
+  // flag says so. Different endpoints may surface this under different
+  // field names, so check the common variants.
+  const isDeleted = Boolean(
+    post.is_active === false ||
+    post.isDeleted === true ||
+    post.deleted === true ||
+    post.is_deleted === true
+  );
 
   const { data: authorProfileData } = useGetPublicProfileQuery(authorId, {
     skip: !authorId,
@@ -136,12 +174,14 @@ export default function PostCard({ post }) {
   };
 
   const handleOpenPost = () => {
-    router.push(`/profile/Posts/${post.id}`);
+    if (postId) {
+      router.push(`/profile/Posts/${postId}`);
+    }
   };
 
   const [showComments, setShowComments] = useState(false);
-  const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsQuery(post.id, {
-    skip: !showComments,
+  const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsQuery(postId, {
+    skip: !showComments || !postId || isDeleted,
   });
 
   const initialLikesCount =
@@ -158,28 +198,49 @@ export default function PostCard({ post }) {
     post.comments?.total ??
     (Array.isArray(post.comments) ? post.comments.length : 0);
 
+  const initialRepostsCount =
+    post.repostsCount ??
+    post.repostCount ??
+    post.reposts?.count ??
+    post.reposts?.total ??
+    (Array.isArray(post.reposts) ? post.reposts.length : undefined) ??
+    (typeof post.reposts === "number" ? post.reposts : 0);
+
+  const initialReposted = toBoolean(
+    post.hasReposted ??
+    post.has_reposted ??
+    post.reposted ??
+    post.isReposted ??
+    post.is_reposted
+  );
+
   const [likes, setLikes] = useState(initialLikesCount);
   const [liked, setLiked] = useState(initialLiked);
   const [commentCount, setCommentCount] = useState(initialCommentCount);
-  const [reposts, setReposts] = useState(post.reposts ?? 0);
-  const [reposted, setReposted] = useState(!!(post.reposted || post.isReposted));
+  const [reposts, setReposts] = useState(initialRepostsCount);
+  const [reposted, setReposted] = useState(initialReposted);
   const [shares, setShares] = useState(post.shares ?? 0);
   const [saved, setSaved] = useState(!!(post.hasSaved || post.saved || post.isSaved));
   const [isShareOpen, setIsShareOpen] = useState(false);
   
-  // Track copy feedback state
   const [isCopied, setIsCopied] = useState(false);
-
-  // Track avatar error state for fallback icon
   const [hasAvatarError, setHasAvatarError] = useState(false);
 
-  // Keep the card aligned with refreshed RTK Query feed data. This makes
-  // persisted likes and comment totals visible after a reload or cache refresh.
   useEffect(() => {
     setLikes(initialLikesCount);
     setLiked(initialLiked);
     setCommentCount(initialCommentCount);
-  }, [initialCommentCount, initialLiked, initialLikesCount, post.id]);
+    setReposts(initialRepostsCount);
+    setReposted(initialReposted);
+  }, [initialCommentCount, initialLiked, initialLikesCount, initialRepostsCount, initialReposted, postId]);
+
+  // Name to fall back to when author data is missing/unpopulated on a
+  // deleted post. Since only the post's own owner can delete it, it's
+  // safe to assume the logged-in user is the author in that case.
+  const currentUserName =
+    currentUser?.name ||
+    `${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() ||
+    null;
 
   const authorName = (() => {
     if (typeof post.author === "string" && post.author.trim()) {
@@ -187,7 +248,12 @@ export default function PostCard({ post }) {
     }
     if (post.author && typeof post.author === "object") {
       const fullName = `${post.author.firstName || ""} ${post.author.lastName || ""}`.trim();
-      return fullName || "Unknown";
+      if (fullName) return fullName;
+    }
+    // Only trust the current-user fallback when the post is confirmed
+    // deleted (and therefore, given delete permissions, owned by them).
+    if (isDeleted && currentUserName) {
+      return currentUserName;
     }
     return "Unknown";
   })();
@@ -259,7 +325,6 @@ export default function PostCard({ post }) {
     return value && !taggedUserIds.has(value) && !looksLikeUserId;
   });
 
-  // ── Image detection for the "..." menu's Save/Download options ─────────
   const primaryImageMedia = Array.isArray(post.media)
     ? post.media.find((m) => m?.mimetype?.startsWith("image/") && m?.url)
     : null;
@@ -290,7 +355,7 @@ export default function PostCard({ post }) {
   const commentsByPost = useCommentStore(state => state.commentsByPost);
   
   const loadedCommentCount = commentsList.length;
-  const localCommentCount = (commentsByPost[post.id] || []).length;
+  const localCommentCount = (commentsByPost[postId] || []).length;
   const displayedCommentCount = Math.max(
     commentCount,
     loadedCommentCount,
@@ -302,24 +367,38 @@ export default function PostCard({ post }) {
 
   // Copy Link Handler
   const handleCopyLink = async (e) => {
-  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
 
-  // The direct URL to the post
-  const postUrl = `${window.location.origin}/profile/Posts/${post.id}`;
+    const postUrl = `${window.location.origin}/profile/Posts/${postId}`;
 
-  try {
-    await navigator.clipboard.writeText(postUrl);
-    setIsCopied(true);
-    setTimeout(() => setIsCopied(false), 2000);
-  } catch (err) {
-    console.error("Failed to copy post link:", err);
-  }
-};
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy post link:", err);
+    }
+  };
 
-  // "Save to Camera Roll" — downloads the post's primary image via a
-  // blob + <a download> link. Works consistently across every browser;
-  // on mobile this lands in the device's default Downloads/Files
-  // location, which the user can then save into their photo library.
+  // Delete Post Handler
+  const handleDeletePost = async (e) => {
+    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (!postId) return;
+
+    if (window.confirm("Are you sure you want to delete this post?")) {
+      dispatch(setDeletingPost(true));
+      try {
+        await deletePost(postId).unwrap();
+        dispatch(setDeletePostSuccess(true));
+      } catch (err) {
+        console.error("Failed to delete post:", err);
+        dispatch(setDeletePostError(err?.data?.message || err?.message || "Failed to delete post"));
+      } finally {
+        dispatch(setDeletingPost(false));
+      }
+    }
+  };
+
   const handleDownloadImage = async (e) => {
     if (e && typeof e.stopPropagation === "function") e.stopPropagation();
     if (!primaryImageMedia?.url) return;
@@ -330,7 +409,7 @@ export default function PostCard({ post }) {
       const blobUrl = URL.createObjectURL(blob);
 
       const fileName =
-        primaryImageMedia.path?.split("/").pop() || `post-${post.id}.jpg`;
+        primaryImageMedia.path?.split("/").pop() || `post-${postId}.jpg`;
 
       const link = document.createElement("a");
       link.href = blobUrl;
@@ -346,13 +425,17 @@ export default function PostCard({ post }) {
 
   const handleLikeClick = async (e) => {
     e.stopPropagation();
+    if (!postId || isDeleted) return;
+
     const previousLiked = liked;
     const previousLikesCount = likes;
+
     setLikes(liked ? likes - 1 : likes + 1);
     setLiked(!liked);
+    dispatch(setLikingPost(true));
 
     try {
-      const res = await toggleLikePost(post.id).unwrap();
+      const res = await toggleLikePost(postId).unwrap();
       if (res?.success && res?.data) {
         setLiked(toBoolean(
           res.data.liked ??
@@ -363,30 +446,84 @@ export default function PostCard({ post }) {
         ));
         setLikes(res.data.count ?? res.data.likesCount ?? res.data.likes ?? likes);
       }
+      dispatch(setLikePostSuccess(true));
     } catch (err) {
       setLiked(previousLiked);
       setLikes(previousLikesCount);
+      dispatch(setLikePostError(err?.data?.message || err?.message || "Failed to like post"));
+    } finally {
+      dispatch(setLikingPost(false));
+    }
+  };
+
+  const handleRepostClick = async (e) => {
+    e.stopPropagation();
+    if (!postId || isDeleted) {
+      return;
+    }
+
+    const previousReposted = reposted;
+    const previousRepostsCount = reposts;
+
+    setReposts(reposted ? Math.max(0, reposts - 1) : reposts + 1);
+    setReposted(!reposted);
+    dispatch(setRepostingPost(true));
+
+    try {
+      const res = await toggleRepost(postId).unwrap();
+      if (res?.success && res?.data) {
+        setReposted(toBoolean(
+          res.data.reposted ??
+          res.data.hasReposted ??
+          res.data.has_reposted ??
+          res.data.isReposted ??
+          res.data.is_reposted
+        ));
+        setReposts(
+          res.data.count ??
+          res.data.repostsCount ??
+          res.data.repostCount ??
+          res.data.reposts ??
+          reposts
+        );
+      }
+      dispatch(setRepostPostSuccess(true));
+    } catch (err) {
+      console.error("Failed to toggle repost:", err);
+      setReposted(previousReposted);
+      setReposts(previousRepostsCount);
+      dispatch(setRepostPostError(err?.data?.message || err?.message || "Failed to repost"));
+    } finally {
+      dispatch(setRepostingPost(false));
     }
   };
 
   const handleSaveClick = async (e) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (!postId || isDeleted) return;
+
     const previousSaved = saved;
     setSaved(!saved);
+    dispatch(setSavingPost(true));
 
     try {
-      const res = await toggleSavePost(post.id).unwrap();
+      const res = await toggleSavePost(postId).unwrap();
       if (res?.success && res?.data) {
         setSaved(res.data.saved);
       }
+      dispatch(setSavePostSuccess(true));
     } catch (err) {
       setSaved(previousSaved);
+      dispatch(setSavePostError(err?.data?.message || err?.message || "Failed to save post"));
+    } finally {
+      dispatch(setSavingPost(false));
     }
   };
 
   const handleCommentAdded = async (content) => {
+    if (!postId || isDeleted) return;
     try {
-      const res = await addComment({ postId: post.id, content }).unwrap();
+      const res = await addComment({ postId, content }).unwrap();
       const nextCount =
         res?.data?.commentsCount ??
         res?.data?.commentCount ??
@@ -439,8 +576,8 @@ export default function PostCard({ post }) {
             >
               <p className="text-sm font-semibold text-gray-900">
                 {authorName}{authorIsVerified ? " ✓" : ""} •  
-                <span className="text-xs mx-2 font-semibold text-teal-600">
-                  {post.status || "Active"}
+                <span className={`text-xs mx-2 font-semibold ${isDeleted ? "text-red-500" : "text-teal-600"}`}>
+                  {isDeleted ? "Deleted" : post.status || "Active"}
                 </span>
               </p>
               <p className="text-xs text-gray-500">
@@ -449,48 +586,58 @@ export default function PostCard({ post }) {
             </div>
           </div>
 
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button variant="outline" aria-label="Open menu" size="icon-sm">
-                <MoreHorizontalIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-40" align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuItem onSelect={handleSaveClick}>
-                  <Bookmark/>
-                  Save
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Star/>
-                  Add to Favourites
-                </DropdownMenuItem>
-
-                {/* Only shown when the post actually has an image */}
-                {hasImage && (
-                  <DropdownMenuItem onSelect={handleDownloadImage}>
-                    <ImageDown/>
-                    Save to Camera Roll
+          {/* "..." menu hidden entirely once the post is deleted */}
+          {!isDeleted && (
+            <DropdownMenu modal={false}>
+              <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Button variant="outline" aria-label="Open menu" size="icon-sm">
+                  <MoreHorizontalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-40" align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem onSelect={handleSaveClick}>
+                    <Bookmark/>
+                    Save
                   </DropdownMenuItem>
-                )}
-                
-                {/* Updated Copy Link Item */}
-                <DropdownMenuItem onSelect={handleCopyLink}>
-                  {isCopied ? <Check className="text-teal-600" /> : <Copy />}
-                  {isCopied ? "Copied!" : "Copy link to post"}
-                </DropdownMenuItem>
-                
-                <DropdownMenuItem>
-                  <CircleSlash/>
-                  Not Interested
-                </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setShowReportDialog(true)} className="text-red-600">
-                  <MessageSquareWarning color="red"/>
-                  Report post
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <DropdownMenuItem>
+                    <Star/>
+                    Add to Favourites
+                  </DropdownMenuItem>
+
+                  {hasImage && (
+                    <DropdownMenuItem onSelect={handleDownloadImage}>
+                      <ImageDown/>
+                      Save to Camera Roll
+                    </DropdownMenuItem>
+                  )}
+                  
+                  <DropdownMenuItem onSelect={handleCopyLink}>
+                    {isCopied ? <Check className="text-teal-600" /> : <Copy />}
+                    {isCopied ? "Copied!" : "Copy link to post"}
+                  </DropdownMenuItem>
+                  
+                  <DropdownMenuItem>
+                    <CircleSlash/>
+                    Not Interested
+                  </DropdownMenuItem>
+
+                  {/* SHOW DELETE ONLY FOR POST OWNER */}
+                  {isOwner ? (
+                    <DropdownMenuItem onSelect={handleDeletePost} className="text-red-600">
+                      <Trash2 color="red" />
+                      Delete post
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem onSelect={() => setShowReportDialog(true)} className="text-red-600">
+                      <MessageSquareWarning color="red"/>
+                      Report post
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
 
           <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
             <DialogContent className="sm:max-w-[425px]">
@@ -640,90 +787,92 @@ export default function PostCard({ post }) {
           );
         })()}
 
-        {/* Actions */}
-        <div className="flex items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-5">
-            {/* Like */}
-            <div className="flex items-center">    
-              <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleLikeClick}>
-                <Heart
-                  size={22}
-                  className={`transition ${
-                    liked
-                      ? "fill-red-500 text-red-500"
-                      : "text-gray-600 hover:text-red-500"
-                  }`}
-                />
-              </button>
-              <span>
-                {likes > 0 && <span>{likes}</span>}
-              </span>
-            </div>
+        {/* Actions — entire engagement row hidden once the post is deleted */}
+        {!isDeleted && (
+          <div className="flex items-center justify-between px-4 py-3">
+            <div className="flex items-center gap-5">
+              {/* Like */}
+              <div className="flex items-center">    
+                <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleLikeClick}>
+                  <Heart
+                    size={22}
+                    className={`transition ${
+                      liked
+                        ? "fill-red-500 text-red-500"
+                        : "text-gray-600 hover:text-red-500"
+                    }`}
+                  />
+                </button>
+                <span>
+                  {likes > 0 && <span>{likes}</span>}
+                </span>
+              </div>
 
-            {/* Comment */}
-            <div className="flex items-center">
-             <button
-              className="flex space-y-1 mr-1 cursor-pointer"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowComments((prev) => !prev);
-              }}
-            >
-              <MessageCircle
-                size={22}
-                className="text-gray-600 hover:text-teal-600"
-              />
-            </button>
-                <span>{displayedCommentCount > 0 && <span>{displayedCommentCount}</span>}</span>
-            </div>
-
-            {/* Repost */}
-            <div className="flex items-center">
-              <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setReposts(reposted ? reposts - 1 : reposts + 1); setReposted(!reposted); }}>
-                <Repeat2
-                  size={22}
-                  className={`transition ${
-                    reposted
-                      ? "text-teal-500"
-                      : "text-gray-600 hover:text-teal-500"
-                  }`}
-                />
-              </button>
-              <span>{reposts > 0 && <span>{reposts}</span>}</span>
-            </div>
-
-            {/* Share */}
-            <div className="flex items-center">
-              <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsShareOpen(true); }}>
-                <Send
+              {/* Comment */}
+              <div className="flex items-center">
+               <button
+                className="flex space-y-1 mr-1 cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowComments((prev) => !prev);
+                }}
+              >
+                <MessageCircle
                   size={22}
                   className="text-gray-600 hover:text-teal-600"
                 />
               </button>
-              <span>{shares > 0 && <span>{shares}</span>}</span>
-            </div>
-          </div>
+                <span>{displayedCommentCount > 0 && <span>{displayedCommentCount}</span>}</span>
+              </div>
 
-          {/* Save */}
-          <button onClick={handleSaveClick}>
-            <Bookmark
-              size={22}
-              className={`transition ${
-                saved
-                  ? "fill-gray-900 text-gray-900"
-                  : "text-gray-600 hover:text-gray-900"
-              }`}
-            />
-          </button>
-        </div>
+              {/* Repost */}
+              <div className="flex items-center">
+                <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleRepostClick}>
+                  <Repeat2
+                    size={22}
+                    className={`transition ${
+                      reposted
+                        ? "text-teal-500"
+                        : "text-gray-600 hover:text-teal-500"
+                    }`}
+                  />
+                </button>
+                <span>{reposts > 0 && <span>{reposts}</span>}</span>
+              </div>
+
+              {/* Share */}
+              <div className="flex items-center">
+                <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsShareOpen(true); }}>
+                  <Send
+                    size={22}
+                    className="text-gray-600 hover:text-teal-600"
+                  />
+                </button>
+                <span>{shares > 0 && <span>{shares}</span>}</span>
+              </div>
+            </div>
+
+            {/* Save */}
+            <button onClick={handleSaveClick}>
+              <Bookmark
+                size={22}
+                className={`transition ${
+                  saved
+                    ? "fill-gray-900 text-gray-900"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              />
+            </button>
+          </div>
+        )}
 
         <div className="text-xs text-gray-500 px-4 mb-2">
           {timeAgo(post.created_at || post.createdAt)}
         </div>
             
-        {showComments && (
+        {showComments && !isDeleted && (
           <PostComments
-            postId={post.id}
+            postId={postId}
             comments={commentsList}
             isLoading={isLoadingComments}
             onCommentAdded={handleCommentAdded}
@@ -731,8 +880,8 @@ export default function PostCard({ post }) {
         )}
       </div>
         
-      {isShareOpen && (
-        <SharePost postId={post.id} onClose={() => setIsShareOpen(false)} />
+      {isShareOpen && !isDeleted && (
+        <SharePost postId={postId} onClose={() => setIsShareOpen(false)} />
       )}
     </div>
   );
