@@ -145,23 +145,36 @@ console.log("users", users);
 />
 
         {/* Feed Stories */}
-        {users.map((user, index) => {
-          const userAvatar =
-            user.profilePicture ||
-            user.picture ||
-            user.stories?.[0]?.media?.url;
+        {otherUsers.map((user, index) => (
+         <StoryAvatar
+            key={user.userId}
+            avatar={
+              user.profilePicture ||
+              user.picture ||
+              user.stories?.[0]?.media?.url ||
+              "/default-avatar.png"
+            }
+            owner={false}
+            hasStory={user.stories?.length > 0}
+            hasUnseenStories={!viewedUsers[user.userId]}
+            onClick={() => setActiveIndex(index)}
+          />
+        ))}
 
-          return (
-            <StoryAvatar
-              key={user.userId}
-              avatar={userAvatar}
-              owner={false}
-              hasStory={user.stories?.length > 0}
-              hasUnseenStories={!viewedUsers[user.userId]}
-              onClick={() => setActiveIndex(index)}
-            />
-          );
-        })}
+        {showMyStory && myStory && (
+  <ViewStory
+    user={{
+      ...myStory,
+      id: myStory.userId,
+      userId: myStory.userId,
+      username: "Your Story",
+      avatar: myProfilePicture,
+
+    }}
+    
+    onClose={() => setShowMyStory(false)}
+  />
+)}
 
         {activeUser && (
           <ViewStory
@@ -175,7 +188,8 @@ console.log("users", users);
               avatar:
                 activeUser.profilePicture ||
                 activeUser.picture ||
-                activeUser.stories?.[0]?.media?.url,
+                activeUser.stories?.[0]?.media?.url ||
+               "/default-avatar.png",
             }}
             onClose={closeStories}
             onNextUser={markViewedAndGoNext}

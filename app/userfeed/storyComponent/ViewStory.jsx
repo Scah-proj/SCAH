@@ -6,7 +6,7 @@ import {
   useViewStoryMutation,
 } from "../../redux/api/storyApi";
 import { useGetPublicProfileQuery } from "../../redux/api/profileApi";
-import { Bookmark, MoreHorizontal, X, Flag, Link2, EyeOff, Trash2 } from "lucide-react";
+import { Bookmark, MoreHorizontal, X, Flag, Link2, EyeOff,Eye,  Trash2 } from "lucide-react";
 
 export default function ViewStory({ user, onClose, onNextUser }) {
   const { data, isLoading, error, refetch } = useGetUserStoriesQuery(
@@ -25,6 +25,7 @@ export default function ViewStory({ user, onClose, onNextUser }) {
   const [currentStoryIndex, setCurrentStoryIndex] = useState(0);
 
   const menuRef = useRef(null);
+  const storiesRef = useRef(null);
 
   const userStories = data?.data?.stories || [];
   const currentStory = userStories[currentStoryIndex];
@@ -53,6 +54,8 @@ export default function ViewStory({ user, onClose, onNextUser }) {
     setShowMenu(false);
     setSaved(false);
   }, [currentStoryIndex]);
+
+  
 
   const profilePicture =
     publicProfile?.profile?.profilePicture ||
@@ -102,7 +105,9 @@ export default function ViewStory({ user, onClose, onNextUser }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
       <div className="relative bg-black w-full h-full sm:w-[420px] sm:h-[740px] sm:rounded-xl overflow-hidden">
         <Stories
+          ref={storiesRef}
           stories={stories}
+          isPaused={showMenu || showViewers}
           defaultInterval={4000}
           width="100%"
           height="100%"
@@ -210,9 +215,9 @@ export default function ViewStory({ user, onClose, onNextUser }) {
                 setShowViewers((prev) => !prev);
                 refetch();
               }}
-              className="pointer-events-auto rounded-full bg-black/50 px-4 py-2 text-sm text-white backdrop-blur cursor-pointer hover:bg-black/70 transition"
+              className="flex items-center gap-2 pointer-events-auto rounded-full bg-black/50 px-4 py-2 text-sm text-white backdrop-blur cursor-pointer hover:bg-black/70 transition"
             >
-              👁 {viewers.length} {viewers.length === 1 ? "view" : "views"}
+              <Eye className="w-4 h-4" /> {viewers.length} {viewers.length === 1 ? "view" : "views"}
             </button>
 
             <button
@@ -229,7 +234,10 @@ export default function ViewStory({ user, onClose, onNextUser }) {
 
         {/* Viewers panel */}
         {showViewers && (
-          <div className="absolute inset-x-0 bottom-0 z-[9999] max-h-[60%] bg-neutral-950/95 backdrop-blur rounded-t-2xl border-t border-white/10 flex flex-col animate-in slide-in-from-bottom duration-200">
+          <div
+            onMouseDown={(e) => e.stopPropagation()}
+            className="absolute inset-x-0 bottom-0 z-[9999] max-h-[60%] bg-neutral-950/95 backdrop-blur rounded-t-2xl border-t border-white/10 flex flex-col animate-in slide-in-from-bottom duration-200"
+          >
             <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/10">
               <h3 className="text-white font-semibold text-sm">
                 {viewers.length} {viewers.length === 1 ? "View" : "Views"}
