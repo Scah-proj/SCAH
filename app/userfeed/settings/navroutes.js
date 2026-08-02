@@ -59,7 +59,7 @@ export const settingsSections = [
     title: "Learn more about privacy on Scah",
     items: [
       // { label: "Privacy center", path: "/userfeed/settings/usage/saved" , icon: <User size={20} />},
-      { label: "Privacy policy", path: "/userfeed/settings/usage/privacy" , icon: <User size={20} />},
+      { label: "Privacy policy", path: "/userfeed/settings/usage/policy" , icon: <User size={20} />},
       // { label: "Contact us", path: "/userfeed/settings/usage/privacy" , icon: <User size={20} />},
      ],
       more: "",

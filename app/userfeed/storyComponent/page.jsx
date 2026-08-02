@@ -22,6 +22,7 @@ export default function StoryComponent() {
   const [activeIndex, setActiveIndex] = useState(null);
   const [viewedUsers, setViewedUsers] = useState({});
   const [openCreateStory, setOpenCreateStory] = useState(false);
+  const [showMyStory, setShowMyStory] = useState(false);
 
   // Logged-in user profile
   const { data: myProfile } = useGetMyProfileQuery();
@@ -34,6 +35,12 @@ export default function StoryComponent() {
 
   const users =
     useSelector((state) => state.story.feedStories) || [];
+
+    const otherUsers = users.filter(
+  (user) =>
+    user.userId !== myProfile?._id &&
+    user.userId !== myProfile?.userId
+);
 
   useEffect(() => {
     dispatch(setLoadingFeedStories(isLoading));
@@ -51,8 +58,15 @@ export default function StoryComponent() {
     }
   }, [error, dispatch]);
 
+  const myStory = users.find(
+  (user) =>
+    user.userId === myProfile?._id ||
+    user.userId === myProfile?.userId
+);
+console.log("myProfile", myProfile);
+console.log("users", users);
   const activeUser =
-    activeIndex !== null ? users[activeIndex] : null;
+  activeIndex !== null ? otherUsers[activeIndex] : null;
 
   const closeStories = () => {
     setActiveIndex(null);
@@ -62,13 +76,14 @@ export default function StoryComponent() {
     setActiveIndex((prev) => {
       if (prev === null) return null;
 
-      if (prev + 1 < users.length) {
+      if (prev + 1 < otherUsers.length) {
         return prev + 1;
       }
 
       return null;
     });
   };
+
 
   const markViewedAndGoNext = () => {
     if (activeUser) {
@@ -112,31 +127,54 @@ export default function StoryComponent() {
 
         {/* Your Story */}
         <StoryAvatar
-          owner={true}
-          hasStory={false}
-          hasUnseenStories={false}
-          avatar={myProfilePicture}
-          onClick={() => setOpenCreateStory(true)}
-        />
+  owner
+    onAddStory={() => setOpenCreateStory(true)}
+  hasStory={!!myStory}
+  hasUnseenStories={false}
+  avatar={
+    myStory?.profilePicture ||
+    myProfilePicture
+  }
+  onClick={() => {
+    if (myStory) {
+      setShowMyStory(true);
+    } else {
+      setOpenCreateStory(true);
+    }
+  }}
+/>
 
         {/* Feed Stories */}
-        {users.map((user, index) => {
-          const userAvatar =
-            user.profilePicture ||
-            user.picture ||
-            user.stories?.[0]?.media?.url;
+        {otherUsers.map((user, index) => (
+         <StoryAvatar
+            key={user.userId}
+            avatar={
+              user.profilePicture ||
+              user.picture ||
+              user.stories?.[0]?.media?.url ||
+              "/default-avatar.png"
+            }
+            owner={false}
+            hasStory={user.stories?.length > 0}
+            hasUnseenStories={!viewedUsers[user.userId]}
+            onClick={() => setActiveIndex(index)}
+          />
+        ))}
 
-          return (
-            <StoryAvatar
-              key={user.userId}
-              avatar={userAvatar}
-              owner={false}
-              hasStory={user.stories?.length > 0}
-              hasUnseenStories={!viewedUsers[user.userId]}
-              onClick={() => setActiveIndex(index)}
-            />
-          );
-        })}
+        {showMyStory && myStory && (
+  <ViewStory
+    user={{
+      ...myStory,
+      id: myStory.userId,
+      userId: myStory.userId,
+      username: "Your Story",
+      avatar: myProfilePicture,
+
+    }}
+    
+    onClose={() => setShowMyStory(false)}
+  />
+)}
 
         {activeUser && (
           <ViewStory
@@ -150,7 +188,8 @@ export default function StoryComponent() {
               avatar:
                 activeUser.profilePicture ||
                 activeUser.picture ||
-                activeUser.stories?.[0]?.media?.url,
+                activeUser.stories?.[0]?.media?.url ||
+               "/default-avatar.png",
             }}
             onClose={closeStories}
             onNextUser={markViewedAndGoNext}

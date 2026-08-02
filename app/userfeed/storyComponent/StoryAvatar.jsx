@@ -7,6 +7,7 @@ import { User } from "lucide-react";
 export default function StoryAvatar({
   onClick,
   avatar,
+  onAddStory,
   hasStory,
   hasUnseenStories,
   owner,
@@ -40,11 +41,17 @@ export default function StoryAvatar({
           )}
         </div>
 
-        {owner && !hasStory && (
-          <span className="absolute bottom-0 right-0 w-5 h-5 bg-teal-500 text-white rounded-full flex items-center justify-center text-sm border-2 border-white">
-            <AiOutlinePlus />
-          </span>
-        )}
+        {owner && (
+  <span
+    onClick={(e) => {
+      e.stopPropagation();
+      onAddStory();
+    }}
+    className="absolute bottom-0 right-0 w-5 h-5 bg-teal-500 text-white rounded-full flex items-center justify-center text-sm border-2 border-white"
+  >
+    <AiOutlinePlus />
+  </span>
+)}
       </button>
     </div>
   );
