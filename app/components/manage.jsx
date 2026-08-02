@@ -90,7 +90,7 @@ export default function MyTryoutCard({ trial }) {
 
         <div className="flex items-center gap-2 text-gray-600">
           <Users size={16} className="text-gray-400 flex-shrink-0" />
-          <span>{trial.applicantCount ?? 0} Applicants</span>
+          <span>{trial.applicants ?? 0} Applicants</span>
         </div>
 
         <div className="col-span-2 flex items-center gap-2 text-gray-600">
@@ -117,10 +117,10 @@ export default function MyTryoutCard({ trial }) {
         </Link>
 
         <Link
-          href={`/userfeed/tryout/application/${trial._id}/applicants`}
+          href={`/userfeed/tryout/application/${trial._id}`}
           className="flex items-center justify-center gap-1.5 rounded-xl bg-teal-600 text-white py-2.5 text-center text-sm font-medium hover:bg-teal-700 transition-colors group/btn"
         >
-          Applicants
+          Application
           <ArrowRight size={15} className="transition-transform group-hover/btn:translate-x-0.5" />
         </Link>
       </div>

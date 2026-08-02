@@ -99,16 +99,14 @@ console.log("users", users);
   // Logged-in user's profile picture
   const myProfilePicture =
     myProfile?.profile?.profilePicture ||
+    myProfile?.profile?.media?.profilePicture ||
     myProfile?.profilePicture ||
-    myProfile?.user?.profilePicture ||
-    "/default-avatar.png";
+    myProfile?.user?.profilePicture;
 
   if (isLoading) {
     return (
       <div className="flex p-3 space-x-4 overflow-x-auto">
-        <p className="text-sm text-gray-500">
-          Loading stories...
-        </p>
+        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-teal-600 animate-spin"></div>
       </div>
     );
   }
@@ -147,34 +145,23 @@ console.log("users", users);
 />
 
         {/* Feed Stories */}
-        {otherUsers.map((user, index) => (
-          <StoryAvatar
-            key={user.userId}
-            avatar={
-              user.profilePicture ||
-              user.picture ||
-              user.stories?.[0]?.media?.url ||
-              "/default-avatar.png"
-            }
-            owner={false}
-            hasStory={user.stories?.length > 0}
-            hasUnseenStories={!viewedUsers[user.userId]}
-            onClick={() => setActiveIndex(index)}
-          />
-        ))}
+        {users.map((user, index) => {
+          const userAvatar =
+            user.profilePicture ||
+            user.picture ||
+            user.stories?.[0]?.media?.url;
 
-        {showMyStory && myStory && (
-  <ViewStory
-    user={{
-      ...myStory,
-      id: myStory.userId,
-      userId: myStory.userId,
-      username: "Your Story",
-      avatar: myProfilePicture,
-    }}
-    onClose={() => setShowMyStory(false)}
-  />
-)}
+          return (
+            <StoryAvatar
+              key={user.userId}
+              avatar={userAvatar}
+              owner={false}
+              hasStory={user.stories?.length > 0}
+              hasUnseenStories={!viewedUsers[user.userId]}
+              onClick={() => setActiveIndex(index)}
+            />
+          );
+        })}
 
         {activeUser && (
           <ViewStory
@@ -188,8 +175,7 @@ console.log("users", users);
               avatar:
                 activeUser.profilePicture ||
                 activeUser.picture ||
-                activeUser.stories?.[0]?.media?.url ||
-                "/default-avatar.png",
+                activeUser.stories?.[0]?.media?.url,
             }}
             onClose={closeStories}
             onNextUser={markViewedAndGoNext}

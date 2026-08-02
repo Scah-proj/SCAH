@@ -19,6 +19,7 @@ import { PhoneInput } from 'react-international-phone';
 import { CountryDropdown } from 'react-country-region-selector';
 import 'react-international-phone/style.css';
 import { createPortal } from "react-dom";
+import { User } from "lucide-react";
 import { Checkbox } from "../../../components/ui/checkbox"
 import { Label } from "../../../components/ui/label"
 import ExperienceSection from "../../components/Experience";

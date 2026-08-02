@@ -136,6 +136,25 @@ export const profileApi = baseApi.injectEndpoints({
       transformResponse: unwrap,
       providesTags: ["Profile"],
     }),
+
+    // All profiles directory (paginated)
+    getAllProfiles: builder.query({
+      query: ({ page = 1, limit = 20 } = {}) => ({
+        url: `/api/profile/all?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+      transformResponse: unwrap,
+      providesTags: ["Profile"],
+    }),
+
+    // Search users by name — used for @ mention/tagging autocomplete
+    searchUsers: builder.query({
+      query: (q = "") => ({
+        url: `/api/profile/search?q=${encodeURIComponent(q)}`,
+        method: "GET",
+      }),
+      transformResponse: unwrap,
+    }),
   }),
 
   overrideExisting: false,
@@ -152,4 +171,6 @@ export const {
   useUpdateExperienceMutation,
   useDeleteExperienceMutation,
   useGetScoutsQuery,
+  useGetAllProfilesQuery,
+  useLazySearchUsersQuery,
 } = profileApi;

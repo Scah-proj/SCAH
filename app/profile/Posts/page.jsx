@@ -28,7 +28,7 @@ export default function AllPosts() {
         <div className="flex items-center px-4 py-4">
             <Link href="/profile" className="flex items-center text-gray-600 hover:text-gray-800">
             <MdArrowBack/>
-            <p className="px-2">Posts</p>
+            <p className="px-2">P</p>
             </Link>
         </div>
     <div className="grid grid-cols-3 max-w-2xl mx-auto">

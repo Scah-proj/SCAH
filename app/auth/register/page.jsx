@@ -1,15 +1,13 @@
-'use client';
-import { useEffect, useState } from "react";
+"use client";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
 import { handleGoogleSuccess } from "../googleAuth";
 import { GoogleLogin } from "@react-oauth/google";
-import { FcGoogle } from "react-icons/fc";
 import { Eye, EyeOff } from "lucide-react"; 
-import { postRequest } from "../../api";
-import { useUserStore } from "../../../lib/userStore";
-
+import { useRegisterMutation } from "../../redux/api/authApi";
 
 const Page = () => {
     const [formData, setFormData] = useState({
@@ -17,57 +15,59 @@ const Page = () => {
       lastName: "",
       email: "",
       password: "",
-      
+      confirmPassword: "",
     });
 
   const [showPassword, setShowPassword] = useState(false); 
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
-  const setUser = useUserStore((state) =>state.setUser)
+  const [register, { isLoading }] = useRegisterMutation();
+  const dispatch = useDispatch();
   const router = useRouter();
 
-  
-  
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setErrorMsg("");
 
-    
-  if (!formData.email || !formData.password) {
-  setErrorMsg("Email and password are required");
-  return;
-}
+    if (!formData.email || !formData.password) {
+      setErrorMsg("Email and password are required");
+      return;
+    }
 
-if (formData.password !== formData.confirmPassword) {
-  setErrorMsg("Passwords do not match");
-  return;
-}
+    if (formData.password !== formData.confirmPassword) {
+      setErrorMsg("Passwords do not match");
+      return;
+    }
 
     try {
-      const data = await postRequest('/api/auth/register', formData);
-      console.log('Account created successfully', data);
-      setUser(data.data.user)
-      router.push('/auth/verify');
+      // Omit confirmPassword from the payload sent to the backend
+      const { confirmPassword, ...payload } = formData;
+
+      const result = await register(payload).unwrap();
+      console.log('Account created successfully', result);
+
+      const token = result?.token || result?.accessToken || result?.data?.token;
+      if (token) {
+        localStorage.setItem("token", token);
+      }
+
+      router.push(`/auth/verify?email=${encodeURIComponent(formData.email)}`);
     } catch (error) {
-  console.error('Error:', error);
-
-  setErrorMsg(error.message || "Something went wrong");
-
-}finally {
-  setLoading(false);
-}
+      console.error('Error:', error);
+      setErrorMsg(
+        error?.data?.error?.message ||
+        error?.data?.message ||
+        "Something went wrong"
+      );
+    }
   };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
-    
       <div
         className="md:w-1/2 w-full bg-cover bg-center flex flex-col text-white p-8"
         style={{ backgroundImage: "url('/namee.png')" }}
@@ -90,7 +90,6 @@ if (formData.password !== formData.confirmPassword) {
         </div>
       </div>
 
-      
       <div className="md:w-1/2 w-full flex items-center justify-center bg-gray-50 p-6 md:p-10">
         <div className="w-full max-w-xl">
           <h2 className="text-xl md:text-3xl font-semibold text-center text-teal-900 mb-6">
@@ -98,7 +97,6 @@ if (formData.password !== formData.confirmPassword) {
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-          
             <div className="flex flex-col sm:flex-row gap-4 w-full">
               <div className="w-full">
                 <label className="block text-md font-medium">First Name</label>
@@ -122,7 +120,6 @@ if (formData.password !== formData.confirmPassword) {
               </div>
             </div>
 
-          
             <div>
               <label className="block text-md font-medium">Email</label>
               <input
@@ -134,7 +131,6 @@ if (formData.password !== formData.confirmPassword) {
               />
             </div>
 
-            
             <div>
               <label className="block text-md font-medium">Password</label>
               <div className="relative">
@@ -156,7 +152,6 @@ if (formData.password !== formData.confirmPassword) {
               </div>
             </div>
 
-            
             <div>
               <label className="block text-md font-medium">Confirm Password</label>
               <div className="relative">
@@ -178,19 +173,14 @@ if (formData.password !== formData.confirmPassword) {
               </div>
             </div>
 
-          
-            
-
-            
-            
             <button
               type="submit"
-              disabled={loading || !formData.email || !formData.password}
+              disabled={isLoading || !formData.email || !formData.password}
               className="w-full bg-teal-900 text-white py-2 px-4 rounded-md hover:bg-green-800 transition"
             >
-              {loading ? "Creating Account..." : "Create Account"}
+              {isLoading ? "Creating Account..." : "Create Account"}
             </button>
-          
+         
            {errorMsg && (
               <p className="text-red-500 text-sm mt-2 text-center">{errorMsg}</p>
             )}
@@ -202,23 +192,17 @@ if (formData.password !== formData.confirmPassword) {
             <hr className="flex-grow border-gray-300" />
           </div>
 
-          
-          
-         
-            <GoogleLogin onSuccess={(res) => handleGoogleSuccess(res, router, setUser)}
+          <GoogleLogin 
+            onSuccess={(res) => handleGoogleSuccess(res, router, dispatch)}
             onError={() => console.log('Login Failed')}
-            className = "border border-gray-300 rounded-md py-2 hover:bg-gray-50 transition cursor-pointer">
-            {/* <FcGoogle className="mr-2" /> */}
-            </GoogleLogin>
-          
+          />
 
-         
           <p className="text-sm text-center text-gray-600 mt-5">
-                       Have an account?{" "}
-                      <Link href="/auth/login" className="text-teal-700 font-medium">
-                        Login
-                      </Link>
-                    </p>
+            Have an account?{" "}
+            <Link href="/auth/login" className="text-teal-700 font-medium">
+              Login
+            </Link>
+          </p>
         </div>
       </div>
     </div>

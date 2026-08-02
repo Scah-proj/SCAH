@@ -1,12 +1,32 @@
 "use client";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Eye, Share2, Bookmark, ListTodo } from "lucide-react";
 import { timeAgo } from "../../../components/timeAgo"
 
 
 export default function TrendingCard({ item }) {
+  const router = useRouter();
+
+  const itemId = item.id || item._id;
+
+  const handleCardClick = () => {
+    if (!itemId) return;
+
+    if (item.type === "tryout") {
+      router.push(`/userfeed/tryout/${itemId}`);
+      return;
+    }
+
+    // Default to post for "post" type and anything unrecognized
+    router.push(`/profile/Posts/${itemId}`);
+  };
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition flex flex-col h-full">
+    <div
+      onClick={handleCardClick}
+      className="bg-white rounded-xl shadow-sm border overflow-hidden cursor-pointer hover:shadow-md transition flex flex-col h-full"
+    >
       
       {/* Cover */}
       <div className="relative h-36 w-full">

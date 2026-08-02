@@ -2,18 +2,23 @@
 
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { User, LogOut } from "lucide-react";
 
 import { navroutes } from "./navroutes";
 import { useGetMyProfileQuery } from "../../../redux/api/profileApi";
+import { logout } from "../../../redux/features/auth/authSlice";
 
 const Sidenav = ({ onClose }) => {
   const pathname = usePathname();
-  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const dispatch = useDispatch();
 
- 
+  const [mounted, setMounted] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
   const user = useSelector((state) => state.auth.user);
 
   // Fetch full profile
@@ -23,12 +28,18 @@ const Sidenav = ({ onClose }) => {
     setMounted(true);
   }, []);
 
+  const handleLogout = () => {
+    dispatch(logout());
+    if (onClose) onClose();
+    window.location.href = "/auth/login";
+  };
+
   const computedProfilePicture =
     profile?.profilePicture ||
     profile?.picture ||
     user?.profilePicture ||
     user?.picture ||
-    "/wen.webp";
+    null;
 
   const computedDisplayName =
     profile?.name ||
@@ -48,24 +59,14 @@ const Sidenav = ({ onClose }) => {
     user?.location ||
     {};
 
-  const profilePicture = mounted ? computedProfilePicture : "/wen.webp";
+  const profilePicture = mounted ? computedProfilePicture : null;
   const displayName = mounted ? computedDisplayName : "Profile";
   const organization = mounted ? computedOrganization : "";
   const location = mounted ? computedLocation : {};
 
   return (
-    <div className="relative w-full h-screen flex flex-col">
+    <div className="relative w-full h-screen flex flex-col justify-between">
       <div className="flex-shrink-0 px-4 pt-4">
-        {/* Mobile header */}
-        {/* <div className="lg:hidden flex justify-end items-center mb-4">
-          <AiOutlineClose
-            color="gray"
-            size={24}
-            className="cursor-pointer"
-            onClick={onClose}
-          />
-        </div> */}
-
         {/* Desktop Header */}
         <div className="hidden lg:block mb-6">
           <div className="mb-8">
@@ -83,14 +84,19 @@ const Sidenav = ({ onClose }) => {
 
           <div className="flex items-center gap-3">
             <Link href="/profile" className="flex-shrink-0">
-              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border">
-                <Image
-                  src={profilePicture}
-                  alt="Profile Picture"
-                  width={48}
-                  height={48}
-                  className="object-cover"
-                />
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 border flex items-center justify-center">
+                {profilePicture && !hasError ? (
+                  <Image
+                    src={profilePicture}
+                    alt="Profile Picture"
+                    width={48}
+                    height={48}
+                    className="object-cover w-full h-full"
+                    onError={() => setHasError(true)}
+                  />
+                ) : (
+                  <User className="w-6 h-6 text-gray-400" />
+                )}
               </div>
             </Link>
 
@@ -130,6 +136,7 @@ const Sidenav = ({ onClose }) => {
                 <li key={route.path}>
                   <Link
                     href={route.path}
+                    onClick={() => onClose && onClose()}
                     className={`group flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors ${
                       isActive
                         ? "bg-teal-500 text-white"
@@ -155,6 +162,17 @@ const Sidenav = ({ onClose }) => {
             })}
           </ul>
         </nav>
+      </div>
+
+      {/* Bottom Logout Section */}
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-red-600 hover:bg-red-50 transition-colors font-medium text-sm"
+        >
+          <LogOut className="w-5 h-5 flex-shrink-0" />
+          <span>Logout</span>
+        </button>
       </div>
     </div>
   );

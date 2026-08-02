@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import Select from "react-select";
 
@@ -13,6 +13,7 @@ import { useSelector } from "react-redux";
 import {
   useGetTryoutsQuery,
   useSearchTryoutsQuery,
+  useGetSavedTryoutsQuery,
 } from "../../redux/api/tryoutApi";
 
 const Page = () => {
@@ -64,6 +65,20 @@ const Page = () => {
       skip: query.trim() === "",
     }
   );
+
+  // Neither getTryouts nor searchTryouts return an isSaved flag per item,
+  // so a page refresh would otherwise lose bookmark state entirely. This
+  // fetches the user's real saved-tryout list and is cross-referenced
+  // below so the bookmark icon reflects actual persisted state.
+  const { data: savedTryoutsData } = useGetSavedTryoutsQuery({
+    page: 1,
+    limit: 200,
+  });
+
+  const savedTryoutIds = useMemo(() => {
+    const saved = savedTryoutsData?.data?.tryouts || [];
+    return new Set(saved.map((t) => String(t._id || t.id)));
+  }, [savedTryoutsData]);
 
   const loading = loadingAll || loadingSearch;
 
@@ -130,9 +145,14 @@ const Page = () => {
             </div>
 
             {user?.role === "Scout" && (
-              <Button className="bg-teal-600" disabled>
-                Post Tryout
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" disabled>
+                  Manage Tryouts
+                </Button>
+                <Button className="bg-teal-600" disabled>
+                  Post Tryout
+                </Button>
+              </div>
             )}
           </div>
         </div>
@@ -212,11 +232,18 @@ const Page = () => {
           </div>
 
           {user?.role === "Scout" && (
-            <Button className="bg-teal-600">
-              <Link href="/userfeed/tryout/newTryout">
-                Post Tryout
+            <div className="flex items-center gap-3">
+              <Link href="/userfeed/tryout/manageTryout">
+                <Button variant="outline">
+                  Manage Tryouts
+                </Button>
               </Link>
-            </Button>
+              <Button className="bg-teal-600">
+                <Link href="/userfeed/tryout/newTryout">
+                  Post Tryout
+                </Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>
@@ -224,7 +251,13 @@ const Page = () => {
       <div className="grid sm:grid-cols-2 gap-8">
         {filteredTryouts.length ? (
           filteredTryouts.map((trial) => (
-            <Trials key={trial._id} trial={trial} />
+            <Trials
+              key={trial._id}
+              trial={{
+                ...trial,
+                isSaved: savedTryoutIds.has(String(trial._id)),
+              }}
+            />
           ))
         ) : (
           <p className="col-span-2 text-center text-gray-500">

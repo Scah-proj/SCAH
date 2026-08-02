@@ -122,6 +122,17 @@ const Page = () => {
     )
   }
 
+  // tryout.postedBy is populated (name/firstName/lastName/picture) by the
+  // getTryoutById controller, so compare its _id against the logged-in
+  // user. Fall back to a plain string comparison in case it's ever
+  // unpopulated for some reason.
+  const currentUserId = user?.id || user?._id;
+  const isTryoutOwner = Boolean(
+    currentUserId &&
+      ((tryout.postedBy?._id && tryout.postedBy._id === currentUserId) ||
+        tryout.postedBy === currentUserId)
+  );
+
   return (
     <div className="max-w-4xl mx-auto px-4 md:px-8 py-6 pb-28 lg:pb-16">
       <Link
@@ -192,7 +203,7 @@ const Page = () => {
                 <div className="mt-6"><p className="px-4 py-3 rounded-lg bg-red-50 text-sm text-red-600 font-medium text-center">Deadline: {tryout.deadline}</p></div>
 
                 <div className="mt-6">
-                  {user?.role === "Scout" ? (
+                  {user?.role === "Scout" && isTryoutOwner ? (
                     <Button
   className="w-full bg-blue-600 hover:bg-blue-700"
   onClick={() =>
@@ -201,6 +212,10 @@ const Page = () => {
 >
   View Applicants
 </Button>
+                  ) : user?.role === "Scout" ? (
+                    <p className="text-center text-sm text-gray-500 py-2">
+                      Posted by another scout
+                    </p>
                   ) : (
                     <Dialog open={open} onOpenChange={setOpen}>
                       <DialogTrigger asChild>

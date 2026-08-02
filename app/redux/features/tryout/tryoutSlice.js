@@ -45,6 +45,17 @@ const initialState = {
   updatingApplicationStatus: false,
   updateApplicationStatusSuccess: false,
   updateApplicationStatusError: null,
+
+  // ---------------- Save / Unsave ----------------
+  saving: false,
+  saveSuccess: false,
+  saveError: null,
+
+  // ---------------- Saved Tryouts List ----------------
+  savedTryouts: [],
+  savedTryoutsTotal: 0,
+  savedTryoutsLoading: false,
+  savedTryoutsError: null,
 };
 
 const tryoutSlice = createSlice({
@@ -181,6 +192,56 @@ const tryoutSlice = createSlice({
       state.updateApplicationStatusError = action.payload;
     },
 
+    // ---------------- Save / Unsave ----------------
+
+    setSaving: (state, action) => {
+      state.saving = action.payload;
+    },
+
+    setSaveSuccess: (state, action) => {
+      state.saveSuccess = action.payload;
+    },
+
+    setSaveError: (state, action) => {
+      state.saveError = action.payload;
+    },
+
+    updateTryoutSavedState: (state, action) => {
+      const { tryoutId, saved, count } = action.payload;
+
+      const patch = (tryout) => {
+        if (tryout && (tryout._id === tryoutId || tryout.id === tryoutId)) {
+          tryout.isSaved = saved;
+          if (count !== undefined) tryout.savedCount = count;
+        }
+        return tryout;
+      };
+
+      state.tryouts = state.tryouts.map(patch);
+      state.filteredTryouts = state.filteredTryouts.map(patch);
+      if (state.selectedTryout) {
+        state.selectedTryout = patch({ ...state.selectedTryout });
+      }
+    },
+
+    // ---------------- Saved Tryouts List ----------------
+
+    setSavedTryouts: (state, action) => {
+      state.savedTryouts = action.payload;
+    },
+
+    setSavedTryoutsTotal: (state, action) => {
+      state.savedTryoutsTotal = action.payload;
+    },
+
+    setSavedTryoutsLoading: (state, action) => {
+      state.savedTryoutsLoading = action.payload;
+    },
+
+    setSavedTryoutsError: (state, action) => {
+      state.savedTryoutsError = action.payload;
+    },
+
     // ---------------- Reset ----------------
 
     resetTryoutState: (state) => {
@@ -219,6 +280,15 @@ const tryoutSlice = createSlice({
       state.updatingApplicationStatus = false;
       state.updateApplicationStatusSuccess = false;
       state.updateApplicationStatusError = null;
+
+      state.saving = false;
+      state.saveSuccess = false;
+      state.saveError = null;
+
+      state.savedTryouts = [];
+      state.savedTryoutsTotal = 0;
+      state.savedTryoutsLoading = false;
+      state.savedTryoutsError = null;
     },
   },
 });
@@ -252,6 +322,14 @@ export const {
   setUpdatingApplicationStatus,
   setUpdateApplicationStatusSuccess,
   setUpdateApplicationStatusError,
+  setSaving,
+  setSaveSuccess,
+  setSaveError,
+  updateTryoutSavedState,
+  setSavedTryouts,
+  setSavedTryoutsTotal,
+  setSavedTryoutsLoading,
+  setSavedTryoutsError,
   resetTryoutState,
 } = tryoutSlice.actions;
 

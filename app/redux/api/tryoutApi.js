@@ -11,6 +11,15 @@ export const tryoutApi = baseApi.injectEndpoints({
       providesTags: ["Tryout"],
     }),
 
+   
+    getMyTryouts: builder.query({
+      query: () => ({
+        url: "/api/tryout/my",
+        method: "GET",
+      }),
+      providesTags: ["Tryout"],
+    }),
+
     // Search tryouts
     searchTryouts: builder.query({
       query: ({ q = "", sport = "" }) => ({
@@ -93,6 +102,7 @@ getLatestTryout: builder.query({
       invalidatesTags: (result, error, { id }) => [
         { type: "Tryout", id },
         "TryoutApplicants",
+        "Notification",
       ],
     }),
 
@@ -130,7 +140,29 @@ getLatestTryout: builder.query({
       invalidatesTags: (result, error, { id }) => [
         { type: "TryoutApplicants", id },
         "TryoutApplicants",
+        "Notification",
       ],
+    }),
+
+    // Toggle save/unsave a tryout — mirrors post save behaviour
+    toggleSaveTryout: builder.mutation({
+      query: (id) => ({
+        url: `/api/tryout/${id}/save`,
+        method: "POST",
+      }),
+      invalidatesTags: (result, error, id) => [
+        { type: "Tryout", id },
+        "Tryout",
+      ],
+    }),
+
+    // Get all tryouts saved by the current user
+    getSavedTryouts: builder.query({
+      query: ({ page = 1, limit = 20 } = {}) => ({
+        url: `/api/tryout/saved?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+      providesTags: ["Tryout"],
     }),
   }),
 
@@ -139,6 +171,7 @@ getLatestTryout: builder.query({
 
 export const {
   useGetTryoutsQuery,
+  useGetMyTryoutsQuery,
   useSearchTryoutsQuery,
   useGetTryoutByIdQuery,
   useGetLatestTryoutQuery,
@@ -149,4 +182,6 @@ export const {
   useWithdrawApplicationMutation,
   useGetTryoutApplicantsQuery,
   useUpdateApplicationStatusMutation,
+  useToggleSaveTryoutMutation,
+  useGetSavedTryoutsQuery,
 } = tryoutApi;

@@ -19,13 +19,22 @@ export const baseApi = createApi({
     },
   }),
 
-  tagTypes: ["Feed",
+  tagTypes: [
+    "Feed",
     "Comments",
     "Profile",
-    "Tryout","TryoutApplicants",
+    "Tryout",
+    "TryoutApplicants",
     "Story",
     "Connection",
-    "Notification",],
+    "Notification",
+    "NotificationSettings",
+    "Recommendations",
+    "Onboarding",
+    "Settings",
+    "Sessions",
+    "SavedPosts", 
+  ],
 
   endpoints: () => ({}),
 });

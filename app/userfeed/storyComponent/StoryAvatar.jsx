@@ -1,5 +1,8 @@
+"use client";
+import { useState } from "react";
 import Image from "next/image";
 import { AiOutlinePlus } from "react-icons/ai";
+import { User } from "lucide-react";
 
 export default function StoryAvatar({
   onClick,
@@ -9,6 +12,8 @@ export default function StoryAvatar({
   hasUnseenStories,
   owner,
 }) {
+  const [hasError, setHasError] = useState(false);
+
   return (
     <div className="flex shrink-0 p-2">
       <button
@@ -21,14 +26,19 @@ export default function StoryAvatar({
             : "bg-gray-300"
         }`}
       >
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border">
-          <Image
-            src={avatar || "/default-avatar.png"}
-            alt="Profile"
-            width={48}
-            height={48}
-            className="object-cover w-full h-full"
-          />
+        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 border flex items-center justify-center">
+          {avatar && !hasError ? (
+            <Image
+              src={avatar}
+              alt="Profile"
+              width={48}
+              height={48}
+              className="object-cover w-full h-full"
+              onError={() => setHasError(true)}
+            />
+          ) : (
+            <User className="w-6 h-6 text-gray-400" />
+          )}
         </div>
 
         {owner && (

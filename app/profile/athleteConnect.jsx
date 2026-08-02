@@ -1,28 +1,57 @@
 "use client";
-import { useState, useEffect } from "react";
-import { getProfiles } from "../userfeed/lib/profile";
+import { User } from "lucide-react";
 import AthleteProfile from "../components/AthleteProfile";
+import { useGetRecommendedAthletesQuery } from "../redux/api/recommendationApi";
 
 export default function Page() {
-     const [profile, setProfile] = useState([]);
-        
-          useEffect(() => {
-            async function fetchData() {
-              const data = await getProfiles();
-              setProfile(data);
-            }
-            fetchData();
-          }, []);
+  const { data, isLoading, isError } = useGetRecommendedAthletesQuery();
 
-           const athleteProfiles = profile.filter(
-    (profile) => profile.role === "Athlete"
+  const recommendations = (data?.data?.recommendations || []).filter(
+    (rec) => rec?.target?.name
   );
+
+  if (isLoading) {
+    return (
+      <div className="">
+        <div className="flex flex-col items-center gap-4 py-16">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
+          <p className="text-sm text-gray-500">Finding athletes for you...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="">
+        <p className="text-center py-16 text-sm text-red-500">
+          Failed to load athlete suggestions.
+        </p>
+      </div>
+    );
+  }
+
+  if (!recommendations.length) {
+    return (
+      <div className="">
+        <div className="flex flex-col items-center justify-center gap-2 py-16 text-center">
+          <User className="text-gray-300" size={36} />
+          <p className="text-base font-semibold text-gray-900">
+            No suggestions yet
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
-      {athleteProfiles.map((profile) => (
-        <AthleteProfile key={profile.id} profile={profile} />
+      {recommendations.map((rec) => (
+        <AthleteProfile
+          key={rec.target._id || rec.target.userId}
+          profile={rec.target}
+        />
       ))}
     </div>
-    )
+  );
 }

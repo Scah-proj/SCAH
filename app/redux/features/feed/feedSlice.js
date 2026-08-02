@@ -15,6 +15,11 @@ const initialState = {
   loadingMyPosts: false,
   myPostsError: null,
 
+  // Saved Posts (ADDED)
+  savedPosts: [],
+  loadingSavedPosts: false,
+  savedPostsError: null,
+
   // Like Post
   likingPost: false,
   likePostSuccess: false,
@@ -81,6 +86,22 @@ const feedSlice = createSlice({
     },
 
     // ======================
+    // Saved Posts (ADDED)
+    // ======================
+
+    setSavedPosts: (state, action) => {
+      state.savedPosts = action.payload;
+    },
+
+    setLoadingSavedPosts: (state, action) => {
+      state.loadingSavedPosts = action.payload;
+    },
+
+    setSavedPostsError: (state, action) => {
+      state.savedPostsError = action.payload;
+    },
+
+    // ======================
     // Like Post
     // ======================
 
@@ -126,6 +147,10 @@ const feedSlice = createSlice({
       state.loadingMyPosts = false;
       state.myPostsError = null;
 
+      state.savedPosts = [];
+      state.loadingSavedPosts = false;
+      state.savedPostsError = null;
+
       state.likingPost = false;
       state.likePostSuccess = false;
       state.likePostError = null;
@@ -149,6 +174,9 @@ export const {
   setMyPosts,
   setLoadingMyPosts,
   setMyPostsError,
+  setSavedPosts,
+  setLoadingSavedPosts,
+  setSavedPostsError,
   setLikingPost,
   setLikePostSuccess,
   setLikePostError,

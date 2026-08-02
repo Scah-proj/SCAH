@@ -11,6 +11,15 @@ export const connectionApi = baseApi.injectEndpoints({
       invalidatesTags: ["Connection", "Notification"],
     }),
 
+    // Unfollow User
+    unfollowUser: builder.mutation({
+      query: (userId) => ({
+        url: `/api/connections/${userId}/unfollow`,
+        method: "DELETE", // Changed to DELETE to match standard REST conventions
+      }),
+      invalidatesTags: ["Connection", "Notification"],
+    }),
+
     // Get Connection Status
     getConnectionStatus: builder.query({
       query: (userId) => ({
@@ -42,7 +51,16 @@ export const connectionApi = baseApi.injectEndpoints({
       providesTags: ["Connection"],
     }),
 
-    // Get Mutual Followers
+    // Get My Mutuals (Users who follow me and I follow back)
+    getMutuals: builder.query({
+      query: () => ({
+        url: "/api/connections/mutuals",
+        method: "GET",
+      }),
+      providesTags: ["Connection"],
+    }),
+
+    // Get Mutual Followers with another specific user
     getMutualFollowers: builder.query({
       query: (userId) => ({
         url: `/api/connections/${userId}/mutual`,
@@ -110,16 +128,55 @@ export const connectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Notification"],
     }),
+    getNotificationSettings: builder.query({
+      query: () => ({
+        url: "/api/connections/notifications/settings",
+        method: "GET",
+      }),
+      providesTags: ["NotificationSettings"],
+    }),
+ 
+    // Update Notification Settings (bulk/general update)
+    updateNotificationSettings: builder.mutation({
+      query: (settings) => ({
+        url: "/api/connections/notifications/settings",
+        method: "PUT",
+        body: settings,
+      }),
+      invalidatesTags: ["NotificationSettings"],
+    }),
+ 
+    // Toggle Pause All Notifications
+    togglePauseAllNotifications: builder.mutation({
+      query: (pauseAll) => ({
+        url: "/api/connections/notifications/settings/pause-all",
+        method: "PATCH",
+        body: { pauseAll },
+      }),
+      invalidatesTags: ["NotificationSettings"],
+    }),
+ 
+    // Toggle Sleep Mode Notifications
+    toggleSleepModeNotifications: builder.mutation({
+      query: (sleepMode) => ({
+        url: "/api/connections/notifications/settings/sleep-mode",
+        method: "PATCH",
+        body: { sleepMode },
+      }),
+      invalidatesTags: ["NotificationSettings"],
+    }),
   }),
 
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
   useFollowUserMutation,
+  useUnfollowUserMutation,
   useGetConnectionStatusQuery,
   useGetConnectionCountsQuery,
   useGetSuggestionsQuery,
+  useGetMutualsQuery,
   useGetMutualFollowersQuery,
   useGetFollowersQuery,
   useGetFollowingQuery,
@@ -127,4 +184,8 @@ export const {
   useGetUnreadNotificationCountQuery,
   useReadAllNotificationsMutation,
   useDeleteAllNotificationsMutation,
+   useGetNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation,
+  useTogglePauseAllNotificationsMutation,
+  useToggleSleepModeNotificationsMutation,
 } = connectionApi;

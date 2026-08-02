@@ -1,12 +1,27 @@
 "use client";
 
-import { Calendar, MapPin } from "lucide-react";
+import { useState } from "react";
+import { useDispatch } from "react-redux";
+import { Calendar, MapPin, Users, Bookmark } from "lucide-react";
 import { BiFootball, BiBasketball } from "react-icons/bi";
 import { CiFootball } from "react-icons/ci";
 import Image from "next/image";
 import Link from "next/link";
 
+import { useToggleSaveTryoutMutation } from "../redux/api/tryoutApi"; // Adjust path if needed
+import {
+  setSaving,
+  setSaveSuccess,
+  setSaveError,
+  updateTryoutSavedState,
+} from "../redux/features/tryout/tryoutSlice"; 
+
 export default function Trials({ trial }) {
+  const dispatch = useDispatch();
+  const [toggleSaveTryout] = useToggleSaveTryoutMutation();
+  const [saved, setSaved] = useState(!!trial?.isSaved);
+  const [isSaving, setIsSaving] = useState(false);
+
   const sportConfig = {
     football: {
       bg: "bg-teal-800/80",
@@ -67,56 +82,121 @@ export default function Trials({ trial }) {
     ? `${scout.firstName || ""} ${scout.lastName || ""}`.trim()
     : "Unknown";
 
-  const deadlineInfo = getDeadlineStatus(trial.deadline);
+  const deadlineInfo = getDeadlineStatus(trial?.deadline);
+
+  const handleSaveClick = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isSaving || !trial?._id) return;
+
+    const previousSaved = saved;
+    setSaved((prev) => !prev); // optimistic update
+    setIsSaving(true);
+
+    dispatch(setSaving(true));
+    dispatch(setSaveError(null));
+    dispatch(setSaveSuccess(false));
+
+    try {
+      const res = await toggleSaveTryout(trial._id).unwrap();
+      const nextSaved = res?.data?.saved ?? !previousSaved;
+      const nextCount = res?.data?.count;
+
+      setSaved(nextSaved);
+
+      dispatch(setSaveSuccess(true));
+      dispatch(
+        updateTryoutSavedState({
+          tryoutId: trial._id,
+          saved: nextSaved,
+          count: nextCount,
+        })
+      );
+    } catch (err) {
+      setSaved(previousSaved); // rollback on failure
+      console.error("Failed to toggle saved tryout:", err);
+
+      const message =
+        err?.data?.message ||
+        err?.data?.error ||
+        err?.message ||
+        "Failed to save tryout";
+      dispatch(setSaveError(message));
+    } finally {
+      setIsSaving(false);
+      dispatch(setSaving(false));
+    }
+  };
 
   return (
     <div className="mb-4">
-      <div className="bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm hover:shadow-md transition">
+      <div className="relative bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm hover:shadow-md transition">
+        {/* Bookmark */}
+        <button
+          onClick={handleSaveClick}
+          disabled={isSaving}
+          aria-label={saved ? "Remove from saved" : "Save tryout"}
+          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Bookmark
+            size={18}
+            className={`transition ${
+              saved
+                ? "fill-teal-600 text-teal-600"
+                : "text-gray-500 hover:text-gray-900"
+            }`}
+          />
+        </button>
+
         {/* Sport */}
         <div className="flex">
           <span
             className={`flex items-center justify-center gap-1 rounded-full text-xs font-semibold whitespace-nowrap transition px-2 py-1 text-white mb-2 ${sport.bg}`}
           >
             {sport.Icon && <sport.Icon size={14} />}
-            <span className="mx-1">{trial.sport}</span>
+            <span className="mx-1">{trial?.sport}</span>
           </span>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 border">
-              <Image
-                src={trial.badge || "/images/avatar.png"}
-                alt="Tryout"
-                width={34}
-                height={34}
-                className="object-cover"
-              />
+            <span className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border flex items-center justify-center shrink-0">
+              {trial?.badge ? (
+                <Image
+                  src={trial.badge}
+                  alt="Tryout"
+                  width={34}
+                  height={34}
+                  className="object-cover w-full h-full"
+                />
+              ) : (
+                <Users className="w-4 h-4 text-gray-500" />
+              )}
             </span>
 
             <div>
-              <p className="font-semibold text-gray-900 text-sm line-clamp-2">
-                {trial.title}
+              <p className="font-semibold text-gray-900 text-sm line-clamp-2 pr-6">
+                {trial?.title}
               </p>
             </div>
           </div>
 
           <p className="text-sm text-gray-500">
             <MapPin className="inline-block mr-1 mb-1 w-4 h-4 text-gray-400" />
-            {trial.venue}, {trial.city}
+            {trial?.venue}, {trial?.city}
           </p>
 
           <p
             className={`mt-2 px-3 py-2 rounded-md text-xs font-medium inline-block ${deadlineInfo.color}`}
           >
             {deadlineInfo.text} ·{" "}
-            {new Date(trial.deadline).toLocaleDateString()}
+            {trial?.deadline ? new Date(trial.deadline).toLocaleDateString() : ""}
           </p>
         </div>
 
         <div className="mt-4 flex justify-center">
           <Link
-            href={`/userfeed/tryout/application/${trial._id}`}
+            href={`/userfeed/tryout/application/${trial?._id}`}
             className="w-full max-w-sm bg-teal-600 text-white font-medium text-sm flex justify-center py-2.5 rounded-lg hover:bg-teal-700 transition focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             View Details
