@@ -7,7 +7,7 @@ export const storyApi = baseApi.injectEndpoints({
       query: (storyData) => {
         const formData = new FormData();
 
-        formData.append("media[type]", storyData.mediaType);
+        formData.append("mediaType", storyData.mediaType);
         formData.append("caption", storyData.caption);
 
         if (storyData.media) {
@@ -43,11 +43,38 @@ export const storyApi = baseApi.injectEndpoints({
       ],
     }),
 
+    // Get archived stories (Paginated). Cache-tagged per page so loading
+    // page 2 doesn't refetch page 1, but any story mutation (create/delete/
+    // archive) still invalidates the whole list via the bare "Story" tag.
+    getArchivedStories: builder.query({
+      query: (params) => ({
+        url: "/api/stories/archived",
+        method: "GET",
+        params: {
+          page: params?.page || 1,
+          limit: params?.limit || 20,
+        },
+      }),
+      providesTags: (result, error, params) => [
+        { type: "Story", id: `ARCHIVE-${params?.page || 1}` },
+        "Story",
+      ],
+    }),
+
     // View Story
     viewStory: builder.mutation({
       query: (storyId) => ({
         url: `/api/stories/${storyId}/view`,
         method: "POST",
+      }),
+      invalidatesTags: ["Story"],
+    }),
+
+    
+    archiveStory: builder.mutation({
+      query: (storyId) => ({
+        url: `/api/stories/${storyId}/archive`,
+        method: "PATCH",
       }),
       invalidatesTags: ["Story"],
     }),
@@ -62,13 +89,15 @@ export const storyApi = baseApi.injectEndpoints({
     }),
   }),
 
-  overrideExisting: false,
+  overrideExisting: true,
 });
 
 export const {
   useCreateStoryMutation,
   useGetFeedStoriesQuery,
   useGetUserStoriesQuery,
+  useGetArchivedStoriesQuery,
   useViewStoryMutation,
+  useArchiveStoryMutation,
   useDeleteStoryMutation,
 } = storyApi;

@@ -5,7 +5,8 @@ import Image from "next/image";
 import { MdArrowBack } from "react-icons/md";
 import { Switch } from "../../../../../components/ui/switch";
 import { Archive, ImageIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { useGetArchivedStoriesQuery } from "../../../../redux/api/storyApi";
 
 const archiveOptions = [
   {
@@ -22,49 +23,6 @@ const archiveOptions = [
   },
 ];
 
-// ── DEMO DATA ────────────────────────────────────────────────────────────
-// Placeholder only. Swap these two arrays for the real query response
-// once the archived-posts/archived-stories endpoint is wired in —
-// everything below expects the same { id, imageUrl, caption, archivedAt }
-// shape per item.
-const DEMO_ARCHIVED_POSTS = [
-  {
-    id: "demo-post-1",
-    imageUrl: "/wen.webp",
-    caption: "Match day highlights vs Riverside FC",
-    archivedAt: "2026-07-18T10:00:00Z",
-  },
-  {
-    id: "demo-post-2",
-    imageUrl: "/wen.webp",
-    caption: "Training camp recap",
-    archivedAt: "2026-06-02T10:00:00Z",
-  },
-  {
-    id: "demo-post-3",
-    imageUrl: "/wen.webp",
-    caption: null,
-    archivedAt: "2026-05-21T10:00:00Z",
-  },
-];
-
-const DEMO_ARCHIVED_STORIES = [
-  {
-    id: "demo-story-1",
-    imageUrl: "/wen.webp",
-    caption: null,
-    archivedAt: "2026-07-30T10:00:00Z",
-  },
-  {
-    id: "demo-story-2",
-    imageUrl: "/wen.webp",
-    caption: null,
-    archivedAt: "2026-07-15T10:00:00Z",
-  },
-];
-
-const archiveTabs = ["Posts", "Stories"];
-
 function formatArchivedDate(dateString) {
   if (!dateString) return "";
   return new Date(dateString).toLocaleDateString(undefined, {
@@ -74,6 +32,13 @@ function formatArchivedDate(dateString) {
   });
 }
 
+const extractArray = (...candidates) => {
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) return candidate;
+  }
+  return [];
+};
+
 const Page = () => {
   const [settings, setSettings] = useState({
     story: false,
@@ -82,16 +47,27 @@ const Page = () => {
     cameraroll: false,
   });
 
-  const [activeTab, setActiveTab] = useState("Posts");
+  // Fetch real archived stories via RTK Query
+  const {
+    data: storiesData,
+    isLoading,
+    isError,
+  } = useGetArchivedStoriesQuery();
 
-  // Swap these for real query state (isLoading/isError/data) once the
-  // endpoint exists — layout below already handles those cases.
-  const isLoading = false;
-  const isError = false;
-  const archivedPosts = DEMO_ARCHIVED_POSTS;
-  const archivedStories = DEMO_ARCHIVED_STORIES;
-
-  const activeItems = activeTab === "Posts" ? archivedPosts : archivedStories;
+  // Normalize array structures regardless of API envelope wrapper
+  const archivedStories = useMemo(() => {
+    const raw = extractArray(
+      storiesData?.data?.stories,
+      storiesData?.stories,
+      storiesData?.data
+    );
+    return raw.map((item, idx) => ({
+      id: item._id || item.id || `archived-story-${idx}`,
+      imageUrl: item?.media?.url || item?.imageUrl || item?.url || "",
+      caption: item?.caption || null,
+      archivedAt: item?.archivedAt || item?.createdAt || item?.updatedAt,
+    }));
+  }, [storiesData]);
 
   const handleToggle = (key, value) => {
     setSettings((prev) => ({
@@ -102,7 +78,6 @@ const Page = () => {
 
   return (
     <div className="max-w-3xl mx-auto px-4 md:px-6 py-12 space-y-10">
-
       {/* Header */}
       <div className="space-y-3">
         <Link
@@ -116,12 +91,10 @@ const Page = () => {
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
           Archiving and downloading
         </h1>
-    
       </div>
 
       {/* Settings */}
       <div className="bg-white border rounded-xl p-5 space-y-4 shadow-sm">
-
         {archiveOptions.map((setting) => (
           <div
             key={setting.key}
@@ -132,21 +105,18 @@ const Page = () => {
               <p className="text-sm font-medium text-gray-900">
                 {setting.label}
               </p>
-              <p className="text-xs text-gray-500">
-                {setting.desc}
-              </p>
+              {setting.desc && (
+                <p className="text-xs text-gray-500">{setting.desc}</p>
+              )}
             </div>
 
             {/* Switch */}
             <Switch
               checked={settings[setting.key]}
-              onCheckedChange={(value) =>
-                handleToggle(setting.key, value)
-              }
+              onCheckedChange={(value) => handleToggle(setting.key, value)}
             />
           </div>
         ))}
-
       </div>
 
       {/* Archived content */}
@@ -156,33 +126,16 @@ const Page = () => {
             <Archive className="text-teal-600" size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Archive</h2>
+            <h2 className="text-lg font-bold text-gray-900">Stories Archive</h2>
             <p className="text-sm text-gray-500">
-              Posts and stories you've archived are only visible to you.
+              Stories you've archived are only visible to you.
             </p>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-3">
-          {archiveTabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition ${
-                activeTab === tab
-                  ? "bg-teal-600 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
         {/* Loading */}
         {isLoading && (
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-3 gap-1 md:gap-2">
             {[...Array(6)].map((_, i) => (
               <div
                 key={i}
@@ -196,37 +149,43 @@ const Page = () => {
         {!isLoading && isError && (
           <div className="flex flex-col items-center justify-center py-16">
             <p className="text-red-500 text-sm font-medium">
-              Failed to load archived {activeTab.toLowerCase()}.
+              Failed to load archived stories.
             </p>
           </div>
         )}
 
         {/* Empty */}
-        {!isLoading && !isError && activeItems.length === 0 && (
+        {!isLoading && !isError && archivedStories.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 border border-dashed rounded-xl">
             <div className="w-16 h-16 rounded-full border-2 border-gray-300 flex items-center justify-center">
               <ImageIcon size={28} className="text-gray-400" />
             </div>
             <p className="mt-4 text-sm font-medium text-gray-500">
-              No archived {activeTab.toLowerCase()} yet.
+              No archived stories yet.
             </p>
           </div>
         )}
 
         {/* Grid */}
-        {!isLoading && !isError && activeItems.length > 0 && (
+        {!isLoading && !isError && archivedStories.length > 0 && (
           <div className="grid grid-cols-3 gap-1 md:gap-2">
-            {activeItems.map((item) => (
+            {archivedStories.map((item) => (
               <div
                 key={item.id}
                 className="relative aspect-square rounded-md overflow-hidden bg-gray-100 group cursor-pointer"
               >
-                <Image
-                  src={item.imageUrl}
-                  alt={item.caption || "Archived item"}
-                  fill
-                  className="object-cover"
-                />
+                {item.imageUrl ? (
+                  <Image
+                    src={item.imageUrl}
+                    alt={item.caption || "Archived story"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                    <ImageIcon size={24} />
+                  </div>
+                )}
 
                 {/* Hover overlay with archived date */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-end p-2 opacity-0 group-hover:opacity-100">

@@ -134,7 +134,7 @@ const Page = () => {
       </form>
 
       <div>
-        <Link href="/settings/account" className="text-sm text-teal-500 hover:underline">
+        <Link href="/settings/account/security/forgotPassword" className="text-sm text-teal-500 hover:underline">
           Forgotten your password?
         </Link>
       </div>
