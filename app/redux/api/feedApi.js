@@ -3,29 +3,34 @@ import { baseApi } from "../../redux/api/baseurl";
 export const feedApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     createPost: builder.mutation({
-      query: (postData) => {
+      query: (postData) =>
+      {
         const formData = new FormData();
 
         formData.append("caption", postData.caption);
         formData.append("type", postData.type);
         formData.append("sport", postData.sport);
 
-        if (postData.tags) {
+        if (postData.tags)
+        {
           formData.append("tags", postData.tags);
         }
 
-        if (postData.taggedUsers?.length) {
-          formData.append("taggedUsers", postData.taggedUsers.join(","));
+        if (postData.taggedUsers?.length)
+        {
+          formData.append("tagged_users", postData.taggedUsers.join(","));
         }
 
-        if (postData.location) {
+        if (postData.location)
+        {
           formData.append(
             "location",
             JSON.stringify(postData.location)
           );
         }
 
-        postData.media?.forEach((file) => {
+        postData.media?.forEach((file) =>
+        {
           formData.append("media", file);
         });
 
@@ -300,7 +305,7 @@ export const {
   useGetDeletedPostsQuery,
   useToggleRepostMutation,
   useGetRepostsQuery,
-  useGetMyRepostsQuery, 
+  useGetMyRepostsQuery,
   useArchivePostMutation,
   useGetArchivedPostsQuery,
   useGetRepliesQuery,

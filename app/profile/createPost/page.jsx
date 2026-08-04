@@ -8,7 +8,6 @@ import {
   Camera,
   Smile,
   CalendarClock,
-  ChevronDown,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -61,7 +60,7 @@ export default function CreatePost() {
   const videoRef = useRef(null);
   const cameraStreamRef = useRef(null);
 
-  const [type, setType] = useState("highlight");
+  const [type] = useState("highlight"); // no UI toggle anymore; backend still expects this field
   const [sport, setSport] = useState("Football");
   const [tags] = useState("");
   const [taggedUsers, setTaggedUsers] = useState([]);
@@ -70,9 +69,6 @@ export default function CreatePost() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const [privacy, setPrivacy] = useState("everyone");
-  const [showPrivacy, setShowPrivacy] = useState(false);
 
   const profilePicture =
     profile?.profilePicture ||
@@ -214,12 +210,6 @@ export default function CreatePost() {
     }
   };
 
-  const privacyOptions = {
-    everyone: "Everyone can reply to this post",
-    community: "Only community members can reply",
-    private: "Only you can see and reply",
-  };
-
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
 
@@ -283,30 +273,6 @@ export default function CreatePost() {
           Cancel
         </Link>
 
-        <div className="flex gap-2 mb-3">
-          <button
-            onClick={() => setType("highlight")}
-            className={`px-3 py-1 rounded-full text-sm ${
-              type === "highlight"
-                ? "bg-teal-600 text-white"
-                : "border"
-            }`}
-          >
-            Highlight
-          </button>
-
-          <button
-            onClick={() => setType("update")}
-            className={`px-3 py-1 rounded-full text-sm ${
-              type === "update"
-                ? "bg-teal-600 text-white"
-                : "border"
-            }`}
-          >
-            Update
-          </button>
-        </div>
-
         <button
           onClick={handlePost}
           disabled={loading || !canPost}
@@ -333,39 +299,6 @@ export default function CreatePost() {
         </div>
 
         <div className="flex-1">
-          {/* Privacy dropdown */}
-          <div className="relative inline-block mb-2">
-            <button
-              onClick={() => setShowPrivacy(!showPrivacy)}
-              className="flex items-center gap-1 text-sm border px-3 py-1 rounded-full"
-            >
-              {privacy.charAt(0).toUpperCase() + privacy.slice(1)}
-              <ChevronDown size={14} />
-            </button>
-
-            {showPrivacy && (
-              <div className="absolute z-10 mt-2 bg-white border rounded-lg shadow w-48">
-                {Object.keys(privacyOptions).map((key) => (
-                  <button
-                    key={key}
-                    onClick={() => {
-                      setPrivacy(key);
-                      setShowPrivacy(false);
-                    }}
-                    className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                  >
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Helper text */}
-          <p className="text-xs text-gray-500 mb-2">
-            {privacyOptions[privacy]}
-          </p>
-
           {/* Textarea */}
           <div className="relative">
             <textarea

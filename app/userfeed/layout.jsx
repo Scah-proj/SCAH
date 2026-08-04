@@ -5,22 +5,38 @@ import React, { useState } from "react";
 import Suggestions from "./feed/trialsAndSuggestions/page";
 import Link from "next/link";
 import Image from "next/image";
-import { BellPlus, MessageCircle } from "lucide-react";
+import { BellPlus } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { mobileroutes } from "./components/sidenav/navroutes";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { useGetMyProfileQuery } from "../redux/api/profileApi"; // adjust path if it doesn't resolve — match whatever depth Sidenav/CreatePost use for "redux/api/profileApi" from this file's actual location
 
 export default function FeedLayout({ children }) {
   const [nav, setNav] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
+  // Was: useUserStore((state) => state.user) — a Zustand store nothing in
+  // the app writes to. Login dispatches into the Redux authSlice
+  // (setCredentials), so we read from there instead, same as Sidenav.
   const user = useSelector((state) => state.auth.user);
 
+  // Redux's `user` is only whatever was in the login/register payload —
+  // it can be stale or missing a profile picture set later. Fetch the
+  // actual profile (same as Sidenav does) and prefer that.
+  const { data: profile } = useGetMyProfileQuery();
+
   const profileHref = user?._id || user?.id ? `/profile/${user._id || user.id}` : "/profile";
-  const avatarSrc = user?.profilePicture || user?.avatar || "/wen.webp";
+  const avatarSrc =
+    profile?.profilePicture ||
+    profile?.picture ||
+    profile?.profile?.profilePicture ||
+    profile?.profile?.media?.profilePicture ||
+    user?.profilePicture ||
+    user?.avatar ||
+    "/wen.webp";
 
   const handleAddPost = () => {
     router.push("/profile/createPost");
@@ -54,9 +70,8 @@ export default function FeedLayout({ children }) {
         </Link>
 
         <div className="flex items-center gap-4">
-          <BellPlus size={24} className="text-gray-500" />
-          <Link href="/userfeed/chats">
-            <MessageCircle size={24} className="text-gray-500" />
+          <Link href="/userfeed/notifications" aria-label="Notifications">
+            <BellPlus size={24} className="text-gray-500 hover:text-teal-600 transition" />
           </Link>
         </div>
       </div>

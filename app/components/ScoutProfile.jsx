@@ -44,17 +44,31 @@ export default function ScoutProfile({ profile }) {
     profile?.sport ||
     "User";
 
+  // IMPORTANT: `profile._id` (and `user._id`, since `user` falls back to
+  // `profile` itself when there's no nested user object) is the Athlete/
+  // Scout PROFILE document's own id — not the account id that /profile/:id
+  // routes expect. The recommendations payload makes this concrete:
+  // target._id is the Scout doc id, target.userId is the actual User id.
+  // So the explicit userId field (string, or a populated object with its
+  // own _id/id) must be checked BEFORE falling back to _id/id, otherwise
+  // this always routes to the wrong (profile-document) id whenever userId
+  // is present as a plain string, since _id/id resolve first and are
+  // always truthy on a profile document.
+  const rawUserId = profile?.userId ?? user?.userId;
+
   const userId =
+    (typeof rawUserId === "string" && rawUserId) ||
+    rawUserId?._id ||
+    rawUserId?.id ||
+    // Fallbacks below only apply when there's no userId field at all —
+    // i.e. shapes where the object passed in already IS the user/account
+    // itself, not a separate profile document referencing one.
     user?._id ||
     user?.id ||
     user?.user_id ||
-    (typeof user?.userId === "string" ? user.userId : undefined) ||
     profile?._id ||
     profile?.id ||
-    profile?.user_id ||
-    (typeof profile?.userId === "string" ? profile.userId : undefined) ||
-    profile?.userId?._id ||
-    profile?.userId?.id;
+    profile?.user_id;
 
   const handleViewProfile = () => {
     if (userId) {

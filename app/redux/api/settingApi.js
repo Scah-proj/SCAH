@@ -74,10 +74,13 @@ export const settingsApi = baseApi.injectEndpoints({
       providesTags: ["Settings"],
     }),
 
-    // PATCH /api/settings/account/privacy — accepts any subset of fields
+    // PATCH /api/settings/privacy — accepts any subset of fields
+    // (was /api/settings/account/privacy — that route still works per your
+    // routes file, but it's explicitly marked "(legacy)" there, so new code
+    // should hit the current path instead)
     updatePrivacySettings: builder.mutation({
       query: (data) => ({
-        url: "/api/settings/account/privacy",
+        url: "/api/settings/privacy",
         method: "PATCH",
         body: data,
       }),
@@ -161,7 +164,7 @@ export const settingsApi = baseApi.injectEndpoints({
     }),
   }),
 
-  overrideExisting: false,
+  overrideExisting: process.env.NODE_ENV === "development",
 });
 
 export const {

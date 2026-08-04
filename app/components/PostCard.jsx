@@ -46,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
 import { timeAgo } from "../../components/timeAgo";
+import toast from "react-hot-toast";
 import { 
   useToggleLikePostMutation, 
   useToggleSavePostMutation,
@@ -380,23 +381,54 @@ export default function PostCard({ post }) {
     }
   };
 
-  // Delete Post Handler
-  const handleDeletePost = async (e) => {
-    if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+  // Delete Post Handler — a native window.confirm() blocks the whole page
+  // and looks jarring next to the rest of the UI, so the confirmation step
+  // is a toast with inline action buttons instead. react-hot-toast doesn't
+  // have sonner's built-in action/cancel options, so the confirmation is
+  // rendered as custom JSX inside the toast, dismissed via toast.dismiss.
+  const handleDeletePost = (e) => {
+    if (e && typeof e.stopPropagation === "function") e.stopPropagation();
     if (!postId) return;
 
-    if (window.confirm("Are you sure you want to delete this post?")) {
-      dispatch(setDeletingPost(true));
-      try {
-        await deletePost(postId).unwrap();
-        dispatch(setDeletePostSuccess(true));
-      } catch (err) {
-        console.error("Failed to delete post:", err);
-        dispatch(setDeletePostError(err?.data?.message || err?.message || "Failed to delete post"));
-      } finally {
-        dispatch(setDeletingPost(false));
-      }
-    }
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <p className="text-sm font-medium text-gray-900">Delete this post?</p>
+          <p className="text-xs text-gray-500">This action cannot be undone.</p>
+          <div className="flex justify-end gap-2 mt-1">
+            <button
+              onClick={() => toast.dismiss(t.id)}
+              className="text-xs px-3 py-1 rounded-full border text-gray-600 hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t.id);
+                dispatch(setDeletingPost(true));
+                try {
+                  await deletePost(postId).unwrap();
+                  dispatch(setDeletePostSuccess(true));
+                  toast.success("Post deleted");
+                } catch (err) {
+                  const message =
+                    err?.data?.message || err?.message || "Failed to delete post";
+                  console.error("Failed to delete post:", err);
+                  dispatch(setDeletePostError(message));
+                  toast.error(message);
+                } finally {
+                  dispatch(setDeletingPost(false));
+                }
+              }}
+              className="text-xs px-3 py-1 rounded-full bg-red-600 text-white hover:bg-red-700"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: Infinity }
+    );
   };
 
   const handleDownloadImage = async (e) => {
@@ -594,7 +626,18 @@ export default function PostCard({ post }) {
                   <MoreHorizontalIcon />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-40" align="end">
+              {/* stopPropagation here, not just on the trigger: Radix
+                  portals this content elsewhere in the DOM, but React still
+                  bubbles the synthetic click event up the *component* tree
+                  (this element is still a JSX child of the card's outer
+                  onClick={handleOpenPost} div). Without this, clicking any
+                  item inside the menu — Save, Copy link, Delete, etc. — was
+                  also triggering navigation to the post page. */}
+              <DropdownMenuContent
+                className="w-40"
+                align="end"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <DropdownMenuGroup>
                   <DropdownMenuItem onSelect={handleSaveClick}>
                     <Bookmark/>
@@ -624,12 +667,24 @@ export default function PostCard({ post }) {
 
                   {/* SHOW DELETE ONLY FOR POST OWNER */}
                   {isOwner ? (
-                    <DropdownMenuItem onSelect={handleDeletePost} className="text-red-600">
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e?.stopPropagation?.();
+                        handleDeletePost(e);
+                      }}
+                      className="text-red-600"
+                    >
                       <Trash2 color="red" />
                       Delete post
                     </DropdownMenuItem>
                   ) : (
-                    <DropdownMenuItem onSelect={() => setShowReportDialog(true)} className="text-red-600">
+                    <DropdownMenuItem
+                      onSelect={(e) => {
+                        e?.stopPropagation?.();
+                        setShowReportDialog(true);
+                      }}
+                      className="text-red-600"
+                    >
                       <MessageSquareWarning color="red"/>
                       Report post
                     </DropdownMenuItem>
@@ -640,7 +695,10 @@ export default function PostCard({ post }) {
           )}
 
           <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent
+              className="sm:max-w-[425px]"
+              onClick={(e) => e.stopPropagation()}
+            >
               <DialogHeader>
                 <DialogTitle>Why are you reporting this post?</DialogTitle>
                 <DialogDescription>
@@ -700,7 +758,10 @@ export default function PostCard({ post }) {
           </Dialog>
 
           <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent
+              className="sm:max-w-[425px]"
+              onClick={(e) => e.stopPropagation()}
+            >
               <DialogHeader>
                 <DialogTitle>Thanks for your feedback</DialogTitle>
                 <DialogDescription>

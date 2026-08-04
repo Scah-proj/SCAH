@@ -133,11 +133,7 @@ const Page = () => {
         </Button>
       </form>
 
-      <div>
-        <Link href="/settings/account/security/forgotPassword" className="text-sm text-teal-500 hover:underline">
-          Forgotten your password?
-        </Link>
-      </div>
+     
     </div>
   );
 };
