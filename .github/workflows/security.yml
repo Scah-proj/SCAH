@@ -16,10 +16,10 @@ permissions:
 
 jobs:
   semgrep:
-    uses: SCAH-club/scah-security/.github/workflows/semgrep.yml@d9c73034577ef0a3078818a6220cfbeb78202e5b
+    uses: SCAH-club/scah-security/.github/workflows/semgrep.yml@main
 
   developer-security-report:
-    uses: SCAH-club/scah-security/.github/workflows/developer-security-report.yml@d9c73034577ef0a3078818a6220cfbeb78202e5b
+    uses: SCAH-club/scah-security/.github/workflows/developer-security-report.yml@main
     with:
       node-version: "20"
       working-directory: "."
