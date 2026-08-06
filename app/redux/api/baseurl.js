@@ -1,5 +1,10 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logout } from "../features/auth/authSlice"; // adjust path if your authSlice lives elsewhere
+import {
+  isNetworkAvailable,
+  showOfflineToast,
+  initNetworkListeners,
+} from "./networkGuard";
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
@@ -35,6 +40,21 @@ const isPublicAuthRequest = (args) => {
 };
 
 const baseQueryWithAuthHandling = async (args, api, extraOptions) => {
+  // Attach online/offline listeners once (idempotent).
+  initNetworkListeners();
+
+  // If the device reports being offline, short-circuit the request with a
+  // clear error + toast instead of letting the fetch fail/hang silently.
+  if (!isNetworkAvailable()) {
+    showOfflineToast();
+    return {
+      error: {
+        status: "FETCH_ERROR",
+        error: "You're offline. Check your internet connection.",
+      },
+    };
+  }
+
   const result = await rawBaseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401 && !isPublicAuthRequest(args)) {

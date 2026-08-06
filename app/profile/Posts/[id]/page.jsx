@@ -27,13 +27,18 @@ export default function SinglePost() {
   // Check if the query returned a 401 Unauthorized status
   const isUnauthorized = isError && error?.status === 401;
 
-  useEffect(() => {
-   
-    if (!isUnauthorized || hasRedirected || hasToken) return;
+useEffect(() => {
+    if (hasRedirected) return;
 
-    setHasRedirected(true);
-    const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`;
-    router.replace(loginUrl);
+    // Redirect to login when the visiting user is NOT authenticated
+    // (no token) OR when the API returns 401 (expired/invalid token).
+    // The redirectTo param makes the login page bounce back to this
+    // post after the user signs in.
+    if (!hasToken || isUnauthorized) {
+      setHasRedirected(true);
+      const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`;
+      router.replace(loginUrl);
+    }
   }, [hasRedirected, hasToken, isUnauthorized, pathname, router]);
 
   return (

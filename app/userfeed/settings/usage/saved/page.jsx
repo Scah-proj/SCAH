@@ -36,9 +36,7 @@ export default function SavedPage() {
   const posts = postsData?.data?.posts || [];
   const tryouts = tryoutsData?.data?.tryouts || [];
 
-  // "Posts" here means saved feed posts that AREN'T themselves tagged as
-  // tryout-type posts — real Tryout documents come from a separate
-  // collection/endpoint entirely and are handled below.
+  // "Posts" here means saved feed posts that AREN'T tryout-type posts
   const filteredPosts = posts.filter((post) => post.type !== "tryout");
 
   const showTryouts = active === "Tryouts";
@@ -50,38 +48,38 @@ export default function SavedPage() {
   const totalCount = showPosts ? filteredPosts.length : tryouts.length;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 md:px-6 py-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
       <Link
         href="/userfeed/settings"
-        className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition"
+        className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition"
       >
-        <MdArrowBack size={20} />
+        <MdArrowBack size={18} />
         <span>Back to Settings</span>
       </Link>
 
-      <div className="mt-8 mb-8">
+      <div className="mt-6 sm:mt-8 mb-6 sm:mb-8">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-teal-50 flex items-center justify-center">
-            <Bookmark className="text-teal-600" size={24} />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-teal-50 flex items-center justify-center shrink-0">
+            <Bookmark className="text-teal-600" size={20} />
           </div>
 
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
               Saved
             </h1>
-            <p className="text-gray-500 mt-1">
+            <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
               Your saved posts and tryouts.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="flex gap-3 overflow-x-auto no-scrollbar pb-6">
+      <div className="flex gap-2 sm:gap-3 overflow-x-auto no-scrollbar pb-4 sm:pb-6">
         {filters.map((filter) => (
           <button
             key={filter}
             onClick={() => setActive(filter)}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
+            className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium transition whitespace-nowrap ${
               active === filter
                 ? "bg-teal-600 text-white"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -92,36 +90,45 @@ export default function SavedPage() {
         ))}
       </div>
 
+      {/* Responsive Loading Skeleton */}
       {isLoading && (
-        <div className="grid grid-cols-3 gap-1">
-          {[...Array(12)].map((_, i) => (
+        <div
+          className={`grid ${
+            showPosts
+              ? "grid-cols-3 gap-1 sm:gap-2"
+              : "grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4"
+          }`}
+        >
+          {[...Array(showPosts ? 9 : 4)].map((_, i) => (
             <div
               key={i}
-              className="aspect-square animate-pulse bg-gray-200 rounded-md"
+              className={`${
+                showPosts ? "aspect-square" : "h-56 sm:h-64"
+              } animate-pulse bg-gray-200 rounded-lg`}
             />
           ))}
         </div>
       )}
 
       {!isLoading && isError && (
-        <div className="flex flex-col items-center justify-center py-24">
-          <p className="text-red-500 font-medium">
+        <div className="flex flex-col items-center justify-center py-16 sm:py-24">
+          <p className="text-red-500 font-medium text-sm sm:text-base">
             Failed to load saved items.
           </p>
         </div>
       )}
 
       {!isLoading && !isError && totalCount === 0 && (
-        <div className="flex flex-col items-center justify-center py-24">
-          <div className="w-20 h-20 rounded-full border-2 border-gray-300 flex items-center justify-center">
-            <ImageIcon size={36} />
+        <div className="flex flex-col items-center justify-center py-16 sm:py-24">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border-2 border-gray-300 flex items-center justify-center">
+            <ImageIcon size={30} className="text-gray-400" />
           </div>
 
-          <h2 className="mt-6 text-2xl font-bold">
+          <h2 className="mt-4 sm:mt-6 text-xl sm:text-2xl font-bold text-gray-900">
             No Saved Items
           </h2>
 
-          <p className="mt-2 text-gray-500 text-center max-w-sm">
+          <p className="mt-2 text-xs sm:text-sm text-gray-500 text-center max-w-xs sm:max-w-sm">
             {showPosts
               ? "Posts you save will appear here."
               : "Tryouts you save will appear here."}
@@ -131,26 +138,22 @@ export default function SavedPage() {
 
       {!isLoading && !isError && totalCount > 0 && (
         <>
-          <div className="mb-5 text-sm text-gray-500">
-            {totalCount} saved item
-            {totalCount !== 1 ? "s" : ""}
+          <div className="mb-4 sm:mb-5 text-xs sm:text-sm text-gray-500">
+            {totalCount} saved item{totalCount !== 1 ? "s" : ""}
           </div>
 
-          {/* Saved posts — square thumbnail grid */}
+          {/* Posts — Always 3 Columns */}
           {showPosts && (
-            <div className="grid grid-cols-3 gap-1 md:gap-2">
+            <div className="grid grid-cols-3 gap-1 sm:gap-2">
               {filteredPosts.map((post) => (
-                <PostGrid
-                  key={post._id || post.id}
-                  post={post}
-                />
+                <PostGrid key={post._id || post.id} post={post} />
               ))}
             </div>
           )}
 
-          {/* Saved tryouts — full-width stacked cards, matching Trials' own layout */}
+          {/* Tryouts — 1 Column on Mobile, 2 Columns on Tablet/Desktop */}
           {showTryouts && (
-            <div className="max-w-2xl mx-auto md:mx-0">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {tryouts.map((tryout) => (
                 <Trials
                   key={tryout._id || tryout.id}

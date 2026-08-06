@@ -31,7 +31,7 @@ function AllPostsContent({ params }) {
     { skip: !isOwnProfile }
   );
 
-const { data: userPostsData, isLoading: isLoadingUserPosts } = useGetProfileFeedQuery(
+  const { data: userPostsData, isLoading: isLoadingUserPosts } = useGetProfileFeedQuery(
     targetUserId,
     { skip: isOwnProfile || !targetUserId }
   );
@@ -68,62 +68,85 @@ const { data: userPostsData, isLoading: isLoadingUserPosts } = useGetProfileFeed
     return 0;
   };
 
-  // 5. Transform raw post object into PostCard compatible structure
-  const formattedPosts = posts.map((post) => {
-    const authorObj = post.author || post.user || {};
-
-    const mediaItem = post.media?.[0];
-    const resolvedImage =
-      typeof mediaItem === "string"
-        ? mediaItem
-        : mediaItem?.url || post.mediaUrl || post.image || null;
-
-    return {
-      ...post,
-      id: post._id || post.id,
-
-      author:
-        authorObj.name ||
-        `${authorObj.firstName || ""} ${authorObj.lastName || ""}`.trim() ||
-        "Unknown",
-
-      authorAvatar:
-        authorObj.picture ||
-        authorObj.avatar ||
-        authorObj.profilePicture ||
-        "/default-avatar.png",
-
-      title: post.caption || post.content || post.text || "",
-
-      image: resolvedImage,
-
-      hashtags: Array.isArray(post.tags) ? post.tags : [],
-
-      likes: getCount(post.likesCount || post.likes),
-
-      comments: getCount(post.commentsCount || post.comments),
-
-      saves: getCount(post.savesCount || post.saves),
-
-      shares: getCount(post.sharesCount || post.shares),
-
-      status: post.isActive ? "Active" : "Inactive",
-
-      createdAt: post.createdAt || post.created_at,
-
-      position: post.position || "",
-
-      sport: post.sport || "",
-    };
-  });
-
-const backLink = isOwnProfile ? "/profile" : `/profile/${targetUserId}`;
-
-  // Resolve the display name for the header (own name or target user's name)
+  // Fallback author info (own profile) so own posts don't show "Unknown"
   const myName =
     myProfile?.name ||
     `${myProfile?.firstName || ""} ${myProfile?.lastName || ""}`.trim() ||
     "";
+  const myPicture =
+    myProfile?.profilePicture ||
+    myProfile?.picture ||
+    myProfile?.avatar ||
+    null;
+
+  // Helper to detect soft-deleted posts so they don't appear in the list
+  const isDeletedPost = (post) =>
+    post.is_active === false ||
+    post.isDeleted === true ||
+    post.deleted === true ||
+    post.is_deleted === true;
+
+  // 5. Transform raw post object into PostCard compatible structure
+  const formattedPosts = posts
+    .filter((post) => !isDeletedPost(post))
+    .map((post) => {
+      const authorObj = post.author || post.user || {};
+
+      // For the user's own profile, the "my posts" endpoint may not
+      // populate the author object, so fall back to the logged-in user.
+      const fallbackAuthorName =
+        isOwnProfile && myName ? myName : "Unknown";
+      const fallbackAuthorAvatar =
+        isOwnProfile && myPicture ? myPicture : null;
+
+      const mediaItem = post.media?.[0];
+      const resolvedImage =
+        typeof mediaItem === "string"
+          ? mediaItem
+          : mediaItem?.url || post.mediaUrl || post.image || null;
+
+      return {
+        ...post,
+        id: post._id || post.id,
+
+        author:
+          authorObj.name ||
+          `${authorObj.firstName || ""} ${authorObj.lastName || ""}`.trim() ||
+          fallbackAuthorName,
+
+        authorAvatar:
+          authorObj.picture ||
+          authorObj.avatar ||
+          authorObj.profilePicture ||
+          fallbackAuthorAvatar,
+
+        title: post.caption || post.content || post.text || "",
+
+        image: resolvedImage,
+
+        hashtags: Array.isArray(post.tags) ? post.tags : [],
+
+        likes: getCount(post.likesCount || post.likes),
+
+        comments: getCount(post.commentsCount || post.comments),
+
+        saves: getCount(post.savesCount || post.saves),
+
+        shares: getCount(post.sharesCount || post.shares),
+
+        status: post.isActive ? "Active" : "Inactive",
+
+        createdAt: post.createdAt || post.created_at,
+
+        position: post.position || "",
+
+        sport: post.sport || "",
+      };
+    });
+
+  const backLink = isOwnProfile ? "/profile" : `/profile/${targetUserId}`;
+
+  // Resolve the display name for the header (own name or target user's name)
   const headerName = isOwnProfile ? myName : targetName;
   const headerTitle = headerName || (isOwnProfile ? "My Posts" : "User Posts");
 
@@ -137,7 +160,7 @@ const backLink = isOwnProfile ? "/profile" : `/profile/${targetUserId}`;
           >
             <MdArrowBack size={24} />
           </Link>
-<h1 className="text-xl font-bold text-gray-900">
+          <h1 className="text-xl font-bold text-gray-900">
             {headerTitle}
           </h1>
         </div>
@@ -162,7 +185,7 @@ const backLink = isOwnProfile ? "/profile" : `/profile/${targetUserId}`;
         >
           <MdArrowBack size={24} />
         </Link>
-<div>
+        <div>
           <h1 className="text-xl font-bold text-gray-900">
             {headerTitle}
           </h1>
@@ -209,3 +232,4 @@ export default function AllPostsPage({ params }) {
     </Suspense>
   );
 }
+
