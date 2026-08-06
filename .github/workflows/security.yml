@@ -21,7 +21,7 @@ jobs:
   developer-security-report:
     uses: SCAH-club/scah-security/.github/workflows/developer-security-report.yml@main
     with:
-      node-version: "20"
+      node-version: "22"
       working-directory: "."
     permissions:
       contents: read
