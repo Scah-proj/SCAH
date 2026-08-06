@@ -104,18 +104,14 @@ export default function Profile({
         following={following}
       />
 
-      <div className="mx-4 flex justify-center items-center">
+<div className="mx-4 flex justify-center items-center">
         <div>
           {/* Gallery Posts & Always-Visible View All Posts Button */}
           <div className="space-y-3 my-4">
             <ProfileGallery posts={posts} isLoading={isLoadingPosts} />
             <div className="flex justify-center">
               <Link
-                href={
-                  isOwnProfile
-                    ? "/userfeed"
-                    : `/profile/profile/${targetUserId}/allPosts`
-                }
+                href={`/profile/profile/${targetUserId}/allPosts`}
                 className="w-full text-center py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors block"
               >
                 View All Posts

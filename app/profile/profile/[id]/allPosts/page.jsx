@@ -1,28 +1,29 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, use } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
 import PostCard from "../../../../components/PostCard";
 
-import { useGetMyProfileQuery } from "../../../../redux/api/profileApi";
+import {
+  useGetMyProfileQuery,
+  useGetPublicProfileQuery,
+} from "../../../../redux/api/profileApi";
 import {
   useGetMyPostsQuery,
-  useGetProfileFeedQuery, // Fixed: correctly maps to /api/feed/profile/${userId}
+  useGetProfileFeedQuery,
 } from "../../../../redux/api/feedApi";
 
-function AllPostsContent() {
-  const searchParams = useSearchParams();
-  const userIdQuery = searchParams.get("userId");
+function AllPostsContent({ params }) {
+  const { id } = use(params);
 
-  // 1. Fetch active user profile to evaluate ownership
+  // 1. Fetch active user profile to determine ownership
   const { data: myProfile, isLoading: isLoadingMyProfile } = useGetMyProfileQuery();
   const currentUserId = myProfile?._id || myProfile?.userId || myProfile?.data?._id;
 
-  // 2. Identify target user & ownership status
-  const isOwnProfile = !userIdQuery || userIdQuery === currentUserId;
-  const targetUserId = isOwnProfile ? currentUserId : userIdQuery;
+  // 2. Identify target user & ownership status based on the route [id]
+  const targetUserId = id;
+  const isOwnProfile = Boolean(targetUserId && targetUserId === currentUserId);
 
   // 3. Conditional queries with skip guards
   const { data: myPostsData, isLoading: isLoadingMyPosts } = useGetMyPostsQuery(
@@ -30,10 +31,22 @@ function AllPostsContent() {
     { skip: !isOwnProfile }
   );
 
-  const { data: userPostsData, isLoading: isLoadingUserPosts } = useGetProfileFeedQuery(
+const { data: userPostsData, isLoading: isLoadingUserPosts } = useGetProfileFeedQuery(
     targetUserId,
     { skip: isOwnProfile || !targetUserId }
   );
+
+  // Fetch the target user's public profile to resolve their name (skip for own profile)
+  const { data: publicProfileData } = useGetPublicProfileQuery(targetUserId, {
+    skip: isOwnProfile || !targetUserId,
+  });
+
+  // Resolve the target user's name from multiple possible response shapes
+  const targetUser = publicProfileData?.user || publicProfileData?.profile || publicProfileData || {};
+  const targetName =
+    targetUser?.name ||
+    `${targetUser?.firstName || ""} ${targetUser?.lastName || ""}`.trim() ||
+    "";
 
   // 4. Resolve raw response structure safely
   const rawPostsData = isOwnProfile ? myPostsData : userPostsData;
@@ -104,7 +117,15 @@ function AllPostsContent() {
     };
   });
 
-  const backLink = isOwnProfile ? "/profile" : `/profile/${targetUserId}`;
+const backLink = isOwnProfile ? "/profile" : `/profile/${targetUserId}`;
+
+  // Resolve the display name for the header (own name or target user's name)
+  const myName =
+    myProfile?.name ||
+    `${myProfile?.firstName || ""} ${myProfile?.lastName || ""}`.trim() ||
+    "";
+  const headerName = isOwnProfile ? myName : targetName;
+  const headerTitle = headerName || (isOwnProfile ? "My Posts" : "User Posts");
 
   if (isLoading) {
     return (
@@ -116,8 +137,8 @@ function AllPostsContent() {
           >
             <MdArrowBack size={24} />
           </Link>
-          <h1 className="text-xl font-bold text-gray-900">
-            {isOwnProfile ? "My Posts" : "User Posts"}
+<h1 className="text-xl font-bold text-gray-900">
+            {headerTitle}
           </h1>
         </div>
 
@@ -141,9 +162,9 @@ function AllPostsContent() {
         >
           <MdArrowBack size={24} />
         </Link>
-        <div>
+<div>
           <h1 className="text-xl font-bold text-gray-900">
-            {isOwnProfile ? "My Posts" : "User Posts"}
+            {headerTitle}
           </h1>
           <p className="text-xs text-gray-500">
             {`${formattedPosts.length} ${formattedPosts.length === 1 ? "post" : "posts"}`}
@@ -174,8 +195,8 @@ function AllPostsContent() {
   );
 }
 
-// Wrapped with React Suspense to satisfy Next.js App Router rules for useSearchParams()
-export default function AllPostsPage() {
+// Wrapped with React Suspense to satisfy Next.js App Router rules for use(params)
+export default function AllPostsPage({ params }) {
   return (
     <Suspense
       fallback={
@@ -184,7 +205,7 @@ export default function AllPostsPage() {
         </div>
       }
     >
-      <AllPostsContent />
+      <AllPostsContent params={params} />
     </Suspense>
   );
 }

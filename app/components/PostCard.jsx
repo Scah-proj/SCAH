@@ -361,7 +361,7 @@ export default function PostCard({ post }) {
             name: fullName,
             
             picture: user.picture || user.avatar || null,
-            avatar: user.picture || user.avatar || "/default-avatar.png",
+            avatar: user.picture || user.avatar || null,
           }
         : null,
     };
