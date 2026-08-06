@@ -77,6 +77,9 @@ export const baseApi = createApi({
     "Application",
     "DeletedPosts",
     "MyReposts",
+    "Gallery",
+    "Media",
+    "CoverPhoto",
   ],
 
   endpoints: () => ({}),

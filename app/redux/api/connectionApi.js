@@ -135,7 +135,7 @@ export const connectionApi = baseApi.injectEndpoints({
       }),
       providesTags: ["NotificationSettings"],
     }),
- 
+
     // Update Notification Settings (bulk/general update)
     updateNotificationSettings: builder.mutation({
       query: (settings) => ({
@@ -145,7 +145,24 @@ export const connectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["NotificationSettings"],
     }),
- 
+    // Get My Followers
+    getMyFollowers: builder.query({
+      query: () => ({
+        url: "/api/connections/me/followers",
+        method: "GET",
+      }),
+      providesTags: [{ type: "Connection", id: "my-followers" }],
+    }),
+
+    // Get My Following
+    getMyFollowing: builder.query({
+      query: () => ({
+        url: "/api/connections/me/following",
+        method: "GET",
+      }),
+      providesTags: [{ type: "Connection", id: "my-following" }],
+    }),
+
     // Toggle Pause All Notifications
     togglePauseAllNotifications: builder.mutation({
       query: (pauseAll) => ({
@@ -155,7 +172,7 @@ export const connectionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["NotificationSettings"],
     }),
- 
+
     // Toggle Sleep Mode Notifications
     toggleSleepModeNotifications: builder.mutation({
       query: (sleepMode) => ({
@@ -180,11 +197,13 @@ export const {
   useGetMutualFollowersQuery,
   useGetFollowersQuery,
   useGetFollowingQuery,
+  useGetMyFollowersQuery,
+  useGetMyFollowingQuery,
   useGetNotificationsQuery,
   useGetUnreadNotificationCountQuery,
   useReadAllNotificationsMutation,
   useDeleteAllNotificationsMutation,
-   useGetNotificationSettingsQuery,
+  useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
   useTogglePauseAllNotificationsMutation,
   useToggleSleepModeNotificationsMutation,

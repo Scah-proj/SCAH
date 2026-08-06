@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MdEdit } from "react-icons/md";
 import { Label } from "../../components/ui/label";
 import { useRouter } from "next/navigation";
@@ -14,16 +14,35 @@ import {
 } from "../redux/api/connectionApi";
 
 import { useUpdateProfileMutation } from "../redux/api/profileApi";
+import {
+  useUploadCoverPhotoMutation,
+  useGetMyCoverPhotoQuery,
+  useGetCoverPhotoQuery,
+} from "../redux/api/uploadApi";
 
 export default function ProfileInfo({ profile, isOwnProfile, followers, following }) {
   const router = useRouter();
 
   const [bio] = useState("");
+  const [coverPhotoPreview, setCoverPhotoPreview] = useState(null);
+  const [profilePicPreview, setProfilePicPreview] = useState(null);
+  const objectUrlRef = useRef(null); // tracks the blob URL so we can revoke it
 
-  const profileId = profile?._id || profile?.id;
+  // Resolves ID for both own profile and other users (supports _id, id, and userId)
+  const profileId = profile?._id || profile?.id || profile?.userId;
+
   const displayName =
     profile?.name ||
     `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim();
+
+  // Route resolution pointing to followers and following.
+  const followersHref = isOwnProfile
+    ? "/profile/followers"
+    : `/profile/followers?userId=${profileId}`;
+
+  const followingHref = isOwnProfile
+    ? "/profile/following"
+    : `/profile/following?userId=${profileId}`;
 
   const { data: connectionStatus, refetch } =
     useGetConnectionStatusQuery(profileId, {
@@ -39,12 +58,45 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
   const [updateProfile, { isLoading: isUploading }] =
     useUpdateProfileMutation();
 
+  // My own cover photo
+  const { data: myCoverPhotoData } = useGetMyCoverPhotoQuery(undefined, {
+    skip: !isOwnProfile,
+  });
+
+  // Someone else's cover photo — fetched by profileId when it's not my profile
+  const { data: otherCoverPhotoData } = useGetCoverPhotoQuery(profileId, {
+    skip: isOwnProfile || !profileId,
+  });
+
+  const [uploadCoverPhoto, { isLoading: isUploadingCover }] =
+    useUploadCoverPhotoMutation();
+
+  // Resolution order: local uploaded preview -> backend fetched cover (mine or theirs) -> profile prop -> default asset
+  const fetchedCoverPhoto = isOwnProfile
+    ? myCoverPhotoData?.data?.coverPhoto
+    : otherCoverPhotoData?.data?.coverPhoto;
+
+  const coverPhotoSrc =
+    coverPhotoPreview || fetchedCoverPhoto || profile?.coverPhoto || "/defaultCover.png";
+
+  const profilePicSrc =
+    profilePicPreview || profile?.profilePicture || "/defaultImage.jpg";
+
   const isFollowing =
     connectionStatus?.data?.isFollowing ??
     connectionStatus?.isFollowing ??
     false;
 
   const isActionLoading = isFollowLoading || isUnfollowLoading;
+
+  // Revoke any local blob URL on unmount to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
+    };
+  }, []);
 
   const handleFollowToggle = async () => {
     if (!profileId || isActionLoading) return;
@@ -65,6 +117,9 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Instant local preview
+    setProfilePicPreview(URL.createObjectURL(file));
+
     try {
       await updateProfile({
         profilePicture: file,
@@ -73,6 +128,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
       router.refresh();
     } catch (err) {
       console.error("Profile picture upload failed:", err);
+      setProfilePicPreview(null); // revert to the real photo on failure
     }
   };
 
@@ -80,14 +136,38 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Clean up any previous blob URL before creating a new one
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+    }
+
+    const localUrl = URL.createObjectURL(file);
+    objectUrlRef.current = localUrl;
+    setCoverPhotoPreview(localUrl);
+
+    const formData = new FormData();
+    // Standard key 'coverPhoto'; if your server expects 'file', change 'coverPhoto' below
+    formData.append("coverPhoto", file);
+
     try {
-      await updateProfile({
-        coverPhoto: file,
-      }).unwrap();
+      const res = await uploadCoverPhoto(formData).unwrap();
+
+      // Swap the local blob preview for the real hosted URL once upload succeeds,
+      // then revoke the blob URL since it's no longer needed
+      if (res?.data?.coverPhoto) {
+        URL.revokeObjectURL(localUrl);
+        objectUrlRef.current = null;
+        setCoverPhotoPreview(res.data.coverPhoto);
+      }
 
       router.refresh();
     } catch (err) {
       console.error("Cover photo upload failed:", err);
+
+      // Revert: drop the broken local preview and clean up the blob URL
+      URL.revokeObjectURL(localUrl);
+      objectUrlRef.current = null;
+      setCoverPhotoPreview(null);
     }
   };
 
@@ -101,7 +181,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
         <div className="relative">
           <div className="relative">
             <Image
-              src={profile?.coverPhoto || "/defaultCover.png"}
+              src={coverPhotoSrc}
               alt="Cover Photo"
               width={1200}
               height={300}
@@ -109,7 +189,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
             />
             {isOwnProfile && (
               <Label className="absolute right-[2%] bottom-2 border bg-white rounded-full cursor-pointer hover:bg-gray-100">
-                {isUploading ? (
+                {isUploadingCover ? (
                   <span className="px-2 py-1 text-xs">...</span>
                 ) : (
                   <MdEdit size={16} className="m-2" />
@@ -120,7 +200,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
                   name="editCoverPhoto"
                   id="editCoverPhoto"
                   accept="image/*"
-                  disabled={isUploading}
+                  disabled={isUploadingCover}
                   className="hidden"
                   onChange={handleCoverPhotoUpload}
                 />
@@ -130,7 +210,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
 
           <div className="relative">
             <Image
-              src={profile?.profilePicture || "/defaultImage.jpg"}
+              src={profilePicSrc}
               alt="Profile Picture"
               width={250}
               height={250}
@@ -164,8 +244,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
         <div className="mt-16 flex flex-col md:flex-row md:justify-between gap-3">
           <div className="flex flex-col gap-1">
             <p className="font-bold text-2xl text-black break-all">
-              {profile?.name ||
-                `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim()}
+              {displayName}
             </p>
 
             <p className="font-medium text-sm text-gray-800">
@@ -231,23 +310,29 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
 
           {/* Right */}
           <div className="flex items-center gap-6 md:gap-10">
-            <div className="text-center">
-              <p className="text-xl md:text-2xl font-bold text-gray-900">
+            <Link
+              href={followersHref}
+              className="text-center group cursor-pointer"
+            >
+              <p className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
                 {followers}
               </p>
-              <p className="text-xs uppercase tracking-wide text-gray-500">
+              <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
                 Followers
               </p>
-            </div>
+            </Link>
 
-            <div className="text-center">
-              <p className="text-xl md:text-2xl font-bold text-gray-900">
+            <Link
+              href={followingHref}
+              className="text-center group cursor-pointer"
+            >
+              <p className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
                 {following}
               </p>
-              <p className="text-xs uppercase tracking-wide text-gray-500">
+              <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
                 Following
               </p>
-            </div>
+            </Link>
           </div>
         </div>
       </div>

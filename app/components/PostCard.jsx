@@ -169,6 +169,11 @@ export default function PostCard({ post }) {
   const handleAvatarClick = (e) => {
     e.stopPropagation();
 
+    if (isOwner) {
+      router.push(`/profile`);
+      return;
+    }
+
     if (authorId) {
       router.push(`/profile/${authorId}`);
     }
@@ -333,8 +338,12 @@ export default function PostCard({ post }) {
 
   const rawComments = commentsData?.data?.comments || [];
   
-  const commentsList = rawComments.map(comment => {
-    const fullName = comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : "Unknown User";
+  const commentsList = rawComments.map((comment) => {
+    const user = comment?.user;
+    const fullName = user
+      ? user.name || `${user.firstName || ""} ${user.lastName || ""}`.trim()
+      : "Unknown User";
+
     return {
       id: comment.id,
       postId: comment.post_id,
@@ -344,12 +353,17 @@ export default function PostCard({ post }) {
       author: fullName,      
       isActive: comment.is_active,
       createdAt: comment.created_at,
-      user: comment.user ? {
-        id: comment.user._id, 
-        firstName: comment.user.firstName,
-        lastName: comment.user.lastName,
-        avatar: comment.user.avatar || "/default-avatar.png"
-      } : null
+      user: user
+        ? {
+            id: user._id || user.id || comment.user_id, 
+            firstName: user.firstName,
+            lastName: user.lastName,
+            name: fullName,
+            
+            picture: user.picture || user.avatar || null,
+            avatar: user.picture || user.avatar || "/default-avatar.png",
+          }
+        : null,
     };
   });
 
@@ -848,9 +862,12 @@ export default function PostCard({ post }) {
           );
         })()}
 
-        {/* Actions — entire engagement row hidden once the post is deleted */}
+        {/* Actions */}
         {!isDeleted && (
-          <div className="flex items-center justify-between px-4 py-3">
+          <div
+            className="flex items-center justify-between px-4 py-3"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center gap-5">
               {/* Like */}
               <div className="flex items-center">    
@@ -873,10 +890,7 @@ export default function PostCard({ post }) {
               <div className="flex items-center">
                <button
                 className="flex space-y-1 mr-1 cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowComments((prev) => !prev);
-                }}
+                onClick={() => setShowComments((prev) => !prev)}
               >
                 <MessageCircle
                   size={22}
@@ -903,7 +917,7 @@ export default function PostCard({ post }) {
 
               {/* Share */}
               <div className="flex items-center">
-                <button className="flex space-y-1 mr-1 cursor-pointer" onClick={(e) => { e.stopPropagation(); setIsShareOpen(true); }}>
+                <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setIsShareOpen(true)}>
                   <Send
                     size={22}
                     className="text-gray-600 hover:text-teal-600"
@@ -932,12 +946,14 @@ export default function PostCard({ post }) {
         </div>
             
         {showComments && !isDeleted && (
-          <PostComments
-            postId={postId}
-            comments={commentsList}
-            isLoading={isLoadingComments}
-            onCommentAdded={handleCommentAdded}
-          />
+          <div onClick={(e) => e.stopPropagation()}>
+            <PostComments
+              postId={postId}
+              comments={commentsList}
+              isLoading={isLoadingComments}
+              onCommentAdded={handleCommentAdded}
+            />
+          </div>
         )}
       </div>
         

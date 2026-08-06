@@ -87,6 +87,8 @@ export default function Profile({
     }
   };
 
+  const targetUserId = profile?._id || profile?.userId;
+
   return (
     <div>
       <div className="lg:hidden fixed top-0 left-0 w-full h-16 z-20 flex items-center justify-between px-4">
@@ -104,8 +106,22 @@ export default function Profile({
 
       <div className="mx-4 flex justify-center items-center">
         <div>
-          {/* Gallery Posts */}
-          <ProfileGallery posts={posts} isLoading={isLoadingPosts} />
+          {/* Gallery Posts & Always-Visible View All Posts Button */}
+          <div className="space-y-3 my-4">
+            <ProfileGallery posts={posts} isLoading={isLoadingPosts} />
+            <div className="flex justify-center">
+              <Link
+                href={
+                  isOwnProfile
+                    ? "/userfeed"
+                    : `/profile/profile/${targetUserId}/allPosts`
+                }
+                className="w-full text-center py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors block"
+              >
+                View All Posts
+              </Link>
+            </div>
+          </div>
 
           {/* Experience Section */}
           <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
