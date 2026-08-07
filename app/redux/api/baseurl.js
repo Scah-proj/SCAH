@@ -55,7 +55,7 @@ const baseQueryWithAuthHandling = async (args, api, extraOptions) => {
     };
   }
 
-  const result = await rawBaseQuery(args, api, extraOptions);
+const result = await rawBaseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401 && !isPublicAuthRequest(args)) {
     api.dispatch(logout());
@@ -65,7 +65,16 @@ const baseQueryWithAuthHandling = async (args, api, extraOptions) => {
       typeof window !== "undefined" &&
       !window.location.pathname.startsWith("/auth/")
     ) {
-      window.location.href = "/auth/login?sessionExpired=1";
+      // Preserve the current page as redirectTo so that after login the
+      // user is bounced back to the post/route they originally opened
+      // (e.g. a copied post link), instead of always landing on /userfeed.
+      const currentPath = window.location.pathname;
+      const redirectParam = `redirectTo=${encodeURIComponent(currentPath)}`;
+      const hasExistingRedirect = window.location.search.includes("redirectTo=");
+
+      window.location.href = hasExistingRedirect
+        ? `/auth/login?sessionExpired=1&${window.location.search.replace(/^\?/, "")}`
+        : `/auth/login?sessionExpired=1&${redirectParam}`;
     }
   }
 

@@ -17,4 +17,7 @@
 
 - [x] Route unauthenticated users to `/auth/login?redirectTo=<post path>` when opening a post link
 - [x] After login, redirect back to the post (login page already handles `redirectTo`)
-</content>
+- [x] Canonical shared post route is `/profile/Posts/{id}` (PostCard copies this link)
+- [x] Session available → post loads directly (no redirect when token exists)
+- [x] No session → redirect to `/auth/login?redirectTo=/profile/Posts/{id}`, then back to post after login
+      </content>
