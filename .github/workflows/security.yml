@@ -16,13 +16,19 @@ permissions:
 
 jobs:
   semgrep:
+    name: SCAH Semgrep Scan
     uses: SCAH-club/scah-security/.github/workflows/semgrep.yml@main
+    permissions:
+      contents: read
 
   developer-security-report:
+    name: SCAH Security Gate
     uses: SCAH-club/scah-security/.github/workflows/developer-security-report.yml@main
+
     with:
       node-version: "22"
       working-directory: "."
+
     permissions:
       contents: read
       actions: read
