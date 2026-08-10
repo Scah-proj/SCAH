@@ -325,7 +325,7 @@ export default function EditProfile() {
             <div className="w-full  bg-white sm:w-1/2 sm:h-4/5 sm:rounded-md p-4 lg:pl-[50px] lg:pr-[50px] lg:pt-6 lg:pb-6 p-4 shadow-md" >
         <form onSubmit={handleSubmit}>
           <div className="flex items-center justify-between mb-8">
-            <Link href="/profile/123"><MdArrowBack/></Link>
+            <Link href="/profile"><MdArrowBack/></Link>
             <button type="submit" disabled={isSaving} className="bg-teal-600 text-white text-sm font-medium px-3 py-2 rounded-md">
               {isSaving ? "Saving..." : "Save changes"}
             </button>

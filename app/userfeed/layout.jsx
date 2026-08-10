@@ -46,7 +46,7 @@ export default function FeedLayout({ children }) {
     <div className="min-h-dvh bg-[#f8fafc]">
       {/* MOBILE HEADER */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-white z-20 flex items-center justify-between px-4 border-b">
-        <Link href={profileHref}>
+        <Link href="/profile">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
             <Image
               src={avatarSrc}
@@ -58,7 +58,7 @@ export default function FeedLayout({ children }) {
           </div>
         </Link>
 
-        <Link href="/feed">
+        <Link href="/userfeed">
           <Image
             src="/yattr.png"
             alt="Logo"
