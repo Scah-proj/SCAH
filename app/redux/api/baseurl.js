@@ -55,11 +55,10 @@ const baseQueryWithAuthHandling = async (args, api, extraOptions) => {
     };
   }
 
-const result = await rawBaseQuery(args, api, extraOptions);
+  const result = await rawBaseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401 && !isPublicAuthRequest(args)) {
     api.dispatch(logout());
-    api.dispatch(baseApi.util.resetApiState());
 
     if (
       typeof window !== "undefined" &&
@@ -75,7 +74,11 @@ const result = await rawBaseQuery(args, api, extraOptions);
       window.location.href = hasExistingRedirect
         ? `/auth/login?sessionExpired=1&${window.location.search.replace(/^\?/, "")}`
         : `/auth/login?sessionExpired=1&${redirectParam}`;
+      return result;
     }
+
+  
+    api.dispatch(baseApi.util.resetApiState());
   }
 
   return result;

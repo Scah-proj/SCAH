@@ -5,10 +5,27 @@ import { useCreateStoryMutation } from "../../redux/api/storyApi";
 
 const MAX_FILE_SIZE_MB = 50;
 
+const BACKGROUND_COLORS = [
+  "#000000",
+  "#7C3AED",
+  "#DB2777",
+  "#DC2626",
+  "#EA580C",
+  "#16A34A",
+  "#0891B2",
+  "#1D4ED8",
+];
+
 export default function CreateStory({ open, onClose }) {
+  const [mode, setMode] = useState("media"); // "media" | "text"
+
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
   const [caption, setCaption] = useState("");
+
+  const [textContent, setTextContent] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState(BACKGROUND_COLORS[0]);
+
   const [validationError, setValidationError] = useState("");
 
   // Tracks the current blob: URL so we can revoke it the moment it's
@@ -33,7 +50,10 @@ export default function CreateStory({ open, onClose }) {
     setFile(null);
     setPreview("");
     setCaption("");
+    setTextContent("");
+    setBackgroundColor(BACKGROUND_COLORS[0]);
     setValidationError("");
+    setMode("media");
   };
 
   useEffect(() => {
@@ -70,18 +90,42 @@ export default function CreateStory({ open, onClose }) {
     setPreview(url);
   };
 
+  const switchMode = (nextMode) => {
+    if (nextMode === mode) return;
+    // Clear whichever fields belong to the mode we're leaving
+    revokeCurrentPreview();
+    setFile(null);
+    setPreview("");
+    setValidationError("");
+    setMode(nextMode);
+  };
+
   const handleSubmit = async () => {
-    if (!file) {
+    if (mode === "media" && !file) {
       setValidationError("Please select an image or video.");
       return;
     }
 
+    if (mode === "text" && !textContent.trim()) {
+      setValidationError("Please write something for your story.");
+      return;
+    }
+
     try {
-      await createStory({
-        media: file,
-        mediaType: file.type.startsWith("video") ? "video" : "image",
-        caption,
-      }).unwrap();
+      if (mode === "media") {
+        await createStory({
+          media: file,
+          mediaType: file.type.startsWith("video") ? "video" : "image",
+          caption,
+        }).unwrap();
+      } else {
+        await createStory({
+          mediaType: "text",
+          caption: textContent,
+          backgroundColor,
+          textColor: "#FFFFFF",
+        }).unwrap();
+      }
     } catch (err) {
       console.log(err);
     }
@@ -97,45 +141,107 @@ export default function CreateStory({ open, onClose }) {
       <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
         <h2 className="mb-5 text-center text-xl font-bold">Create Story</h2>
 
-        <label className="flex h-44 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
-          {preview ? (
-            file?.type.startsWith("video") ? (
-              <video
-                src={preview}
-                controls
-                className="h-full w-full rounded-lg object-cover"
+        {/* Mode toggle */}
+        <div className="mb-5 flex rounded-lg border p-1">
+          <button
+            type="button"
+            onClick={() => switchMode("media")}
+            className={`flex-1 rounded-md py-2 text-sm font-medium transition ${
+              mode === "media"
+                ? "bg-teal-600 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Photo / Video
+          </button>
+          <button
+            type="button"
+            onClick={() => switchMode("text")}
+            className={`flex-1 rounded-md py-2 text-sm font-medium transition ${
+              mode === "text"
+                ? "bg-teal-600 text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            Text
+          </button>
+        </div>
+
+        {mode === "media" ? (
+          <>
+            <label className="flex h-44 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-gray-300">
+              {preview ? (
+                file?.type.startsWith("video") ? (
+                  <video
+                    src={preview}
+                    controls
+                    className="h-full w-full rounded-lg object-cover"
+                  />
+                ) : (
+                  // Plain <img>, not next/image: next/image runs blob: URLs
+                  // through the image optimizer, which doesn't handle local
+                  // file previews correctly.
+                  <img
+                    src={preview}
+                    alt="Preview"
+                    className="h-full w-full rounded-lg object-cover"
+                  />
+                )
+              ) : (
+                <div className="text-center text-gray-500">
+                  <p className="font-medium">Click to upload</p>
+                  <p className="text-sm">Image or Video</p>
+                </div>
+              )}
+
+              <input
+                type="file"
+                accept="image/*,video/*"
+                hidden
+                onChange={handleFileChange}
               />
-            ) : (
-              // Plain <img>, not next/image: next/image runs blob: URLs
-              // through the image optimizer, which doesn't handle local
-              // file previews correctly.
-              <img
-                src={preview}
-                alt="Preview"
-                className="h-full w-full rounded-lg object-cover"
+            </label>
+
+            <textarea
+              value={caption}
+              onChange={(e) => setCaption(e.target.value)}
+              placeholder="Write a caption..."
+              className="mt-5 h-24 w-full resize-none rounded-lg border p-3 outline-none focus:border-teal-500"
+            />
+          </>
+        ) : (
+          <>
+            {/* Live text-story preview */}
+            <div
+              className="flex h-44 w-full items-center justify-center rounded-lg p-4 transition-colors"
+              style={{ backgroundColor }}
+            >
+              <textarea
+                value={textContent}
+                onChange={(e) => setTextContent(e.target.value)}
+                placeholder="Start typing..."
+                maxLength={500}
+                className="h-full w-full resize-none border-none bg-transparent text-center text-lg font-semibold text-white outline-none placeholder:text-white/70"
               />
-            )
-          ) : (
-            <div className="text-center text-gray-500">
-              <p className="font-medium">Click to upload</p>
-              <p className="text-sm">Image or Video</p>
             </div>
-          )}
 
-          <input
-            type="file"
-            accept="image/*,video/*"
-            hidden
-            onChange={handleFileChange}
-          />
-        </label>
-
-        <textarea
-          value={caption}
-          onChange={(e) => setCaption(e.target.value)}
-          placeholder="Write a caption..."
-          className="mt-5 h-24 w-full resize-none rounded-lg border p-3 outline-none focus:border-teal-500"
-        />
+            {/* Background color picker */}
+            <div className="mt-4 flex justify-center gap-2">
+              {BACKGROUND_COLORS.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => setBackgroundColor(color)}
+                  aria-label={`Set background color ${color}`}
+                  className={`h-7 w-7 rounded-full ring-offset-2 ${
+                    backgroundColor === color ? "ring-2 ring-teal-600" : ""
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         {validationError && (
           <p className="mt-3 text-sm text-red-500">{validationError}</p>

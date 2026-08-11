@@ -15,8 +15,6 @@ import {
   Bookmark,
   MoreHorizontal,
   X,
-  Flag,
-  Link2,
   EyeOff,
   Eye,
   Trash2,
@@ -54,6 +52,13 @@ const isVideoStory = (story) => {
   return VIDEO_EXTENSIONS.some((ext) => url.toLowerCase().endsWith(ext));
 };
 
+// A story with no media file — content is the caption itself, styled
+// with a background/text color.
+const isTextStory = (story) => {
+  const type = story?.media?.type || story?.type;
+  return String(type).toLowerCase() === "text";
+};
+
 export default function ViewStory({
   isOwner: propIsOwner,
   user,
@@ -62,7 +67,6 @@ export default function ViewStory({
   onDeleteStory,
   onArchiveStory,
   onMuteUser,
-  onReportStory,
 }) {
   const myUser = useSelector((state) => state.auth?.user);
   const myId = getUserId(myUser);
@@ -170,6 +174,26 @@ export default function ViewStory({
         return {
           key: storyKey,
           content: () => {
+            if (isTextStory(story)) {
+              const bg = story?.media?.backgroundColor || "#000000";
+              const textColor = story?.media?.textColor || "#FFFFFF";
+              const text = story?.caption || "";
+
+              return (
+                <div
+                  className="w-full h-full relative flex items-center justify-center p-8"
+                  style={{ backgroundColor: bg }}
+                >
+                  <p
+                    className="text-center text-2xl font-semibold break-words whitespace-pre-wrap"
+                    style={{ color: textColor }}
+                  >
+                    {text}
+                  </p>
+                </div>
+              );
+            }
+
             if (isVideoStory(story)) {
               return (
                 <div className="w-full h-full relative bg-black">
@@ -462,17 +486,6 @@ export default function ViewStory({
 
             {showMenu && (
               <div className="absolute right-0 top-11 w-48 bg-neutral-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-30 animate-in fade-in slide-in-from-top-1 duration-150">
-                <button
-                  onClick={() => {
-                    navigator.clipboard?.writeText(window.location.href);
-                    setShowMenu(false);
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition"
-                >
-                  <Link2 className="w-4 h-4" />
-                  Copy link
-                </button>
-
                 {isOwner ? (
                   <>
                     <button
@@ -504,32 +517,18 @@ export default function ViewStory({
                     </button>
                   </>
                 ) : (
-                  <>
-                    <button
-                      onClick={() => {
-                        setShowMenu(false);
-                        if (targetUserId) {
-                          onMuteUser?.(targetUserId);
-                        }
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition"
-                    >
-                      <EyeOff className="w-4 h-4" />
-                      Mute for 24 hours
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowMenu(false);
-                        if (activeStoryId) {
-                          onReportStory?.(activeStoryId);
-                        }
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-400 hover:bg-white/10 transition"
-                    >
-                      <Flag className="w-4 h-4" />
-                      Report
-                    </button>
-                  </>
+                  <button
+                    onClick={() => {
+                      setShowMenu(false);
+                      if (targetUserId) {
+                        onMuteUser?.(targetUserId);
+                      }
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition"
+                  >
+                    <EyeOff className="w-4 h-4" />
+                    Mute for 24 hours
+                  </button>
                 )}
               </div>
             )}
@@ -538,7 +537,7 @@ export default function ViewStory({
 
         {/* Footer Overlay */}
         <div className="absolute bottom-0 left-0 right-0 z-[9999] pointer-events-none bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-10">
-          {currentStory?.caption && (
+          {currentStory?.caption && !isTextStory(currentStory) && (
             <p className="text-white text-sm px-5 pb-3 pointer-events-auto line-clamp-3">
               {currentStory.caption}
             </p>

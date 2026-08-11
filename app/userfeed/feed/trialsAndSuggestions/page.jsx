@@ -7,6 +7,7 @@ import ScoutProfileConnect from "../../../profile/followScout";
 import { useGetLatestTryoutQuery } from "../../../redux/api/tryoutApi";
 import Link from "next/link";
 import { useSelector } from "react-redux";
+import { Loader } from "lucide-react";
 
 function canAccess(requiredRole, userType) {
   if (!requiredRole) return true;
@@ -45,7 +46,7 @@ export default function Suggestions() {
         <div>
           {isLoading && (
             <div className="flex flex-col items-center gap-4 py-8">
-              <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
+              <Loader className="h-6 w-6 animate-spin text-teal-600" />
               <p className="text-sm text-gray-500">Loading trials...</p>
             </div>
           )}

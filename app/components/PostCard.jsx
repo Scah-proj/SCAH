@@ -7,11 +7,7 @@ import {
   MessageCircle,
   Repeat2,
   Bookmark,
-  Send,
-  Star,
   Copy,
-  CircleSlash,
-  MessageSquareWarning,
   User,
   MoreHorizontalIcon,
   Check,
@@ -19,25 +15,9 @@ import {
   Trash2,
 } from "lucide-react";
 import PostComments from "./comment/CommentSection";
-import SharePost from "./SharePost";
 import { useCommentStore } from "../../lib/commentStore";
 import { Button } from "../../components/ui/button";
-import { Checkbox } from "../../components/ui/checkbox";
 import { useRouter } from "next/navigation";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-} from "../../components/ui/field";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -186,8 +166,11 @@ export default function PostCard({ post }) {
   };
 
   const [showComments, setShowComments] = useState(false);
+  // Run the comments query on mount (not only when comments are toggled open)
+  // so the comment count is available immediately on the postcard. We still
+  // avoid fetching for deleted posts or when there is no post id.
   const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsQuery(postId, {
-    skip: !showComments || !postId || isDeleted,
+    skip: !postId || isDeleted,
   });
 
   const initialLikesCount =
@@ -225,9 +208,8 @@ export default function PostCard({ post }) {
   const [commentCount, setCommentCount] = useState(initialCommentCount);
   const [reposts, setReposts] = useState(initialRepostsCount);
   const [reposted, setReposted] = useState(initialReposted);
-  const [shares, setShares] = useState(post.shares ?? 0);
   const [saved, setSaved] = useState(!!(post.hasSaved || post.saved || post.isSaved));
-  const [isShareOpen, setIsShareOpen] = useState(false);
+  
   
   const [isCopied, setIsCopied] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
@@ -376,9 +358,6 @@ export default function PostCard({ post }) {
     loadedCommentCount,
     localCommentCount
   );
-
-  const [showReportDialog, setShowReportDialog] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   // Copy Link Handler
   const handleCopyLink = async (e) => {
@@ -657,10 +636,6 @@ export default function PostCard({ post }) {
                     <Bookmark/>
                     Save
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Star/>
-                    Add to Favourites
-                  </DropdownMenuItem>
 
                   {hasImage && (
                     <DropdownMenuItem onSelect={handleDownloadImage}>
@@ -673,14 +648,9 @@ export default function PostCard({ post }) {
                     {isCopied ? <Check className="text-teal-600" /> : <Copy />}
                     {isCopied ? "Copied!" : "Copy link to post"}
                   </DropdownMenuItem>
-                  
-                  <DropdownMenuItem>
-                    <CircleSlash/>
-                    Not Interested
-                  </DropdownMenuItem>
 
                   {/* SHOW DELETE ONLY FOR POST OWNER */}
-                  {isOwner ? (
+                  {isOwner && (
                     <DropdownMenuItem
                       onSelect={(e) => {
                         e?.stopPropagation?.();
@@ -691,104 +661,11 @@ export default function PostCard({ post }) {
                       <Trash2 color="red" />
                       Delete post
                     </DropdownMenuItem>
-                  ) : (
-                    <DropdownMenuItem
-                      onSelect={(e) => {
-                        e?.stopPropagation?.();
-                        setShowReportDialog(true);
-                      }}
-                      className="text-red-600"
-                    >
-                      <MessageSquareWarning color="red"/>
-                      Report post
-                    </DropdownMenuItem>
                   )}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
           )}
-
-          <Dialog open={showReportDialog} onOpenChange={setShowReportDialog}>
-            <DialogContent
-              className="sm:max-w-[425px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DialogHeader>
-                <DialogTitle>Why are you reporting this post?</DialogTitle>
-                <DialogDescription>
-                  Your report is anonymous. If someone is in immediate danger, call the local emergency service, don't wait.
-                </DialogDescription>
-              </DialogHeader>
-              <FieldGroup>
-                <Field orientation="horizontal">
-                  <Checkbox id="report-1" />
-                  <FieldLabel htmlFor="report-1" className="font-normal">
-                    I just don't like it
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Checkbox id="report-2" />
-                  <FieldLabel htmlFor="report-2" className="font-normal">
-                    Bullying or unwanted contact
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Checkbox id="report-3" />
-                  <FieldLabel htmlFor="report-3" className="font-normal">
-                    Suicide, self-injury or eating disorders
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Checkbox id="report-4" />
-                  <FieldLabel htmlFor="report-4" className="font-normal">
-                    Violence, hate or exploitation
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Checkbox id="report-5" />
-                  <FieldLabel htmlFor="report-5" className="font-normal">
-                    Selling or promoting restricted items
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Checkbox id="report-6" />
-                  <FieldLabel htmlFor="report-6" className="font-normal">
-                    Nudity or sexual activity
-                  </FieldLabel>
-                </Field>
-                <Field orientation="horizontal">
-                  <Checkbox id="report-7" />
-                  <FieldLabel htmlFor="report-7" className="font-normal">
-                    Scam, fraud or spam
-                  </FieldLabel>
-                </Field>
-              </FieldGroup>
-              <DialogFooter>
-                <Button onClick={() => setShowFeedback(true)} type="submit">
-                  <DialogClose>Submit</DialogClose>
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          <Dialog open={showFeedback} onOpenChange={setShowFeedback}>
-            <DialogContent
-              className="sm:max-w-[425px]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <DialogHeader>
-                <DialogTitle>Thanks for your feedback</DialogTitle>
-                <DialogDescription>
-                  We use these reports to show you less of this kind of content in the future.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">Done</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
         </div>
 
         {/* Caption */}
@@ -915,16 +792,6 @@ export default function PostCard({ post }) {
                 <span>{reposts > 0 && <span>{reposts}</span>}</span>
               </div>
 
-              {/* Share */}
-              <div className="flex items-center">
-                <button className="flex space-y-1 mr-1 cursor-pointer" onClick={() => setIsShareOpen(true)}>
-                  <Send
-                    size={22}
-                    className="text-gray-600 hover:text-teal-600"
-                  />
-                </button>
-                <span>{shares > 0 && <span>{shares}</span>}</span>
-              </div>
             </div>
 
             {/* Save */}
@@ -956,10 +823,6 @@ export default function PostCard({ post }) {
           </div>
         )}
       </div>
-        
-      {isShareOpen && !isDeleted && (
-        <SharePost postId={postId} onClose={() => setIsShareOpen(false)} />
-      )}
     </div>
   );
 }
