@@ -58,7 +58,7 @@ export default function FeedLayout({ children }) {
           </div>
         </Link>
 
-        <Link href="/feed">
+        <Link href="/userfeed">
           <Image
             src="/yattr.png"
             alt="Logo"

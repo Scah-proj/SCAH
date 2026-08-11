@@ -53,16 +53,7 @@ export default function ProfileGallery({
                     ))}
                   </div>
 
-                  {posts.length > 6 && (
-                    <div className="flex justify-end mt-4">
-                      <Link
-                        href="/profile/profileGallery/posts"
-                        className="px-3 py-1 rounded-full border border-teal-600 text-sm"
-                      >
-                        View all posts
-                      </Link>
-                    </div>
-                  )}
+                  
                 </>
               )}
             </TabsContent>

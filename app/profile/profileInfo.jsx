@@ -254,13 +254,28 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
             <p className="text-xs text-gray-500">
               {profile?.location?.state}, {profile?.location?.country}
             </p>
+            {profile?.bio ? (
+              <p className="text-sm text-gray-600 max-w-full md:max-w-md mt-1">
+                {profile.bio}
+              </p>
+            ) : (
+              isOwnProfile && (
+                <button
+                  onClick={handleEdit}
+                  className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-transparent w-full sm:w-auto py-2.5 text-sm font-medium text-gray-700 transition"
+                >
+                  Add Bio
+                  <MdEdit size={16} />
+                </button>
+              )
+            )}
           </div>
         </div>
 
         <div className="mt-6 flex items-start justify-between gap-4 flex-wrap">
           {/* Left */}
           <div className="flex flex-col sm:flex-row gap-3">
-            {profile?.bio ? (
+            {/* {profile?.bio ? (
               <p className="text-sm text-gray-600 max-w-full md:max-w-md">
                 {profile.bio}
               </p>
@@ -274,13 +289,13 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
                   Add Bio
                 </button>
               )
-            )}
+            )} */}
 
             {isOwnProfile ? (
               <Link href="/profile/editProfile">
                 <button className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 w-full sm:w-auto text-sm font-medium text-white hover:bg-teal-700 transition">
-                  <MdEdit size={16} />
                   Edit Profile
+                  <MdEdit size={16} />
                 </button>
               </Link>
             ) : (

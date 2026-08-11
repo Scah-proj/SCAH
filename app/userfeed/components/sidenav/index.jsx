@@ -70,7 +70,7 @@ const Sidenav = ({ onClose }) => {
         {/* Desktop Header */}
         <div className="hidden lg:block mb-6">
           <div className="mb-8">
-            <Link href="/feed">
+            <Link href="/userfeed">
               <Image
                 src="/yattr.png"
                 alt="SCAH Logo"

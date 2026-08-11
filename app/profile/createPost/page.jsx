@@ -404,14 +404,14 @@ export default function CreatePost() {
             </button>
 
             {/* Emoji */}
-            <button>
+            {/* <button>
               <Smile size={22} />
-            </button>
+            </button> */}
 
             {/* Schedule */}
-            <button>
+            {/* <button>
               <CalendarClock size={22} />
-            </button>
+            </button> */}
           </div>
 
           {isCameraOpen && (
