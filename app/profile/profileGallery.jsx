@@ -32,7 +32,7 @@ export default function ProfileGallery({
             <TabsContent value="posts">
               {isLoading ? (
                 <div className="text-center py-8 text-gray-500">
-                  Loading posts...
+                  Loading posts....
                 </div>
               ) : error ? (
                 <div className="text-center py-8 text-red-500">
