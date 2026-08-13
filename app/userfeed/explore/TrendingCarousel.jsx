@@ -18,11 +18,12 @@ export default function TrendingCarousel({ posts = [] }) {
     // Backend uses caption
     title: post.caption,
 
-    // First uploaded media or fallback image
+    // First uploaded media, or undefined so TrendingCard renders its
+    // color fallback instead of an image
     cover:
       post.media && post.media.length > 0
         ? post.media[0].url
-        : "/placeholder.webp",
+        : undefined,
 
     // Author profile picture
     profile: post.author?.picture || "/default-avatar.png",

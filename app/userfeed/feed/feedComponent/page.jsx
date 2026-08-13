@@ -3,6 +3,7 @@
 import PostCard from "../../../components/PostCard";
 import StoryComponent from "../../storyComponent/page";
 import { useGetHomeFeedQuery } from "../../../redux/api/feedApi";
+import { Loader } from "lucide-react";
 
 export default function FeedComponent() {
   const {
@@ -76,7 +77,7 @@ export default function FeedComponent() {
 
         <div className="flex items-center justify-center py-20">
           <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
+            <Loader  className="h-6 w-6 animate-spin text-teal-600" />
 
             <p className="text-sm text-gray-500">
               Loading feed...

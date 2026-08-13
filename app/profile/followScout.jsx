@@ -1,5 +1,5 @@
 "use client";
-import { User } from "lucide-react";
+import { User, Loader } from "lucide-react";
 import ScoutProfile from "../components/ScoutProfile";
 import { useGetRecommendedScoutsQuery } from "../redux/api/recommendationApi";
 
@@ -12,7 +12,7 @@ export default function Page() {
     return (
       <div className="">
         <div className="flex flex-col items-center gap-4 py-16">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
+          <Loader className="h-10 w-10 animate-spin text-teal-600" />
           <p className="text-sm text-gray-500">Finding scouts for you...</p>
         </div>
       </div>

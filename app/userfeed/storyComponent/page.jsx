@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Loader } from "lucide-react";
 
 import StoryAvatar from "./StoryAvatar";
 import ViewStory from "./ViewStory";
@@ -153,7 +154,7 @@ export default function StoryComponent() {
   if (feedLoading && !users.length) {
     return (
       <div className="flex p-3 space-x-4 overflow-x-auto">
-        <div className="w-8 h-8 rounded-full border-2 border-gray-200 border-t-teal-600 animate-spin"></div>
+        <Loader className="h-6 w-6 animate-spin text-teal-600" />
       </div>
     );
   }

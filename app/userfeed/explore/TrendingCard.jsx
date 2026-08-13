@@ -4,11 +4,43 @@ import { useRouter } from "next/navigation";
 import { Eye, Share2, Bookmark, ListTodo } from "lucide-react";
 import { timeAgo } from "../../../components/timeAgo"
 
+// A small set of solid colors to fall back on when there's no cover
+// image. Picked deterministically per-item (via a hash of its id/title)
+// so the color stays stable across re-renders instead of jumping around
+// every time the component mounts.
+const COVER_COLORS = [
+  "bg-rose-400",
+  "bg-amber-400",
+  "bg-emerald-500",
+  "bg-sky-500",
+  "bg-violet-500",
+  "bg-cyan-500",
+  "bg-lime-500",
+  "bg-fuchsia-500",
+  "bg-orange-500",
+  "bg-indigo-500",
+];
+
+const hashToIndex = (value, length) => {
+  const str = String(value ?? "");
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash) % length;
+};
+
+const getCoverColor = (item, itemId) => {
+  const seed = itemId || item.title || item.author || "fallback";
+  return COVER_COLORS[hashToIndex(seed, COVER_COLORS.length)];
+};
 
 export default function TrendingCard({ item }) {
   const router = useRouter();
 
   const itemId = item.id || item._id;
+  const hasCover = Boolean(item.cover);
+  const coverColor = getCoverColor(item, itemId);
 
   const handleCardClick = () => {
     if (!itemId) return;
@@ -30,12 +62,22 @@ export default function TrendingCard({ item }) {
       
       {/* Cover */}
       <div className="relative h-36 w-full">
-        <Image
-          src={item.cover}
-          alt={item.title}
-          fill
-          className="object-cover"
-        />
+        {hasCover ? (
+          <Image
+            src={item.cover}
+            alt={item.title}
+            fill
+            className="object-cover"
+          />
+        ) : (
+          <div
+            className={`h-full w-full ${coverColor} flex items-center justify-center`}
+          >
+            <span className="text-white/90 font-semibold text-lg drop-shadow-sm px-3 text-center line-clamp-2">
+              {item.title}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
