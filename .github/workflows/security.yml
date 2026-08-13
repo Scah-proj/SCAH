@@ -1,0 +1,26 @@
+name: SCAH Security Checks
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    uses: Scah-proj/scah-security/.github/workflows/npm-audit.yml@main
+    with:
+      node-version: "20"
+      working-directory: "."
+
+  semgrep:
+    uses: Scah-proj/scah-security/.github/workflows/semgrep.yml@main
+
+  trivy:
+    uses: Scah-proj/scah-security/.github/workflows/trivy.yml@main
