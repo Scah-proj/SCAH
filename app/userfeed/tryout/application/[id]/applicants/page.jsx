@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
-import { ExternalLink, Check, X } from "lucide-react";
+import { ExternalLink, Check, X, Loader } from "lucide-react";
 import toast from "react-hot-toast";
 
 import {
@@ -51,9 +51,8 @@ export default function ApplicantsPage() {
   // Tracks current selected status filter
   const [selectedStatus, setSelectedStatus] = useState("all");
 
-  // Tracks which specific application is currently being acted on, so only
-  // that row's buttons show a loading state instead of the whole table.
-  const [actingId, setActingId] = useState(null);
+  // Tracks which specific application and action is currently being executed
+  const [actingState, setActingState] = useState({ id: null, status: null });
 
   const applicants = data?.data?.applicants || data?.applicants || [];
   const reportedTotal =
@@ -81,7 +80,7 @@ export default function ApplicantsPage() {
   };
 
   const handleDecision = async (applicationId, status) => {
-    setActingId(applicationId);
+    setActingState({ id: applicationId, status });
     try {
       await updateApplicationStatus({
         id,
@@ -95,15 +94,15 @@ export default function ApplicantsPage() {
         err?.data?.error?.message || `Failed to ${status === "accepted" ? "accept" : "reject"} application`
       );
     } finally {
-      setActingId(null);
+      setActingState({ id: null, status: null });
     }
   };
 
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto flex flex-col items-center justify-center py-10 px-6">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
-        <div className="mt-4">Loading applicants...</div>
+        <Loader className="h-6 w-6 animate-spin text-teal-600" />
+        <div className="mt-4 text-gray-600">Loading applicants...</div>
       </div>
     );
   }
@@ -219,7 +218,9 @@ export default function ApplicantsPage() {
               <tbody>
                 {filteredApplicants.map((applicant) => {
                   const isPending = (applicant.status || "pending") === "pending";
-                  const isActing = actingId === applicant._id;
+                  const isActing = actingState.id === applicant._id;
+                  const isAccepting = isActing && actingState.status === "accepted";
+                  const isRejecting = isActing && actingState.status === "rejected";
 
                   return (
                     <tr
@@ -274,18 +275,26 @@ export default function ApplicantsPage() {
                               type="button"
                               disabled={isActing}
                               onClick={() => handleDecision(applicant._id, "accepted")}
-                              className="inline-flex items-center gap-1 rounded-md bg-teal-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              className="inline-flex items-center gap-1.5 rounded-md bg-teal-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
-                              <Check size={14} />
+                              {isAccepting ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Check size={14} />
+                              )}
                               Accept
                             </button>
                             <button
                               type="button"
                               disabled={isActing}
                               onClick={() => handleDecision(applicant._id, "rejected")}
-                              className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              className="inline-flex items-center gap-1.5 rounded-md border border-gray-300 px-3 py-1.5 text-xs font-medium text-gray-700 transition hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                             >
-                              <X size={14} />
+                              {isRejecting ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <X size={14} />
+                              )}
                               Reject
                             </button>
                           </div>

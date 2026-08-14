@@ -89,34 +89,8 @@ const Page = () => {
         </Link>
 
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
-          Archiving and downloading
+          Archives
         </h1>
-      </div>
-
-      {/* Settings */}
-      <div className="bg-white border rounded-xl p-5 space-y-4 shadow-sm">
-        {archiveOptions.map((setting) => (
-          <div
-            key={setting.key}
-            className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition"
-          >
-            {/* Text */}
-            <div className="space-y-0.5">
-              <p className="text-sm font-medium text-gray-900">
-                {setting.label}
-              </p>
-              {setting.desc && (
-                <p className="text-xs text-gray-500">{setting.desc}</p>
-              )}
-            </div>
-
-            {/* Switch */}
-            <Switch
-              checked={settings[setting.key]}
-              onCheckedChange={(value) => handleToggle(setting.key, value)}
-            />
-          </div>
-        ))}
       </div>
 
       {/* Archived content */}

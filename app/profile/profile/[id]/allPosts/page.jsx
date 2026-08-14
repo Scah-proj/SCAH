@@ -3,6 +3,7 @@
 import { Suspense, use } from "react";
 import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
+import { Loader } from "lucide-react";
 import PostCard from "../../../../components/PostCard";
 
 import {
@@ -165,11 +166,9 @@ function AllPostsContent({ params }) {
           </h1>
         </div>
 
-        <div className="flex items-center justify-center py-20">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
-            <p className="text-sm text-gray-500">Loading posts...</p>
-          </div>
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <Loader className="h-6 w-6 animate-spin text-teal-600" />
+          <p className="text-sm text-gray-500">Loading posts...</p>
         </div>
       </div>
     );
@@ -223,8 +222,9 @@ export default function AllPostsPage({ params }) {
   return (
     <Suspense
       fallback={
-        <div className="max-w-3xl mx-auto px-4 py-20 flex justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
+        <div className="flex flex-col items-center justify-center py-20 gap-3 max-w-3xl mx-auto px-4">
+          <Loader className="h-6 w-6 animate-spin text-teal-600" />
+          <p className="text-sm text-gray-500">Loading posts...</p>
         </div>
       }
     >
@@ -232,4 +232,3 @@ export default function AllPostsPage({ params }) {
     </Suspense>
   );
 }
-

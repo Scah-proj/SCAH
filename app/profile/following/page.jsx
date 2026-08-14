@@ -9,7 +9,11 @@ import { MdCheckCircle, MdSearch, MdArrowBack } from "react-icons/md";
 import {
   useGetMyFollowingQuery,
   useGetFollowingQuery,
-} from "../../redux/api/connectionApi"; // adjust path to match your setup
+} from "../../redux/api/connectionApi"; 
+import { Loader } from "lucide-react";
+
+
+
 
 export default function FollowingPage() {
   const router = useRouter();
@@ -115,7 +119,7 @@ export default function FollowingPage() {
       <div className="px-0 sm:px-4 py-0 sm:py-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <span className="w-8 h-8 border-[3px] border-gray-200 border-t-teal-600 rounded-full animate-spin" />
+            <Loader  className="h-6 w-6 animate-spin text-teal-600" />
             <p className="text-sm text-gray-500">Loading following...</p>
           </div>
         ) : isError ? (

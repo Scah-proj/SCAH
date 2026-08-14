@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useRouter } from "next/navigation";
 import { MdOutlinePersonAddAlt } from "react-icons/md";
+import { User } from "lucide-react";
 
 export default function AthleteProfile({ profile }) {
   const router = useRouter();
@@ -16,8 +17,7 @@ export default function AthleteProfile({ profile }) {
 
   const profilePicture =
     profile?.profilePicture ||
-    profile?.media?.profilePicture ||
-    "/wen.webp";
+    profile?.media?.profilePicture;
 
   // clubName lives inside the athlete's current/most recent experience entry
   const club =
@@ -46,13 +46,17 @@ export default function AthleteProfile({ profile }) {
     <div className="flex justify-between my-4">
       <div className="flex items-center space-x-3">
         <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center">
-          <Image
-            src={profilePicture}
-            alt={name}
-            width={48}
-            height={48}
-            className="object-cover"
-          />
+          {profilePicture ? (
+            <Image
+              src={profilePicture}
+              alt={name}
+              width={48}
+              height={48}
+              className="object-cover"
+            />
+          ) : (
+            <User className="w-6 h-6 text-gray-500" />
+          )}
         </div>
         <div>
           <h3 className="font-semibold text-gray-900">{name}</h3>

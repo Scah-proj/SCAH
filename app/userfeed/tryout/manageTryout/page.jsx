@@ -3,6 +3,7 @@
 import MyTryoutCard from "../../../components/manage";
 import { MdArrowBack } from "react-icons/md";
 import Link from "next/link";
+import { Loader } from "lucide-react";
 import { useGetMyTryoutsQuery } from "../../../redux/api/tryoutApi";
 
 export default function ManageTryouts() {
@@ -45,7 +46,7 @@ export default function ManageTryouts() {
       {isLoading ? (
         <div className="flex justify-center items-center py-20">
           <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-600 rounded-full animate-spin"></div>
+            <Loader className="h-6 w-6 animate-spin text-teal-600" />
             <p className="text-gray-500 text-sm">Loading your tryouts...</p>
           </div>
         </div>

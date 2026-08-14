@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
-import { Loader2, Smartphone, Tablet, Monitor, MapPin, LogOut } from "lucide-react";
+import { Loader, Smartphone, Tablet, Monitor, MapPin, LogOut } from "lucide-react";
 import {
   useGetSessionsQuery,
   useRevokeSessionMutation,
@@ -74,8 +74,6 @@ const Page = () => {
         ? session.device.type.charAt(0).toUpperCase() + session.device.type.slice(1)
         : "Unknown device");
 
-    // Prefer browser/OS if we actually parsed them; otherwise fall back
-    // to a resolved location, then to the raw IP, then nothing at all.
     const subtitle =
       hasBrowser || hasOs
         ? [hasBrowser ? browser : null, hasOs ? os : null].filter(Boolean).join(" · ")
@@ -86,7 +84,7 @@ const Page = () => {
     return (
       <div
         key={session.id}
-        className="flex items-center justify-between gap-3 px-3 py-3  hover:bg-gray-50 transition"
+        className="flex items-center justify-between gap-3 px-3 py-3 hover:bg-gray-50 transition"
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-11 h-11 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
@@ -124,9 +122,16 @@ const Page = () => {
           <button
             onClick={() => handleRevoke(session.id)}
             disabled={revokingId === session.id && isRevoking}
-            className="text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-md hover:bg-red-50 transition flex-shrink-0"
+            className="text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed px-3 py-1.5 rounded-md hover:bg-red-50 transition flex-shrink-0 flex items-center gap-1.5"
           >
-            {revokingId === session.id && isRevoking ? "Logging out..." : "Log out"}
+            {revokingId === session.id && isRevoking ? (
+              <>
+                <Loader className="h-3 w-3 animate-spin text-red-600" />
+                <span>Logging out...</span>
+              </>
+            ) : (
+              "Log out"
+            )}
           </button>
         )}
       </div>
@@ -160,8 +165,17 @@ const Page = () => {
               disabled={isRevokingAll}
               className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed border border-red-200 hover:bg-red-50 px-3 py-2 rounded-lg transition flex-shrink-0"
             >
-              <LogOut size={16} />
-              {isRevokingAll ? "Logging out..." : "Log out of all other devices"}
+              {isRevokingAll ? (
+                <>
+                  <Loader className="h-4 w-4 animate-spin text-red-600" />
+                  <span>Logging out...</span>
+                </>
+              ) : (
+                <>
+                  <LogOut size={16} />
+                  <span>Log out of all other devices</span>
+                </>
+              )}
             </button>
           )}
         </div>
@@ -169,9 +183,9 @@ const Page = () => {
 
       {/* Loading State */}
       {isLoading && (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-          <Loader2 className="w-8 h-8 animate-spin mb-2 text-gray-600" />
-          <p className="text-sm font-medium">Loading your sessions...</p>
+        <div className="flex flex-col items-center justify-center py-12 gap-3">
+          <Loader className="h-6 w-6 animate-spin text-teal-600" />
+          <p className="text-sm text-gray-500 font-medium">Loading your sessions...</p>
         </div>
       )}
 
@@ -186,7 +200,7 @@ const Page = () => {
 
       {/* Sessions List */}
       {!isLoading && !isError && (
-        <div className="bg-white border rounded-sm p-3  divide-y divide-gray-100">
+        <div className="bg-white border rounded-sm p-3 divide-y divide-gray-100">
           {currentSession && renderSessionRow(currentSession, { isCurrent: true })}
           {otherSessions.map((session) => renderSessionRow(session))}
 

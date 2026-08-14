@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import Select from "react-select";
+import { Loader } from "lucide-react";
 
 import Trials from "../../components/trials";
 import TryoutSearch from "../../components/Search/SearchTryout";
@@ -157,13 +158,9 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="flex justify-center items-center py-20">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 border-4 border-gray-200 border-t-teal-600 rounded-full animate-spin"></div>
-            <p className="text-gray-500 text-sm">
-              Loading tryouts...
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <Loader className="h-6 w-6 animate-spin text-teal-600" />
+          <p className="text-sm text-gray-500">Loading tryouts...</p>
         </div>
       </div>
     );

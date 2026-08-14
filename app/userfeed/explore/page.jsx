@@ -14,13 +14,10 @@ import {
   useDismissSuggestionMutation,
   useGetPeopleYouMayKnowQuery,
 } from "../../redux/api/recommendationApi";
-import {
-  useLazySearchUsersQuery,
-  useGetAllProfilesQuery,
-} from "../../redux/api/profileApi";
+import { useLazySearchUsersQuery } from "../../redux/api/profileApi";
 
 // Pulls a display-ready { id, name, subTitle, avatar } out of the various
-// shapes search/profile/recommendation endpoints wrap users in.
+// shapes search/recommendation endpoints wrap users in.
 const normalizeUser = (item) => {
   const userObj = item?.user || item;
   const id = userObj?._id || userObj?.id || userObj?.userId;
@@ -93,19 +90,6 @@ const Page = () => {
   } = useGetPeopleYouMayKnowQuery({ page: 1, limit: 20 });
   const [dismissSuggestion] = useDismissSuggestionMutation();
 
-  // All profiles directory, paginated. Only fetched once search isn't
-  // active, so we're not running two people-listing requests at once.
-  const [profilesPage, setProfilesPage] = useState(1);
-  const {
-    data: allProfilesData,
-    isLoading: allProfilesLoading,
-    isFetching: allProfilesFetching,
-    isError: allProfilesError,
-  } = useGetAllProfilesQuery(
-    { page: profilesPage, limit: 20 },
-    { skip: isSearchActive }
-  );
-
   const trendingPosts = trendingData?.data?.posts || [];
   const people = Array.isArray(suggestedPeople)
     ? suggestedPeople
@@ -114,19 +98,6 @@ const Page = () => {
       suggestedPeople?.data?.users ||
       suggestedPeople?.data ||
       [];
-
-  const allProfilesList = Array.isArray(allProfilesData)
-    ? allProfilesData
-    : allProfilesData?.profiles ||
-      allProfilesData?.users ||
-      allProfilesData?.data ||
-      [];
-
-  const allProfilesPagination =
-    allProfilesData?.pagination || allProfilesData?.meta || null;
-  const hasMoreProfiles = allProfilesPagination
-    ? profilesPage < (allProfilesPagination.totalPages || 1)
-    : allProfilesList.length >= 20;
 
   const handleDismiss = async (userId) => {
     if (!userId) return;
@@ -140,8 +111,7 @@ const Page = () => {
 
   const isLoading = trendingLoading || peopleLoading;
 
-  // Reusable person card, shared between search results, suggested
-  // people, and the all-profiles directory.
+  // Reusable person card, shared between search results and suggested people.
   const renderPersonCard = (person, { onDismiss } = {}) => {
     const { id, name, subTitle, avatar } = person;
 
@@ -229,14 +199,9 @@ const Page = () => {
         <div className="space-y-6">
           <FilterBar />
 
-          <div className="flex items-center justify-center py-24">
-            <div className="flex flex-col items-center gap-4">
-              <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-teal-600"></div>
-
-              <p className="text-sm text-gray-500">
-                Loading explore...
-              </p>
-            </div>
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Loader className="h-6 w-6 animate-spin text-teal-600" />
+            <p className="text-sm text-gray-500">Loading explore...</p>
           </div>
         </div>
       </div>
@@ -310,48 +275,6 @@ const Page = () => {
                     })
                   )}
                 </div>
-              )}
-            </div>
-
-            <div className="p-2 my-4 space-y-4">
-              <p className="font-semibold text-lg">
-                All Profiles
-              </p>
-
-              {allProfilesError ? (
-                <p className="text-red-500">
-                  Failed to load profiles.
-                </p>
-              ) : allProfilesLoading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader className="h-6 w-6 animate-spin text-teal-600" />
-                </div>
-              ) : allProfilesList.length === 0 ? (
-                <p className="text-sm text-gray-500">No profiles found.</p>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    {allProfilesList.map((item) =>
-                      renderPersonCard(normalizeUser(item))
-                    )}
-                  </div>
-
-                  {hasMoreProfiles && (
-                    <div className="flex justify-center pt-2">
-                      <button
-                        type="button"
-                        onClick={() => setProfilesPage((p) => p + 1)}
-                        disabled={allProfilesFetching}
-                        className="flex items-center gap-2 rounded-full border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        {allProfilesFetching && (
-                          <Loader className="h-4 w-4 animate-spin text-teal-600" />
-                        )}
-                        Load more
-                      </button>
-                    </div>
-                  )}
-                </>
               )}
             </div>
           </div>
