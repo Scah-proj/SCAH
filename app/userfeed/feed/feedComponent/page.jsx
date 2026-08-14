@@ -121,7 +121,7 @@ export default function FeedComponent() {
         ) : (
           <div className="text-center py-12">
             <p className="text-gray-500">
-              Nothing to see yet.
+              Nothing to see yet
             </p>
           </div>
         )}
