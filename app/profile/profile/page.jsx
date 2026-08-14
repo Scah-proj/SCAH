@@ -1,9 +1,10 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MdArrowBack, MdClose, MdPersonAdd } from "react-icons/md";
-import { User } from "lucide-react";
+import { User, Loader, FolderOpen } from "lucide-react";
 
 import ProfileInfo from "../profileInfo";
 import ProfileGallery from "../profileGallery";
@@ -25,6 +26,8 @@ export default function Profile({
   posts: passedPosts,
   isLoadingPosts: passedLoading,
 }) {
+  const [showNoDataModal, setShowNoDataModal] = useState(false);
+
   const { data: myProfile } = useGetMyProfileQuery(undefined, {
     skip: !isOwnProfile,
   });
@@ -58,6 +61,13 @@ export default function Profile({
     passedPosts ??
     (myPostsData?.data?.posts || myPostsData?.data || myPostsData?.posts || []);
   const isLoadingPosts = passedLoading ?? isLoadingMyPosts;
+
+  // Open No Data Modal when posts fetch completes and array is empty
+  useEffect(() => {
+    if (!isLoadingPosts && (!posts || posts.length === 0)) {
+      setShowNoDataModal(true);
+    }
+  }, [isLoadingPosts, posts]);
 
   const profile = isOwnProfile
     ? myProfile
@@ -104,20 +114,29 @@ export default function Profile({
         following={following}
       />
 
-<div className="mx-4 flex justify-center items-center">
+      <div className="mx-4 flex justify-center items-center">
         <div>
-          {/* Gallery Posts &  View All Posts Button */}
-          <div className="space-y-3 my-4">
-            <ProfileGallery posts={posts} isLoading={isLoadingPosts} />
-            {posts.length > 6 && (
-                <div className="flex justify-center">
-                  <Link
-                    href={`/profile/profile/${targetUserId}/allPosts`}
-                    className="w-full text-center py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors block"
-                  >
-                    View All Posts
-                  </Link>
-                </div>
+          {/* Gallery Posts & View All Posts Button */}
+          <div className="space-y-3 my-4 relative">
+            {isLoadingPosts ? (
+              <div className="flex flex-col items-center justify-center py-12 space-y-3 bg-gray-50/50 rounded-xl border border-gray-100">
+                <Loader className="w-8 h-8 text-teal-600 animate-spin" />
+                <p className="text-sm text-gray-500 font-medium">Loading posts...</p>
+              </div>
+            ) : (
+              <>
+                <ProfileGallery posts={posts} isLoading={isLoadingPosts} />
+                {posts.length > 6 && (
+                  <div className="flex justify-center">
+                    <Link
+                      href={`/profile/profile/${targetUserId}/allPosts`}
+                      className="w-full text-center py-2.5 px-4 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-lg shadow-sm transition-colors block"
+                    >
+                      View All Posts
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -362,6 +381,37 @@ export default function Profile({
           )}
         </div>
       </div>
+
+      {/* Custom No Data Modal */}
+      {showNoDataModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-xl border border-gray-100 relative animate-in fade-in zoom-in-95 duration-200">
+            <button
+              onClick={() => setShowNoDataModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full transition-colors"
+            >
+              <MdClose size={20} />
+            </button>
+            <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-full flex items-center justify-center mx-auto">
+              <FolderOpen className="w-8 h-8" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-lg font-semibold text-gray-900">No Posts Available</h3>
+              <p className="text-sm text-gray-500">
+                {isOwnProfile
+                  ? "You haven't uploaded any posts yet."
+                  : "This profile does not have any published posts yet."}
+              </p>
+            </div>
+            <button
+              onClick={() => setShowNoDataModal(false)}
+              className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

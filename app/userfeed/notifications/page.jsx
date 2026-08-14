@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { Loader } from "lucide-react";
 
 import NotificationPills from "./Categories";
 import NotificationByGroup from "./NotificationByGroup";
@@ -36,14 +37,11 @@ const Page = () => {
 
         <NotificationPills active={active} setActive={setActive} />
 
-        <div className="flex justify-center items-center py-20">
-          <div className="flex flex-col items-center gap-4">
-            <div className="w-12 h-12 rounded-full border-4 border-gray-200 border-t-teal-600 animate-spin"></div>
-
-            <p className="text-sm text-gray-500">
-              Loading notifications...
-            </p>
-          </div>
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+          <Loader className="h-6 w-6 animate-spin text-teal-600" />
+          <p className="text-sm text-gray-500">
+            Loading notifications...
+          </p>
         </div>
       </div>
     );

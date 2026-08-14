@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
+import { Loader } from "lucide-react";
 import { useGetDeletedPostsQuery } from "../../../../../redux/api/feedApi"; 
 import PostCard from "../../../../../components/PostCard"; 
 
@@ -27,8 +28,9 @@ const Page = () => {
 
       <div className="px-4 space-y-6">
         {isLoading ? (
-          <div className="space-y-4 text-center py-8">
-            <p className="text-gray-500 animate-pulse">Loading deleted posts...</p>
+          <div className="flex flex-col items-center gap-4 py-8">
+            <Loader className="h-8 w-8 animate-spin text-teal-600" />
+            <p className="text-sm text-gray-500">Loading deleted posts...</p>
           </div>
         ) : isError ? (
           <div className="p-4 rounded-lg bg-red-50 text-red-600 text-sm">

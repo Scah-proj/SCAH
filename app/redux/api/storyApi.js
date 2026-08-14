@@ -4,14 +4,36 @@ export const storyApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Create Story
     createStory: builder.mutation({
-      query: (storyData) => {
+      query: (storyData) =>
+      {
         const formData = new FormData();
 
         formData.append("mediaType", storyData.mediaType);
         formData.append("caption", storyData.caption);
 
-        if (storyData.media) {
+        if (storyData.media)
+        {
           formData.append("media", storyData.media);
+        }
+
+        // Text-story styling fields — these were previously never
+        // appended, so the backend always fell back to its defaults
+        // (#000000 / #FFFFFF) regardless of what the user picked.
+        if (storyData.backgroundColor)
+        {
+          formData.append("backgroundColor", storyData.backgroundColor);
+        }
+        if (storyData.textColor)
+        {
+          formData.append("textColor", storyData.textColor);
+        }
+        if (storyData.fontStyle)
+        {
+          formData.append("fontStyle", storyData.fontStyle);
+        }
+        if (storyData.duration)
+        {
+          formData.append("duration", storyData.duration);
         }
 
         return {
@@ -70,7 +92,7 @@ export const storyApi = baseApi.injectEndpoints({
       invalidatesTags: ["Story"],
     }),
 
-    
+
     archiveStory: builder.mutation({
       query: (storyId) => ({
         url: `/api/stories/${storyId}/archive`,

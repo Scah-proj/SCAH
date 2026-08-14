@@ -175,8 +175,14 @@ export default function ViewStory({
           key: storyKey,
           content: () => {
             if (isTextStory(story)) {
-              const bg = story?.media?.backgroundColor || "#000000";
-              const textColor = story?.media?.textColor || "#FFFFFF";
+              const bg =
+                story?.media?.backgroundColor ||
+                story?.backgroundColor ||
+                "#000000";
+              const textColor =
+                story?.media?.textColor ||
+                story?.textColor ||
+                "#FFFFFF";
               const text = story?.caption || "";
 
               return (

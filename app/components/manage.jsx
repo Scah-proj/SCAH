@@ -60,16 +60,19 @@ export default function MyTryoutCard({ trial }) {
 
       {/* Title + Badge image */}
       <div className="flex items-center gap-3 mt-4">
-         <span className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 border">
-                      <Image
-                        src={trial.badge || "/images/avatar.png"}
-                        alt="Tryout"
-                        width={34}
-                        height={34}
-                        className="object-cover"
-                      />
-                    </span>
-        
+        <span className="w-8 h-8 rounded-full overflow-hidden bg-gray-100 border flex items-center justify-center shrink-0">
+          {trial.badge ? (
+            <Image
+              src={trial.badge}
+              alt="Tryout"
+              width={34}
+              height={34}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <Users className="w-4 h-4 text-gray-500" />
+          )}
+        </span>
 
         <div className="min-w-0">
           <h2 className="font-semibold text-gray-900 truncate">
