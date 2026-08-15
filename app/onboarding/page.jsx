@@ -273,9 +273,7 @@ export default function FormContainer() {
     }
   }
 
-  // Skip runs the exact same flow as pressing Complete on the last step —
-  // same mutation chain, same success behavior — just triggered early with
-  // whatever selections have been filled in so far.
+  
   const handleSkip = async (selections) => {
     console.log('Onboarding skipped by user, selections so far:', selections);
     return handleComplete(selections);
