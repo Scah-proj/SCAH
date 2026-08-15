@@ -43,35 +43,35 @@ export default function AthleteProfile({ profile }) {
   };
 
   return (
-    <div className="flex justify-between my-4">
-      <div className="flex items-center space-x-3">
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center">
-          {profilePicture ? (
-            <Image
-              src={profilePicture}
-              alt={name}
-              width={48}
-              height={48}
-              className="object-cover"
-            />
-          ) : (
-            <User className="w-6 h-6 text-gray-500" />
-          )}
-        </div>
-        <div>
-          <h3 className="font-semibold text-gray-900">{name}</h3>
-          <p className="text-xs text-gray-600">{club}</p>
-        </div>
+  <div className="flex items-center justify-between gap-3 my-4">
+    <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center shrink-0">
+        {profilePicture ? (
+          <Image
+            src={profilePicture}
+            alt={name}
+            width={48}
+            height={48}
+            className="object-cover"
+          />
+        ) : (
+          <User className="w-6 h-6 text-gray-500" />
+        )}
       </div>
-      <div>
-        <button
-          onClick={handleViewProfile}
-          className="border border-gray-300 px-4 py-1 flex items-center justify-center rounded-full text-teal-600 text-sm font-semibold cursor-pointer"
-        >
-          <MdOutlinePersonAddAlt size={16} className="mr-1" />
-          <p>Connect</p>
-        </button>
+
+      <div className="min-w-0">
+        <h3 className="font-semibold text-gray-900 truncate">{name}</h3>
+        <p className="text-xs text-gray-600 truncate">{club}</p>
       </div>
     </div>
-  );
+
+    <button
+      onClick={handleViewProfile}
+      className="shrink-0 border border-gray-300 px-4 py-1 flex items-center justify-center rounded-full text-teal-600 text-sm font-semibold cursor-pointer"
+    >
+      <MdOutlinePersonAddAlt size={16} className="mr-1" />
+      <span>Connect</span>
+    </button>
+  </div>
+);
 }

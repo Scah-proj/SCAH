@@ -302,15 +302,15 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
               <button
                 onClick={handleFollowToggle}
                 disabled={isActionLoading}
-                className={`rounded-lg px-5 py-2.5 w-full sm:w-auto text-sm font-medium transition ${
-                  isFollowing
-                    ? "bg-teal-600 text-white hover:bg-teal-700"
-                    : "bg-teal-600 hover:bg-teal-700 text-white"
-                } ${
-                  isActionLoading
-                    ? "opacity-70 cursor-not-allowed"
-                    : ""
-                }`}
+                className={`rounded-lg px-5 py-2.5 w-full sm:w-auto text-sm font-medium border transition ${
+  isFollowing
+    ? "bg-white border-teal-600 text-teal-600 hover:bg-teal-50"
+    : "bg-teal-600 border-teal-600 text-white hover:bg-teal-700"
+} ${
+  isActionLoading
+    ? "opacity-70 cursor-not-allowed"
+    : ""
+}`}
               >
                 {isActionLoading
                   ? isFollowing

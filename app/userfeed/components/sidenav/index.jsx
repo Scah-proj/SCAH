@@ -101,7 +101,7 @@ const Sidenav = ({ onClose }) => {
             </Link>
 
             <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-              <p className="font-semibold text-base text-black truncate">
+              <p className="text-base font-semibold text-black truncate">
                 {mounted ? displayName : "Profile"}
               </p>
 
@@ -140,22 +140,22 @@ const Sidenav = ({ onClose }) => {
                     className={`group flex items-center gap-3 px-3 py-2.5 rounded-md transition-colors ${
                       isActive
                         ? "bg-teal-500 text-white"
-                        : "text-gray-700 hover:bg-gray-200/50 hover:text-gray-700"
+                        : "text-gray-900 hover:bg-gray-200/50 hover:text-gray-700"
                     }`}
                   >
                     <span
                       className={`flex-shrink-0 ${
                         isActive
                           ? "text-white"
-                          : "text-gray-500 group-hover:text-gray-700"
+                          : "text-gray-900 font-bold group-hover:text-gray-700"
                       }`}
                     >
                       {route.icon}
                     </span>
 
-                    <span className="text-sm font-medium">
+                    <p className="text-sm font-semibold">
                       {route.label}
-                    </span>
+                    </p>
                   </Link>
                 </li>
               );

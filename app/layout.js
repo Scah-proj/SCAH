@@ -1,18 +1,23 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo_Black, Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast"; // 1. Import Toaster
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
 import Providers from "./redux/provider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const century = localFont({
+  src: "./fonts/Century.ttf",
+  variable: "--font-body",
+  display: "swap",
+})
+
+const archivoBlack = Archivo_Black({
+  weight: "400",
+  variable: "--font-heading",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata = {
   title: "SCAH",
@@ -32,7 +37,7 @@ export default function RootLayout({ children }) {
           defer
         ></script>
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${archivoBlack.variable} ${century.variable} antialiased`}>
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
           <Providers>
             <Toaster position="top-right" /> 
