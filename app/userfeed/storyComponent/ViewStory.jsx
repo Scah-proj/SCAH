@@ -44,6 +44,29 @@ const isPopulatedViewer = (viewer) => {
 const hasPopulatedViews = (views) =>
   Array.isArray(views) && views.length > 0 && views.some(isPopulatedViewer);
 
+// Converts a timestamp into a short relative label, e.g. "5m", "2h", "3d".
+// Falls back to "now" for anything under a minute, and to the calendar
+// date once it's more than 7 days old (matches typical story-UI behavior).
+const getRelativeTime = (dateInput) => {
+  if (!dateInput) return "";
+
+  const date = new Date(dateInput);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const diffMs = Date.now() - date.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSeconds < 60) return "now";
+  if (diffMinutes < 60) return `${diffMinutes}m`;
+  if (diffHours < 24) return `${diffHours}h`;
+  if (diffDays < 7) return `${diffDays}d`;
+
+  return date.toLocaleDateString();
+};
+
 const VIDEO_EXTENSIONS = [".mp4", ".mov", ".webm", ".m4v"];
 const isVideoStory = (story) => {
   const type = story?.media?.type || story?.type;
@@ -474,8 +497,7 @@ export default function ViewStory({
                 {displayUsername}
               </p>
               <p className="text-gray-300 text-xs">
-                {currentStory?.createdAt &&
-                  new Date(currentStory.createdAt).toLocaleString()}
+                {getRelativeTime(currentStory?.createdAt)}
               </p>
             </div>
           </div>
