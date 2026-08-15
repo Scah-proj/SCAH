@@ -18,7 +18,11 @@ import {
   useUpdateActivityLevelMutation,
   useCompleteOnboardingMutation,
 } from "../redux/api/onboardingApi";
-import { updateOnboardingStatus } from "../redux/features/auth/authSlice";
+import {
+  updateOnboardingStatus,
+  updateAthleteProfile,
+  updateScoutProfile,
+} from "../redux/features/auth/authSlice";
 
 export const positionsBySport = {
   Football: [
@@ -259,7 +263,7 @@ export default function FormContainer() {
         }
       }
 
-      await completeOnboarding().unwrap();
+      const completeResult = await completeOnboarding().unwrap();
       console.log('Onboarding fully complete');
 
       dispatch(updateOnboardingStatus({
@@ -267,13 +271,28 @@ export default function FormContainer() {
         onboarding: { onboardingCompleted: true },
       }));
 
+      // completeOnboarding now creates and returns the Athlete/Scout
+      // record server-side. Put it straight into Redux so it's there
+      // immediately — not just whatever getMyProfileQuery eventually
+      // refetches — since that's what was previously only getting
+      // populated on the next login.
+      const data = completeResult?.data ?? completeResult;
+
+      if (data?.athleteProfile) {
+        dispatch(updateAthleteProfile(data.athleteProfile));
+      } else if (data?.scoutProfile) {
+        dispatch(updateScoutProfile(data.scoutProfile));
+      }
+
       router.push('/userfeed');
     } catch (error) {
       console.error('Error during onboarding submission:', error);
     }
   }
 
-  
+  // Skip runs the exact same flow as pressing Complete on the last step —
+  // same mutation chain, same success behavior — just triggered early with
+  // whatever selections have been filled in so far.
   const handleSkip = async (selections) => {
     console.log('Onboarding skipped by user, selections so far:', selections);
     return handleComplete(selections);
