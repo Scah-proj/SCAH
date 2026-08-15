@@ -2,20 +2,22 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSelector } from "react-redux";
 import { useRouter, useSearchParams } from "next/navigation";
 import { MdCheckCircle, MdSearch, MdArrowBack } from "react-icons/md";
 import {
   useGetMyFollowingQuery,
   useGetFollowingQuery,
-} from "../../redux/api/connectionApi"; 
+} from "../../redux/api/connectionApi";
 import { Loader } from "lucide-react";
 
-
-
-
-export default function FollowingPage() {
+// useSearchParams() requires the component that calls it to be wrapped
+// in a <Suspense> boundary, or Next.js fails during static prerendering.
+// Splitting it into its own component and wrapping that (not the whole
+// page) in <Suspense> fixes the build while keeping everything else
+// unchanged — same fix as the followers page.
+function FollowingPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const profileId = searchParams.get("userId"); // present only when viewing someone else's profile
@@ -119,7 +121,7 @@ export default function FollowingPage() {
       <div className="px-0 sm:px-4 py-0 sm:py-4">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <Loader  className="h-6 w-6 animate-spin text-teal-600" />
+            <Loader className="h-6 w-6 animate-spin text-teal-600" />
             <p className="text-sm text-gray-500">Loading following...</p>
           </div>
         ) : isError ? (
@@ -195,5 +197,20 @@ export default function FollowingPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function FollowingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex flex-col items-center justify-center py-16 gap-3 min-h-screen">
+          <Loader className="h-6 w-6 animate-spin text-teal-600" />
+          <p className="text-sm text-gray-500">Loading following...</p>
+        </div>
+      }
+    >
+      <FollowingPageContent />
+    </Suspense>
   );
 }

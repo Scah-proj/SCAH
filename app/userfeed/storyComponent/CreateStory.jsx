@@ -178,9 +178,7 @@ export default function CreateStory({ open, onClose }) {
                     className="h-full w-full rounded-lg object-cover"
                   />
                 ) : (
-                  // Plain <img>, not next/image: next/image runs blob: URLs
-                  // through the image optimizer, which doesn't handle local
-                  // file previews correctly.
+                 
                   <img
                     src={preview}
                     alt="Preview"

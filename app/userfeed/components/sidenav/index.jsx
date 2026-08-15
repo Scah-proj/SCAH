@@ -164,7 +164,7 @@ const Sidenav = ({ onClose }) => {
         </nav>
       </div>
 
-      {/* Bottom Logout Section */}
+      
       <div className="p-4 border-t border-gray-200">
         <button
           onClick={handleLogout}
