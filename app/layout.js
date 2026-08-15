@@ -6,7 +6,7 @@ import "./globals.css";
 import Providers from "./redux/provider";
 
 const century = localFont({
-  src: "./fonts/CENTURY.TTF",
+  src: "./fonts/CENTURY.ttf",
   variable: "--font-body",
   display: "swap",
 })
