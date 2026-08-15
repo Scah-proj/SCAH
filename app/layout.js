@@ -1,5 +1,4 @@
-import { Archivo_Black, Lora, Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
+import { Archivo_Black, Lora} from "next/font/google";
 import { Toaster } from "react-hot-toast"; // 1. Import Toaster
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
