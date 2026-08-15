@@ -18,7 +18,11 @@ import {
   useUpdateActivityLevelMutation,
   useCompleteOnboardingMutation,
 } from "../redux/api/onboardingApi";
-import { updateOnboardingStatus } from "../redux/features/auth/authSlice";
+import {
+  updateOnboardingStatus,
+  updateAthleteProfile,
+  updateScoutProfile,
+} from "../redux/features/auth/authSlice";
 
 export const positionsBySport = {
   Football: [
@@ -234,21 +238,32 @@ export default function FormContainer() {
         city: selections[2]?.city,
       }).unwrap();
 
+      // Level-specific calls are guarded: Skip becomes visible as early as
+      // step-3, before playing/activity/scouting level has been selected.
+      // Only fire these if the user actually got that far and picked
+      // something — otherwise leave them out of the chain entirely rather
+      // than sending undefined and breaking the whole completion flow.
       if (selections[0]?.selection === 'Athlete') {
-        await updatePlayingLevel({
-          currentPlayingLevel: selections[3]?.selection
-        }).unwrap();
+        if (selections[3]?.selection) {
+          await updatePlayingLevel({
+            currentPlayingLevel: selections[3]?.selection
+          }).unwrap();
+        }
 
-        await updateActivityLevel({
-          activityLevel: selections[4]?.selection
-        }).unwrap();
+        if (selections[4]?.selection) {
+          await updateActivityLevel({
+            activityLevel: selections[4]?.selection
+          }).unwrap();
+        }
       } else {
-        await updateScoutingLevel({
-          scoutingLevel: selections[3]?.selection
-        }).unwrap();
+        if (selections[3]?.selection) {
+          await updateScoutingLevel({
+            scoutingLevel: selections[3]?.selection
+          }).unwrap();
+        }
       }
 
-      await completeOnboarding().unwrap();
+      const completeResult = await completeOnboarding().unwrap();
       console.log('Onboarding fully complete');
 
       dispatch(updateOnboardingStatus({
@@ -256,15 +271,31 @@ export default function FormContainer() {
         onboarding: { onboardingCompleted: true },
       }));
 
+      // completeOnboarding now creates and returns the Athlete/Scout
+      // record server-side. Put it straight into Redux so it's there
+      // immediately — not just whatever getMyProfileQuery eventually
+      // refetches — since that's what was previously only getting
+      // populated on the next login.
+      const data = completeResult?.data ?? completeResult;
+
+      if (data?.athleteProfile) {
+        dispatch(updateAthleteProfile(data.athleteProfile));
+      } else if (data?.scoutProfile) {
+        dispatch(updateScoutProfile(data.scoutProfile));
+      }
+
       router.push('/userfeed');
     } catch (error) {
       console.error('Error during onboarding submission:', error);
     }
   }
 
-  const handleSkip = () => {
-    console.log('Onboarding skipped by user');
-    router.push('/userfeed');
+  // Skip runs the exact same flow as pressing Complete on the last step —
+  // same mutation chain, same success behavior — just triggered early with
+  // whatever selections have been filled in so far.
+  const handleSkip = async (selections) => {
+    console.log('Onboarding skipped by user, selections so far:', selections);
+    return handleComplete(selections);
   };
 
   return <MultiStepForm formSteps={formSteps} onComplete={handleComplete} onSkip={handleSkip} positionsBySport={positionsBySport} />;

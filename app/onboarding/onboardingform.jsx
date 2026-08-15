@@ -1,7 +1,6 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
 import { useState } from 'react'
@@ -367,6 +366,7 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
   const [currentStep, setStep] = useState(0)
   const [selections, setSelections] = useState({})
   const [isCompleting, setIsCompleting] = React.useState(false)
+  const [isSkipping, setIsSkipping] = React.useState(false)
 
   const setSelection = (step, selection) => {
     setSelections((prev) => ({
@@ -415,6 +415,23 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
       finally{
         setIsCompleting(false)
       }
+    }
+  }
+
+  // Skip runs the same completion flow as Continue/Complete on the last
+  // step — it passes the current selections through to onSkip, which (in
+  // the parent) fires the same mutation chain and only navigates on
+  // success. No Link involved, so we never route away before the API
+  // calls have actually resolved.
+  const handleSkipClick = async () => {
+    if (isSkipping) return
+    setIsSkipping(true)
+    try {
+      await onSkip(selections)
+    } catch (error) {
+      console.error('Error skipping onboarding:', error)
+    } finally {
+      setIsSkipping(false)
     }
   }
 
@@ -481,15 +498,14 @@ console.log("Step", currentStep, "Selections", selections[currentStep], "Has sel
               {title && <div className="flex items-center">{title}</div>}
               <div className="w-20 flex justify-end">
                 {currentStep > 1 && (
-                  <Link href="/userfeed">
-                    <Button
-                      variant="link"
-                      onClick={onSkip}
-                      className="text-sm text-muted-foreground hover:text-foreground p-0"
-                    >
-                      Skip
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="link"
+                    onClick={handleSkipClick}
+                    disabled={isSkipping}
+                    className="text-sm text-muted-foreground hover:text-foreground p-0"
+                  >
+                    {isSkipping ? 'Skipping...' : 'Skip'}
+                  </Button>
                 )}
               </div>
             </div>

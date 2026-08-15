@@ -34,6 +34,22 @@ const extractArray = (...candidates) => {
   return [];
 };
 
+// True if `myId` already appears in a story's views/viewers array —
+// i.e. the backend already recorded this user viewing it, regardless
+// of local component state (which resets on refresh).
+const hasUserViewedStory = (story, myId) => {
+  if (!myId) return false;
+  const views = story?.viewers || story?.views || [];
+  return views.some((v) => String(getUserId(v?.user || v)) === String(myId));
+};
+
+// True only once every story for this user has already been viewed by
+// `myId`. A single unseen story in the list keeps the ring "unseen".
+const hasFullyViewedAllStories = (stories, myId) => {
+  if (!Array.isArray(stories) || stories.length === 0) return false;
+  return stories.every((story) => hasUserViewedStory(story, myId));
+};
+
 export default function StoryComponent() {
   const dispatch = useDispatch();
 
@@ -177,6 +193,10 @@ export default function StoryComponent() {
           hasStory={hasMyStories}
           hasUnseenStories={false}
           avatar={myProfilePicture}
+          // Most recent own story — if it's a text-only post, StoryAvatar
+          // shows its background color as the thumbnail instead of the
+          // profile picture.
+          latestStory={myStoriesList?.[0]}
           onClick={() => {
             if (hasMyStories) {
               setShowMyStory(true);
@@ -189,19 +209,39 @@ export default function StoryComponent() {
         {/* Other Users' Feed Avatars */}
         {otherUsers.map((user, index) => {
           const userId = getUserId(user);
+          const latestStory = user.stories?.[0];
+          const isLatestTextStory =
+            String(latestStory?.media?.type || latestStory?.type || "").toLowerCase() ===
+            "text";
+
+          // Already viewed if either: the backend already has `myId` in
+          // every story's views (survives refresh), or this session's
+          // local click-through already marked it (immediate feedback
+          // before the next refetch lands).
+          const alreadyViewed =
+            Boolean(viewedUsers[userId]) ||
+            hasFullyViewedAllStories(user.stories, myId);
+
           return (
             <StoryAvatar
               key={userId || index}
               avatar={
+                // Don't fall back to a story's media URL when the latest
+                // story is text-only (there's no media file to show) —
+                // StoryAvatar will render the background color instead.
                 user.profilePicture ||
                 user.picture ||
-                user.stories?.[0]?.media?.url ||
+                (!isLatestTextStory ? latestStory?.media?.url : null) ||
                 "/default-avatar.png"
               }
               owner={false}
               hasStory={user.stories?.length > 0}
-              hasUnseenStories={!viewedUsers[userId]}
-              onClick={() => setActiveUserId(userId)}
+              hasUnseenStories={!alreadyViewed}
+              latestStory={latestStory}
+              onClick={() => {
+                setActiveUserId(userId);
+                setViewedUsers((prev) => ({ ...prev, [userId]: true }));
+              }}
             />
           );
         })}
