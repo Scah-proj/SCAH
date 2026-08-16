@@ -120,9 +120,9 @@ const Page = () => {
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div className="flex flex-wrap items-center gap-4">
-              <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
-                Filters
-              </p>
+              <h3 className="text-sm font-semibold text-gray-600 tracking-wide">
+                FILTERS
+              </h3>
 
               <div className="w-48">
                 <Select
@@ -147,10 +147,10 @@ const Page = () => {
 
             {user?.role === "Scout" && (
               <div className="flex items-center gap-3">
-                <Button variant="outline" disabled>
+                <Button className="font-semibold" variant="outline" disabled>
                   Manage Tryouts
                 </Button>
-                <Button className="bg-teal-600" disabled>
+                <Button className="bg-teal-600 font-semibold" disabled>
                   Post Tryout
                 </Button>
               </div>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { useUserStore } from "../../lib/userStore";
 import { useEffect, useState } from "react";
+import { User } from "lucide-react";
 
 export default function FollowersProfile( {selectedFollowers, setSelectedFollowers}) {
     const { user } = useUserStore();
@@ -50,7 +51,7 @@ export default function FollowersProfile( {selectedFollowers, setSelectedFollowe
             <div className="relative ">
                 <div className="relative w-12 h-12 rounded-full overflow-hidden border">
               <Image
-                src={follower.profilePicture || "/wen.webp"}
+                src={follower.profilePicture || <User className="w-5 h-5 text-gray-400" />}
                 alt={follower.name}
                 fill
                 className="object-cover"

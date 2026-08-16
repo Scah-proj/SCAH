@@ -247,22 +247,22 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
               {displayName}
             </p>
 
-            <p className="font-medium text-sm text-gray-800">
+            <p className="font-medium text-sm text-black">
               {profile?.club}
             </p>
 
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-black">
               {profile?.location?.state}, {profile?.location?.country}
             </p>
             {profile?.bio ? (
-              <p className="text-sm text-gray-600 max-w-full md:max-w-md mt-1">
-                {profile.bio}
+              <p className="text-sm text-gray-700 max-w-full md:max-w-md mt-1">
+                "{profile.bio}""
               </p>
             ) : (
               isOwnProfile && (
                 <button
                   onClick={handleEdit}
-                  className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-transparent w-full sm:w-auto py-2.5 text-sm font-medium text-gray-700 transition"
+                  className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-transparent w-full sm:w-auto py-2.5 text-sm font-medium text-gray-500 transition"
                 >
                   Add Bio
                   <MdEdit size={16} />
@@ -329,9 +329,9 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
               href={followersHref}
               className="text-center group cursor-pointer"
             >
-              <p className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
                 {followers}
-              </p>
+              </h3>
               <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
                 Followers
               </p>
@@ -341,9 +341,9 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
               href={followingHref}
               className="text-center group cursor-pointer"
             >
-              <p className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
                 {following}
-              </p>
+              </h3>
               <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
                 Following
               </p>

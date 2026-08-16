@@ -35,12 +35,12 @@ export default function Suggestions() {
       {/* Upcoming Trials Section - always visible */}
       <div className="rounded-lg">
         <div className="flex justify-between mb-6">
-          <p className="font-semibold">Upcoming Trials</p>
+          <h3 className="font-semibold">Upcoming Trials</h3>
           <Link
             href="/userfeed/tryout"
-            className="text-teal-600 font-semibold cursor-pointer"
+            className="text-teal-600 font-medium cursor-pointer"
           >
-            See All
+            <p className="text-sm">See all</p>
           </Link>
         </div>
         <div>
@@ -71,7 +71,7 @@ export default function Suggestions() {
       {/* Show Athlete recommendations if logged-in user is a Scout */}
       {mounted && isScout && (
         <div className="rounded-xl shadow-sm p-4 my-4 space-y-1">
-          <p className="font-semibold text-lg">Recommended Athletes</p>
+          <h3 className="font-semibold text-lg">Recommended Athletes</h3>
           <p className="text-sm text-gray-500">
             Based on your location and distance
           </p>

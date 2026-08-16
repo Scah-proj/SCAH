@@ -176,13 +176,13 @@ const [
   return (
     <div>
       <div className="my-4">
-<p className="text-2xl font-bold">
+<h3 className="text-3xl md:text-4xl font-bold text-gray-900">
   {mode === "create" ? "New Tryout" : "Edit Tryout"}
-</p>      </div>
+</h3>      </div>
       <div>
         <form onSubmit={handleSubmit} className="bg-white rounded-lg p-6 space-y-6 shadow-md border">
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Tryout Details</h3>
+            <p className="text-lg font-semibold">Tryout Details</p>
             <input name="title" placeholder="Trial Title" value={formData.title} onChange={handleChange} className="w-full rounded-md p-2 border border-gray-300" />
             <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} className="w-full rounded-md p-2 border border-gray-300" />
 

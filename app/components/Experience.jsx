@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { MdEdit } from "react-icons/md";
 import { IoTrash } from "react-icons/io5";
 
@@ -107,11 +107,11 @@ export default function ExperienceSection({
   if (!experienceList || experienceList.length === 0) {
     return (
       <div className="my-4 rounded-md border border-dashed border-gray-300 p-6 text-center text-gray-500">
-        <p>No experience added yet.</p>
+        <p className="text-lg">No experience added yet.</p>
 
         {isOwnProfile && (
-          <p className="text-sm mt-2">
-            Add your experience from Edit Profile.
+          <p className="text-xs mt-2">
+            Add experience in <Link href="/profile/editProfile" className="text-teal-500">Edit Profile</Link>.
           </p>
         )}
       </div>

@@ -599,13 +599,13 @@ export default function PostCard({ post }) {
               onClick={handleAvatarClick}
               className="cursor-pointer"
             >
-              <p className="text-sm font-semibold text-gray-900">
+              <h3 className="text-sm font-semibold text-gray-900">
                 {authorName}{authorIsVerified ? " ✓" : ""} •  
                 <span className={`text-xs mx-2 font-semibold ${isDeleted ? "text-red-500" : "text-teal-600"}`}>
                   {isDeleted ? "Deleted" : post.status || "Active"}
                 </span>
-              </p>
-              <p className="text-xs text-gray-500">
+              </h3>
+              <p className="text-xs text-gray-400">
                 {post.sport} • {post.position}
               </p>
             </div>
@@ -671,9 +671,9 @@ export default function PostCard({ post }) {
         {/* Caption */}
         {post.caption && (
           <div className="px-4 pb-2">
-            <h2 className="text-base text-gray-900">
+            <p className="text-base text-gray-900">
               {renderCaption(post.caption)}
-            </h2>
+            </p>
           </div>
         )}
 

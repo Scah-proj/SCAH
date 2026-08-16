@@ -197,7 +197,7 @@ export default function Trials({ trial }) {
         <div className="mt-4 flex justify-center">
           <Link
             href={`/userfeed/tryout/application/${trial?._id}`}
-            className="w-full max-w-sm bg-teal-600 text-white font-medium text-sm flex justify-center py-2.5 rounded-lg hover:bg-teal-700 transition focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full max-w-sm bg-teal-600 text-white font-semibold text-sm flex justify-center py-2.5 rounded-lg hover:bg-teal-700 transition focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
             View Details
           </Link>

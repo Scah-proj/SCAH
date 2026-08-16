@@ -153,9 +153,9 @@ const Sidenav = ({ onClose }) => {
                       {route.icon}
                     </span>
 
-                    <p className="text-sm font-semibold">
+                    <h2 className="text-sm">
                       {route.label}
-                    </p>
+                    </h2>
                   </Link>
                 </li>
               );

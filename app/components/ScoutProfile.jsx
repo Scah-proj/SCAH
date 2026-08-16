@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { User } from "lucide-react";
 
 export default function ScoutProfile({ profile }) {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function ScoutProfile({ profile }) {
     user.avatar ||
     user.media?.profilePicture ||
     profile?.media?.profilePicture ||
-    "/wen.webp";
+    <User className="w-5 h-5 text-gray-400" />;
 
   const role =
     user.role ||

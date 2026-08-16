@@ -43,35 +43,41 @@ export default function AthleteProfile({ profile }) {
   };
 
   return (
-  <div className="flex items-center justify-between gap-3 my-4">
-    <div className="flex items-center gap-3 min-w-0 flex-1">
-      <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border flex items-center justify-center shrink-0">
-        {profilePicture ? (
-          <Image
-            src={profilePicture}
-            alt={name}
-            width={48}
-            height={48}
-            className="object-cover"
-          />
-        ) : (
-          <User className="w-6 h-6 text-gray-500" />
-        )}
+  <div className="@container border border-gray-200 rounded-xl bg-white p-3 my-4">
+    <div className="flex flex-col gap-3 @md:flex-row @md:items-center @md:justify-between">
+      {/* Left */}
+      <div className="flex items-center gap-3 min-w-0 flex-1">
+        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border shrink-0 flex items-center justify-center">
+          {profilePicture ? (
+            <Image
+              src={profilePicture}
+              alt={name}
+              width={48}
+              height={48}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <User className="w-6 h-6 text-gray-500" />
+          )}
+        </div>
+
+        <div className="min-w-0">
+          <p className="text-sm font-semibold leading-tight break-words">
+            {name}
+          </p>
+          <p className="text-xs text-gray-500">{club}</p>
+        </div>
       </div>
 
-      <div className="min-w-0">
-        <h3 className="font-semibold text-gray-900 truncate">{name}</h3>
-        <p className="text-xs text-gray-600 truncate">{club}</p>
-      </div>
+      {/* Button */}
+      <button
+        onClick={handleViewProfile}
+        className="w-full @md:w-auto shrink-0 border border-teal-600 bg-white text-teal-600 rounded-full px-3 py-2 text-xs font-semibold flex items-center justify-center gap-1 hover:bg-teal-50 transition"
+      >
+        <MdOutlinePersonAddAlt size={14} />
+        Connect
+      </button>
     </div>
-
-    <button
-      onClick={handleViewProfile}
-      className="shrink-0 border border-gray-300 px-4 py-1 flex items-center justify-center rounded-full text-teal-600 text-sm font-semibold cursor-pointer"
-    >
-      <MdOutlinePersonAddAlt size={16} className="mr-1" />
-      <span>Connect</span>
-    </button>
   </div>
 );
 }

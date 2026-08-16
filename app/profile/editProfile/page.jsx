@@ -25,6 +25,7 @@ import { Label } from "../../../components/ui/label"
 import ExperienceSection from "../../components/Experience";
 import { useUpdateProfileMutation, useGetMyProfileQuery } from "../../redux/api/profileApi";
 import { setProfile, updateProfile as updateProfileLocal } from "../../redux/features/profile/profileSlice";
+import { User } from "lucide-react";
 
 
 function canAccess(requiredRole, userType) {
@@ -100,7 +101,7 @@ export default function EditProfile() {
       ? user.profilePicture
       : user?.media?.profilePicture;
 
-  const profilePhotoSrc = pendingPhotoPreview || savedPhotoUrl || "/wen.webp";
+  const profilePhotoSrc = pendingPhotoPreview || savedPhotoUrl || <User className="w-5 h-5 text-gray-400" />;
 
   const [updateProfile, { isLoading: isSaving }] = useUpdateProfileMutation();
   const { data: myProfile, isSuccess: profileFetched } = useGetMyProfileQuery();

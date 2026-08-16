@@ -141,8 +141,8 @@ export default function Profile({
           </div>
 
           {/* Experience Section */}
-          <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
-            <p className="font-semibold text-lg">Experience</p>
+          <div className="rounded-xl p-4 my-4 space-y-4">
+            <h3 className="font-semibold text-lg">Experience</h3>
 
             <ExperienceSection
               experienceList={profile?.experience || []}
@@ -153,15 +153,17 @@ export default function Profile({
           {/* Explore Scout Profiles - Only show if own profile and not a scout */}
           {isOwnProfile && !isScout && (
             <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
-              <p className="font-semibold text-lg">Explore Scout Profiles</p>
+              <h3 className="font-semibold text-lg">Explore Scout Profiles</h3>
 
               <ScoutProfileConnect />
             </div>
           )}
 
           {isScout ? (
-            <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
-              <p className="font-semibold text-lg">Scouting Details</p>
+            <div>
+              <h3 className="font-semibold text-lg">Scouting Details</h3>
+
+            <div className="border border-dashed border-gray-300 rounded-xl shadow-sm p-4 my-4 space-y-4">
 
               <div className="space-y-3">
                 {profile?.organization && (
@@ -229,11 +231,18 @@ export default function Profile({
                   !profile?.scoutingFocus?.ageRange &&
                   !profile?.scoutingFocus?.levelOfExperience &&
                   !profile?.scoutingFocus?.talentCategories?.length && (
-                    <p className="text-sm text-gray-400">
+                    <p className="text-lg text-center text-gray-500">
                       No scouting details added yet.
                     </p>
+                    
                   )}
+                  {isOwnProfile && (
+                            <p className="text-xs text-center text-gray-500 mt-2">
+                              Add details in <Link href="/profile/editProfile" className="text-teal-500">Edit Profile</Link>.
+                            </p>
+                          )}
               </div>
+            </div>
             </div>
           ) : (
             <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
@@ -283,8 +292,9 @@ export default function Profile({
 
           {/* Integrated "People You May Know" Section - Only show on own profile */}
           {isOwnProfile && (
-            <div className="border border-gray-200 rounded-xl shadow-sm p-4 my-4 space-y-4">
-              <p className="font-semibold text-lg">People you may know</p>
+            <div>
+              <h3 className="font-semibold text-lg">People you may know</h3>
+            <div className="p-4 my-4 space-y-4">
 
               {isLoadingPeople ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -377,6 +387,7 @@ export default function Profile({
                   No new suggestions right now.
                 </p>
               )}
+            </div>
             </div>
           )}
         </div>

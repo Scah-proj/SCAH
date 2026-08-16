@@ -11,6 +11,7 @@ import { mobileroutes } from "./components/sidenav/navroutes";
 import { AiOutlinePlus } from "react-icons/ai";
 import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
+import { User } from "lucide-react";
 import { useGetMyProfileQuery } from "../redux/api/profileApi"; // adjust path if it doesn't resolve — match whatever depth Sidenav/CreatePost use for "redux/api/profileApi" from this file's actual location
 
 export default function FeedLayout({ children }) {
@@ -36,7 +37,7 @@ export default function FeedLayout({ children }) {
     profile?.profile?.media?.profilePicture ||
     user?.profilePicture ||
     user?.avatar ||
-    "/wen.webp";
+    <User className="w-5 h-5 text-gray-400" />;
 
   const handleAddPost = () => {
     router.push("/profile/createPost");

@@ -259,9 +259,9 @@ const Page = () => {
             )}
 
             <div className="p-2 my-4 space-y-4">
-              <p className="font-semibold text-lg">
+              <h3 className="font-semibold text-lg">
                 Suggested People
-              </p>
+              </h3>
 
               {peopleError ? (
                 <p className="text-red-500">

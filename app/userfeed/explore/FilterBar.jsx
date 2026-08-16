@@ -12,7 +12,7 @@ export default function FilterBar() {
         <button
           key={filter}
           onClick={() => setActive(filter)}
-          className={`px-6 py-2 rounded-full text-xs font-medium whitespace-nowrap transition cursor-pointer
+          className={`px-6 py-2 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer
             ${
               active === filter
                 ? "bg-teal-600 text-white"
