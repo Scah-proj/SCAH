@@ -1,19 +1,19 @@
-import { Archivo_Black, Geist, Geist_Mono } from "next/font/google";
-import localFont from "next/font/local";
+import { Archivo_Black, Lora} from "next/font/google";
 import { Toaster } from "react-hot-toast"; // 1. Import Toaster
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import "./globals.css";
 import Providers from "./redux/provider";
 
-const century = localFont({
-  src: "./fonts/Century.ttf",
-  variable: "--font-body",
-  display: "swap",
-})
 
 const archivoBlack = Archivo_Black({
   weight: "400",
   variable: "--font-heading",
+  subsets: ["latin"],
+  display: "swap",
+});
+const lora = Lora({
+  weight: "400",
+  variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
 });
@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
           defer
         ></script>
       </head>
-      <body className={`${archivoBlack.variable} ${century.variable} antialiased`}>
+      <body className={`${archivoBlack.variable} ${lora.variable} antialiased`}>
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
           <Providers>
             <Toaster position="top-right" /> 
