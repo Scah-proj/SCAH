@@ -3,15 +3,50 @@ import usePlacesAutocomplete, {
   getLatLng,
 } from "use-places-autocomplete";
 
-export default function PlacesAutocomplete({ onChange }) {
+// Turns Google's address_components into the {country, state, city} shape
+// the backend's location schema actually expects — same parsing logic
+// already used in the onboarding form's geolocation handler, so a saved
+// residence looks the same whether it came from onboarding or a later edit.
+function parseAddressComponents(components) {
+  let city = "";
+  let state = "";
+  let country = "";
+
+  components.forEach((component) => {
+    if (component.types.includes("locality")) {
+      city = component.long_name;
+    }
+    if (component.types.includes("administrative_area_level_1")) {
+      state = component.long_name;
+    }
+    if (component.types.includes("country")) {
+      country = component.long_name;
+    }
+  });
+
+  return { city, state, country };
+}
+
+export default function PlacesAutocomplete({ onChange, value }) {
+  // `value` is the existing residence — either the raw {country, state,
+  // city} object from the profile, or a pre-formatted display string.
+  // use-places-autocomplete only accepts a plain string via its
+  // `defaultValue` init option (and only reads it once, on mount), so we
+  // build that string here before the hook initializes.
+  const initialDisplayValue =
+    value && typeof value === "object"
+      ? [value.city, value.state, value.country].filter(Boolean).join(", ")
+      : value || "";
+
   const {
     ready,
-    value,
+    value: inputValue,
     suggestions: { status, data },
     setValue,
     clearSuggestions,
   } = usePlacesAutocomplete({
     debounce: 300,
+    defaultValue: initialDisplayValue,
   });
 
   const handleSelect =
@@ -20,18 +55,16 @@ export default function PlacesAutocomplete({ onChange }) {
       setValue(description, false);
       clearSuggestions();
 
-      onChange?.(description);
-
       getGeocode({ address: description }).then((results) => {
-        const { lat, lng } = getLatLng(results[0]);
-        console.log("Coordinates:", lat, lng);
+        const location = parseAddressComponents(results[0].address_components);
+        onChange?.(location);
       });
     };
 
   return (
     <div className="absolute z-50 w-[85%] lg:w-[16%]">
       <input
-        value={value}
+        value={inputValue}
         onChange={(e) => setValue(e.target.value)}
         disabled={!ready}
         placeholder="Enter your location"
