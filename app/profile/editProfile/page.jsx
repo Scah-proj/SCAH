@@ -654,6 +654,17 @@ function InputField({ label, name, value, onChange, type = "text", disabled = fa
     const base = "rounded-md p-2.5 px-3 focus:outline-none transition-colors disabled:bg-gray-100 disabled:cursor-not-allowed disabled:text-gray-500";
     const border = error ? "border-red-500 focus:border-red-500" : "border-gray-300 focus:border-teal-500";
 
+    // <input type="date"> only accepts exactly "YYYY-MM-DD". The backend
+    // sends full ISO timestamps (e.g. "2026-08-15T00:00:00.000Z") for
+    // dob/expStart/expEnd/etc — the browser silently renders that as an
+    // empty date input instead of erroring, which is why saved dates
+    // looked like they weren't coming through at all. Strip the time
+    // component before handing it to the input.
+    const displayValue =
+      type === "date" && typeof value === "string" && value.includes("T")
+        ? value.split("T")[0]
+        : value;
+
   return (
     <div className="flex flex-col w-full">
       <label className="relative py-2" htmlFor={name}>
@@ -665,7 +676,7 @@ function InputField({ label, name, value, onChange, type = "text", disabled = fa
         name={name}
         id={name}
         placeholder={label}
-        value={value}
+        value={displayValue}
         onChange={onChange}
         disabled={disabled}
         max={type === "date" ? today : undefined}
@@ -1008,10 +1019,7 @@ function SliderField({ label, name, value, onChange, min, max, step, defaultValu
   )
 }
 function LocationChange({ name, value, onChange, label }) {
-  
-
   return (
-    
     <div className="flex flex-col w-full">
       <label className="relative py-2" htmlFor={name}>
         <span className="text-gray-700 font-medium w-[20%]">
@@ -1021,6 +1029,7 @@ function LocationChange({ name, value, onChange, label }) {
        <div className="">
 
           <PlacesAutocomplete
+            value={value}
             onChange={(location) => onChange({ target: { name, value: location } })}
             className="border border-gray-300 rounded-md p-2.5 px-3 focus:outline-none focus:border-teal-500 transition-colors w-full"
 
@@ -1028,7 +1037,6 @@ function LocationChange({ name, value, onChange, label }) {
       
       </div>
         </div>
-  
   );
 }
 function Nationality({ label, name, value, onChange }) {
