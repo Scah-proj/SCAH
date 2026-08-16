@@ -14,7 +14,6 @@ export default function SinglePost() {
   const hasToken =
     typeof window !== "undefined" && Boolean(localStorage.getItem("token"));
 
-  // RTK Query hook gives us access to error status
   const {
     data,
     isLoading,
@@ -22,18 +21,72 @@ export default function SinglePost() {
     error
   } = useGetPostByIdQuery(id);
 
-  const post = data?.data;
+  const rawPost = data?.data;
 
-  // Check if the query returned a 401 Unauthorized status
+  // Format post data to ensure PostCard receives identical structure as FeedComponent
+  const post = rawPost
+    ? {
+        ...rawPost,
+
+        author:
+          rawPost.author?.name ||
+          `${rawPost.author?.firstName || ""} ${
+            rawPost.author?.lastName || ""
+          }`.trim() ||
+          "Unknown",
+
+        authorAvatar:
+          rawPost.author?.picture ||
+          "/default-avatar.png",
+
+        title: rawPost.caption || "",
+
+        image:
+          rawPost.media?.[0]?.url ||
+          rawPost.media?.[0] ||
+          null,
+
+        hashtags: rawPost.tags || [],
+
+        likes:
+          rawPost.likesCount ||
+          rawPost.likes?.count ||
+          0,
+
+        comments:
+          rawPost.commentsCount ||
+          rawPost.comments?.count ||
+          0,
+
+        saves:
+          rawPost.savesCount ||
+          rawPost.saves?.count ||
+          0,
+
+        shares:
+          rawPost.sharesCount ||
+          rawPost.shares?.count ||
+          0,
+
+        status: rawPost.isActive ? "Active" : "Inactive",
+
+        createdAt:
+          rawPost.createdAt ||
+          rawPost.created_at,
+
+        position:
+          rawPost.position || "",
+
+        sport:
+          rawPost.sport || "",
+      }
+    : null;
+
   const isUnauthorized = isError && error?.status === 401;
 
-useEffect(() => {
+  useEffect(() => {
     if (hasRedirected) return;
 
-    // Redirect to login when the visiting user is NOT authenticated
-    // (no token) OR when the API returns 401 (expired/invalid token).
-    // The redirectTo param makes the login page bounce back to this
-    // post after the user signs in.
     if (!hasToken || isUnauthorized) {
       setHasRedirected(true);
       const loginUrl = `/auth/login?redirectTo=${encodeURIComponent(pathname)}`;
@@ -44,7 +97,6 @@ useEffect(() => {
   return (
     <div className="w-full flex justify-center">
       <div className="w-full max-w-2xl border-x border-gray-200 ">
-        
         <div className="sticky top-0 z-10 flex items-center gap-6 border-b border-gray-200 bg-white/80 px-4 py-3 backdrop-blur">
           <button
             onClick={() => router.back()}
