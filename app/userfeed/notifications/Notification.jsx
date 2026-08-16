@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
-
+import { User } from "lucide-react"
 import { feedApi } from "../../redux/api/feedApi";
 import { useGetPublicProfileQuery } from "../../redux/api/profileApi";
 import { normalizeNotificationType } from "./notificationCategories";
@@ -34,7 +34,7 @@ const Notification = ({ notification }) => {
     (isValidPhotoUrl(profile?.media?.profilePicture) && profile.media.profilePicture) ||
     (isValidPhotoUrl(notification.sender?.profilePicture) && notification.sender.profilePicture) ||
     (isValidPhotoUrl(notification.sender?.profilePic) && notification.sender.profilePic) ||
-    "/default-avatar.png";
+    <User className="w-5 h-5 text-gray-400" />;
 
   const senderName =
     user?.name ||
