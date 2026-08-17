@@ -6,6 +6,7 @@ import Link from "next/link";
 import {
   ImageIcon,
   Camera,
+  User,
   Smile,
   CalendarClock,
 } from "lucide-react";
@@ -75,7 +76,7 @@ export default function CreatePost() {
     profile?.picture ||
     profile?.profile?.profilePicture ||
     profile?.profile?.media?.profilePicture ||
-    "/defaultImage.jpg";
+    null;
 
   const profileLocation =
     profile?.location ||
@@ -266,8 +267,7 @@ export default function CreatePost() {
   };
 
   return (
-    <div className="mx-auto w-full h-screen bg-white p-4 md:max-w-md md:rounded-xl md:shadow-xl md:mt-10 flex flex-col">
-      {/* Top bar */}
+<div className="mx-auto w-full min-h-screen bg-white p-4 md:max-w-md md:rounded-xl md:shadow-xl md:mt-10 flex flex-col">      {/* Top bar */}
       <div className="flex justify-between items-center mb-4">
         <Link href="/userfeed" className="text-gray-500">
           Cancel
@@ -286,170 +286,178 @@ export default function CreatePost() {
         </button>
       </div>
 
-      {/* User + content */}
-      <div className="flex gap-3">
-        <div className="w-12 h-12 rounded-full overflow-hidden border">
-          <Image
-            src={profilePicture}
-            alt="Profile"
-            width={48}
-            height={48}
-            className="object-cover"
-          />
-        </div>
+     {/* User + content */}
+<div className="flex gap-3">
+  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border shrink-0 flex items-center justify-center">
+    {profilePicture ? (
+      <Image
+        src={profilePicture}
+        alt="Profile"
+        width={48}
+        height={48}
+        className="object-cover"
+      />
+    ) : (
+      <User className="w-6 h-6 text-gray-500" />
+    )}
+  </div>
 
-        <div className="flex-1">
-          {/* Textarea */}
-          <div className="relative">
-            <textarea
-              value={content}
-              onChange={handleContentChange}
-              placeholder="What's on your mind?"
-              className="w-full min-h-[120px] resize-none text-sm outline-none"
+  <div className="flex-1 min-w-0">
+    {/* Textarea + mention dropdown */}
+    <div className="relative">
+      <textarea
+        value={content}
+        onChange={handleContentChange}
+        placeholder="What's on your mind?"
+        className="w-full min-h-[120px] resize-none text-sm outline-none"
+      />
+
+      {showMentionDropdown && (
+        <div className="absolute left-0 top-full z-20 mt-2 max-h-44 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+          {tagSuggestions.length > 0 ? (
+            tagSuggestions.map((user, index) => {
+              const fullName =
+                [user?.firstName, user?.lastName]
+                  .filter(Boolean)
+                  .join(" ") ||
+                user?.name ||
+                user?.username ||
+                "User";
+
+              const userKey =
+                user?._id ||
+                user?.id ||
+                `${fullName}-${index}`;
+
+              return (
+                <button
+                  key={userKey}
+                  type="button"
+                  onClick={() => addTaggedUser(user)}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50"
+                >
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
+                    {fullName.charAt(0).toUpperCase()}
+                  </div>
+
+                  <span>{fullName}</span>
+                </button>
+              );
+            })
+          ) : (
+            <div className="px-3 py-2 text-sm text-gray-500">
+              No people found
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+
+    {/* Image previews */}
+    {images.length > 0 && (
+      <div className="grid grid-cols-3 gap-2 mt-3 max-h-72 overflow-y-auto">
+        {images.map((img, index) => (
+          <div
+            key={index}
+            className="relative aspect-square w-full overflow-hidden rounded-lg"
+          >
+            <Image
+              src={img.preview}
+              alt="preview"
+              fill
+              className="object-cover"
             />
 
-            {showMentionDropdown && (
-              <div className="absolute z-20 mt-2 max-h-44 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-                {tagSuggestions.length > 0 ? (
-                  tagSuggestions.map((user, index) => {
-                    const fullName =
-                      [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-                      user?.name ||
-                      user?.username ||
-                      "User";
-                    const userKey =
-                      user?._id ||
-                      user?.id ||
-                      `${fullName}-${index}`;
-
-                    return (
-                      <button
-                        key={userKey}
-                        type="button"
-                        onClick={() => addTaggedUser(user)}
-                        className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50"
-                      >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
-                          {fullName.charAt(0).toUpperCase()}
-                        </div>
-                        <span>{fullName}</span>
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div className="px-3 py-2 text-sm text-gray-500">
-                    No people found
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Image previews */}
-          {images.length > 0 && (
-            <div className="relative flex gap-2 overflow-x-auto mt-3">
-              {images.map((img, index) => (
-                <div
-                  key={index}
-                  className="relative w-24 h-24 rounded-lg overflow-hidden shrink-0"
-                >
-                  <Image
-                    src={img.preview}
-                    alt="preview"
-                    fill
-                    className="object-cover"
-                  />
-
-                  <button
-                    onClick={() => removeImage(index)}
-                    className="absolute top-[5px] right-1 bg-black/10 cursor-pointer text-black rounded-full w-5 h-5"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {error && (
-            <p className="text-red-500 text-sm mt-2">
-              {error}
-            </p>
-          )}
-
-          {/* Action bar */}
-          <div className="flex items-center gap-5 mt-4 text-gray-600">
-            {/* Gallery */}
-            <label className="cursor-pointer">
-              <ImageIcon size={22} />
-
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                hidden
-                onChange={handleImageUpload}
-              />
-            </label>
-
-            {/* Camera — opens the device's native camera on mobile via
-                the `capture` attribute, instead of the photo gallery. */}
             <button
               type="button"
-              className="cursor-pointer"
-              onClick={openCamera}
-              aria-label="Open camera"
+              onClick={() => removeImage(index)}
+              className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-sm text-white cursor-pointer"
             >
-              <Camera size={22} />
+              ×
             </button>
+          </div>
+        ))}
+      </div>
+    )}
 
-            {/* Emoji */}
-            {/* <button>
-              <Smile size={22} />
-            </button> */}
+    {error && (
+      <p className="mt-2 text-sm text-red-500">
+        {error}
+      </p>
+    )}
 
-            {/* Schedule */}
-            {/* <button>
-              <CalendarClock size={22} />
-            </button> */}
+    {/* Action bar */}
+    <div className="mt-4 flex items-center gap-5 text-gray-600">
+      {/* Gallery */}
+      <label className="cursor-pointer">
+        <ImageIcon size={22} />
+
+        <input
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={handleImageUpload}
+        />
+      </label>
+
+      {/* Camera */}
+      <button
+        type="button"
+        className="cursor-pointer"
+        onClick={openCamera}
+        aria-label="Open camera"
+      >
+        <Camera size={22} />
+      </button>
+    </div>
+
+    {/* Camera modal */}
+    {isCameraOpen && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+        <div className="w-full max-w-lg rounded-xl bg-white p-4 shadow-xl">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="font-semibold text-gray-900">
+              Take a photo
+            </h2>
+
+            <button
+              type="button"
+              onClick={closeCamera}
+              className="text-sm text-gray-600"
+            >
+              Cancel
+            </button>
           </div>
 
-          {isCameraOpen && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-              <div className="w-full max-w-lg rounded-xl bg-white p-4 shadow-xl">
-                <div className="mb-3 flex items-center justify-between">
-                  <h2 className="font-semibold text-gray-900">Take a photo</h2>
-                  <button type="button" onClick={closeCamera} className="text-sm text-gray-600">
-                    Cancel
-                  </button>
-                </div>
+          {cameraError ? (
+            <p className="py-8 text-center text-sm text-red-600">
+              {cameraError}
+            </p>
+          ) : (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="aspect-[3/4] w-full rounded-lg bg-black object-cover"
+            />
+          )}
 
-                {cameraError ? (
-                  <p className="py-8 text-center text-sm text-red-600">{cameraError}</p>
-                ) : (
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="aspect-[3/4] w-full rounded-lg bg-black object-cover"
-                  />
-                )}
-
-                {!cameraError && (
-                  <button
-                    type="button"
-                    onClick={capturePhoto}
-                    className="mt-4 w-full rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700"
-                  >
-                    Capture photo
-                  </button>
-                )}
-              </div>
-            </div>
+          {!cameraError && (
+            <button
+              type="button"
+              onClick={capturePhoto}
+              className="mt-4 w-full rounded-lg bg-teal-600 px-4 py-2 font-medium text-white hover:bg-teal-700"
+            >
+              Capture photo
+            </button>
           )}
         </div>
       </div>
-    </div>
-  );
+    )}
+  </div>
+</div>
+      </div>
+      );
 }

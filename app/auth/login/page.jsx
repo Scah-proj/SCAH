@@ -142,9 +142,7 @@ function LoginForm() {
               fieldErrors.email ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {fieldErrors.email && (
-            <p className="mt-1 text-sm text-red-500">{fieldErrors.email}</p>
-          )}
+          
         </div>
 
         <div>
@@ -174,9 +172,7 @@ function LoginForm() {
               )}
             </button>
           </div>
-          {fieldErrors.password && (
-            <p className="mt-1 text-sm text-red-500">{fieldErrors.password}</p>
-          )}
+          
           <div className="text-right mt-1">
             <Link
               href="/auth/forgot"

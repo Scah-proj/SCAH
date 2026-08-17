@@ -444,7 +444,7 @@ export default function ViewStory({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+<div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80">
       <div className="relative bg-black w-full h-full sm:w-[420px] sm:h-[740px] sm:rounded-xl overflow-hidden">
         <Stories
           key={`stories-${targetUserId}-${stories.length}`}

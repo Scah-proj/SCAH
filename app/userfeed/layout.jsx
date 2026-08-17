@@ -37,7 +37,7 @@ export default function FeedLayout({ children }) {
     profile?.profile?.media?.profilePicture ||
     user?.profilePicture ||
     user?.avatar ||
-    <User className="w-5 h-5 text-gray-400" />;
+    null;
 
   const handleAddPost = () => {
     router.push("/profile/createPost");
@@ -48,16 +48,20 @@ export default function FeedLayout({ children }) {
       {/* MOBILE HEADER */}
       <div className="lg:hidden fixed top-0 left-0 w-full h-16 bg-white z-20 flex items-center justify-between px-4 border-b">
         <Link href="/profile">
-          <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300">
-            <Image
-              src={avatarSrc}
-              alt="Profile"
-              width={48}
-              height={48}
-              className="object-cover"
-            />
-          </div>
-        </Link>
+  <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
+    {avatarSrc ? (
+      <Image
+        src={avatarSrc}
+        alt="Profile"
+        width={48}
+        height={48}
+        className="w-full h-full object-cover"
+      />
+    ) : (
+      <User className="w-6 h-6 text-gray-400" />
+    )}
+  </div>
+</Link>
 
         <Link href="/userfeed">
           <Image

@@ -51,6 +51,9 @@ import {
   setDeletePostError,
 } from "../redux/features/feed/feedSlice";
 
+
+
+
 const escapeRegExp = (value) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -103,6 +106,12 @@ const hasCurrentUserLiked = (post, currentUserId) => {
 };
 
 export default function PostCard({ post }) {
+  const [currentMedia, setCurrentMedia] = useState(0);
+useEffect(() => {
+  setCurrentMedia(0);
+}, [post._id]);
+
+
   if (!post) {
     return <p className="text-center text-gray-500">Loading post...</p>;
   }
@@ -692,52 +701,75 @@ export default function PostCard({ post }) {
         )}
 
         {/* Post Media */}
-        {post.media?.length > 0 && (() => {
-          const primaryMedia = post.media[0];
-          const isImage = primaryMedia.mimetype?.startsWith("image/");
-          const isVideo = primaryMedia.mimetype?.startsWith("video/");
 
-          if (isImage) {
-            return (
-              <div className="relative w-full aspect-square bg-gray-100">
-                <Image
-                  src={primaryMedia.url}
-                  alt="Post"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            );
-          }
-
-          if (isVideo) {
-            return (
-              <div className="relative w-full aspect-square bg-black">
-                <video
-                  src={primaryMedia.url}
-                  controls
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            );
-          }
-
-          return (
+{post.media?.length > 0 && (
+  <div className="relative">
+    {/* Carousel */}
+    <div
+      className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
+      onScroll={(e) => {
+        const index = Math.round(
+          e.currentTarget.scrollLeft / e.currentTarget.clientWidth
+        );
+        setCurrentMedia(index);
+      }}
+    >
+      {post.media.map((media, index) => (
+        <div
+          key={index}
+          className="relative w-full aspect-square shrink-0 snap-center bg-gray-100"
+        >
+          {media.mimetype?.startsWith("image/") ? (
+            <Image
+              src={media.url}
+              alt={`Post ${index + 1}`}
+              fill
+              className="object-cover"
+            />
+          ) : media.mimetype?.startsWith("video/") ? (
+            <video
+              src={media.url}
+              controls
+              className="w-full h-full object-cover"
+            />
+          ) : (
             <a
-              href={primaryMedia.url}
+              href={media.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="mx-4 mb-3 flex items-center gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50 transition"
+              className="flex h-full items-center justify-center"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-md bg-gray-100 text-xs font-semibold text-gray-500 uppercase">
-                {primaryMedia.mimetype?.split("/")[1]?.slice(0, 3) || "file"}
-              </div>
-              <span className="text-sm text-gray-700 truncate">
-                {primaryMedia.path?.split("/").pop() || "Attachment"}
-              </span>
+              Open attachment
             </a>
-          );
-        })()}
+          )}
+        </div>
+      ))}
+    </div>
+
+    {/* Counter */}
+    {post.media.length > 1 && (
+      <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+        {currentMedia + 1}/{post.media.length}
+      </div>
+    )}
+
+    {/* Dots */}
+    {post.media.length > 1 && (
+      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+        {post.media.map((_, index) => (
+          <div
+            key={index}
+            className={`h-2 w-2 rounded-full transition ${
+              index === currentMedia
+                ? "bg-white"
+                : "bg-white/40"
+            }`}
+          />
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
         {/* Actions */}
         {!isDeleted && (

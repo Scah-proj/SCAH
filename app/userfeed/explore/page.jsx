@@ -209,7 +209,7 @@ const Page = () => {
   }
 
   return (
-    <div className="space-y-8 max-w-3xl px-4 py-8 mx-auto">
+    <div className="space-y-10 max-w-4xl px-4 md:px-6 py-12 mx-auto">
       <h1 className="text-2xl font-bold">Explore</h1>
 
       {searchBar}
