@@ -83,6 +83,17 @@ export const storyApi = baseApi.injectEndpoints({
       ],
     }),
 
+    // Permanently delete an archived story replica (hard delete on the
+    // backend, including storage cleanup). Distinct from deleteStory,
+    // which only soft-deletes an active (non-archived) story.
+    deleteArchivedStory: builder.mutation({
+      query: (storyId) => ({
+        url: `/api/stories/archived/${storyId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Story"],
+    }),
+
     // View Story
     viewStory: builder.mutation({
       query: (storyId) => ({
@@ -109,6 +120,36 @@ export const storyApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Story"],
     }),
+
+    // Mute a user's stories — hides their stories from getFeedStories
+    // until unmuted. Does not affect direct profile story viewing.
+    muteStory: builder.mutation({
+      query: (userId) => ({
+        url: "/api/stories/mute",
+        method: "POST",
+        body: { userId },
+      }),
+      invalidatesTags: ["Story"],
+    }),
+
+    // Unmute a previously muted user's stories
+    unmuteStory: builder.mutation({
+      query: (userId) => ({
+        url: "/api/stories/unmute",
+        method: "POST",
+        body: { userId },
+      }),
+      invalidatesTags: ["Story"],
+    }),
+
+    // Get the list of users whose stories the current user has muted
+    getMutedStories: builder.query({
+      query: () => ({
+        url: "/api/stories/muted",
+        method: "GET",
+      }),
+      providesTags: ["Story"],
+    }),
   }),
 
   overrideExisting: true,
@@ -119,7 +160,11 @@ export const {
   useGetFeedStoriesQuery,
   useGetUserStoriesQuery,
   useGetArchivedStoriesQuery,
+  useDeleteArchivedStoryMutation,
   useViewStoryMutation,
   useArchiveStoryMutation,
   useDeleteStoryMutation,
+  useMuteStoryMutation,
+  useUnmuteStoryMutation,
+  useGetMutedStoriesQuery,
 } = storyApi;

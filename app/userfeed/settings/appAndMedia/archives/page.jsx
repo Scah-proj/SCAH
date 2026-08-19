@@ -4,9 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { MdArrowBack } from "react-icons/md";
 import { Switch } from "../../../../../components/ui/switch";
-import { Archive, ImageIcon } from "lucide-react";
+import { Archive, ImageIcon, Trash2, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 import { useState, useMemo } from "react";
-import { useGetArchivedStoriesQuery } from "../../../../redux/api/storyApi";
+import {
+  useGetArchivedStoriesQuery,
+  useDeleteArchivedStoryMutation,
+} from "../../../../redux/api/storyApi";
 
 const archiveOptions = [
   {
@@ -47,12 +51,18 @@ const Page = () => {
     cameraroll: false,
   });
 
+  // Tracks which archived story is mid-delete, so we can disable just
+  // that tile instead of locking the whole grid during the request.
+  const [deletingId, setDeletingId] = useState(null);
+
   // Fetch real archived stories via RTK Query
   const {
     data: storiesData,
     isLoading,
     isError,
   } = useGetArchivedStoriesQuery();
+
+  const [deleteArchivedStory] = useDeleteArchivedStoryMutation();
 
   // Normalize array structures regardless of API envelope wrapper
   const archivedStories = useMemo(() => {
@@ -74,6 +84,59 @@ const Page = () => {
       ...prev,
       [key]: value,
     }));
+  };
+
+  const performDelete = async (id, toastId) => {
+    toast.dismiss(toastId);
+    setDeletingId(id);
+    try {
+      await deleteArchivedStory(id).unwrap();
+      // RTK Query's "Story" tag invalidation refetches the list, so no
+      // manual state update is needed here.
+      toast.success("Archived story deleted");
+    } catch (err) {
+      console.error("Failed to delete archived story:", err);
+      toast.error("Couldn't delete this story. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDelete = (id, e) => {
+    e.stopPropagation();
+
+    // react-hot-toast has no built-in action buttons, so the
+    // confirmation is a custom-rendered toast with Delete/Cancel
+    // buttons inside it instead of a native browser dialog.
+    toast(
+      (t) => (
+        <div className="flex flex-col gap-2">
+          <div>
+            <p className="text-sm font-semibold text-gray-900">
+              Delete this archived story?
+            </p>
+            <p className="text-xs text-gray-500">This can't be undone.</p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => toast.dismiss(t.id)}
+              className="px-3 py-1.5 text-xs font-medium rounded-md text-gray-600 hover:bg-gray-100 transition"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => performDelete(id, t.id)}
+              className="px-3 py-1.5 text-xs font-medium rounded-md bg-red-600 text-white hover:bg-red-700 transition"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      ),
+      { duration: 6000 }
+    );
   };
 
   return (
@@ -143,32 +206,54 @@ const Page = () => {
         {/* Grid */}
         {!isLoading && !isError && archivedStories.length > 0 && (
           <div className="grid grid-cols-3 gap-1 md:gap-2">
-            {archivedStories.map((item) => (
-              <div
-                key={item.id}
-                className="relative aspect-square rounded-md overflow-hidden bg-gray-100 group cursor-pointer"
-              >
-                {item.imageUrl ? (
-                  <Image
-                    src={item.imageUrl}
-                    alt={item.caption || "Archived story"}
-                    fill
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
-                    <ImageIcon size={24} />
-                  </div>
-                )}
+            {archivedStories.map((item) => {
+              const isDeleting = deletingId === item.id;
 
-                {/* Hover overlay with archived date */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-end p-2 opacity-0 group-hover:opacity-100">
-                  <span className="text-white text-xs font-medium">
-                    Archived {formatArchivedDate(item.archivedAt)}
-                  </span>
+              return (
+                <div
+                  key={item.id}
+                  className="relative aspect-square rounded-md overflow-hidden bg-gray-100 group cursor-pointer"
+                >
+                  {item.imageUrl ? (
+                    <Image
+                      src={item.imageUrl}
+                      alt={item.caption || "Archived story"}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
+                      <ImageIcon size={24} />
+                    </div>
+                  )}
+
+                  {/* Hover overlay with archived date + delete action */}
+                  <div
+                    className={`absolute inset-0 bg-black/0 group-hover:bg-black/40 transition flex items-end justify-between p-2 ${
+                      isDeleting ? "opacity-100 bg-black/50" : "opacity-0 group-hover:opacity-100"
+                    }`}
+                  >
+                    <span className="text-white text-xs font-medium">
+                      Archived {formatArchivedDate(item.archivedAt)}
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={(e) => handleDelete(item.id, e)}
+                      disabled={isDeleting}
+                      aria-label="Delete archived story"
+                      className="shrink-0 rounded-full bg-black/60 hover:bg-red-600 p-1.5 text-white transition disabled:opacity-70"
+                    >
+                      {isDeleting ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={14} />
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
