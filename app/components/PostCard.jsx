@@ -406,7 +406,7 @@ export default function PostCard({ post }) {
           </div>
         </div>
       ),
-      { duration: Infinity }
+      { id: `delete-confirm-${postId}` }
     );
   };
 
