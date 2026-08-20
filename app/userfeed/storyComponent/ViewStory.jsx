@@ -9,6 +9,7 @@ import {
   useViewStoryMutation,
   useDeleteStoryMutation,
   useArchiveStoryMutation,
+  useMuteStoryMutation,
 } from "../../redux/api/storyApi";
 import { useGetPublicProfileQuery } from "../../redux/api/profileApi";
 import {
@@ -112,6 +113,7 @@ export default function ViewStory({
   const [deleteStoryMutation] = useDeleteStoryMutation();
   const [archiveStoryMutation, { isLoading: isArchiving }] =
     useArchiveStoryMutation();
+  const [muteStoryMutation, { isLoading: isMuting }] = useMuteStoryMutation();
 
   const [showViewers, setShowViewers] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -443,6 +445,32 @@ export default function ViewStory({
     }
   };
 
+  const handleMute = async () => {
+    setShowMenu(false);
+    if (!targetUserId || isMuting) return;
+
+    try {
+      // Backend sets a 24h expiry on the mute (TTL-indexed), so it
+      // clears itself automatically — no client-side tracking needed.
+      await muteStoryMutation(targetUserId).unwrap();
+      refetchFeed();
+
+      // Let a parent component react (e.g. update a local "muted" list,
+      // show a toast) in addition to the API call above.
+      onMuteUser?.(targetUserId);
+
+      // Muting hides this user's stories from the feed — nothing left
+      // to view here, so move on the same way the story-end handler does.
+      if (onNextUser) {
+        onNextUser();
+      } else {
+        onClose();
+      }
+    } catch (err) {
+      console.error("Failed to mute user:", err);
+    }
+  };
+
   return (
 <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/80">
       <div className="relative bg-black w-full h-full sm:w-[420px] sm:h-[740px] sm:rounded-xl overflow-hidden">
@@ -546,16 +574,12 @@ export default function ViewStory({
                   </>
                 ) : (
                   <button
-                    onClick={() => {
-                      setShowMenu(false);
-                      if (targetUserId) {
-                        onMuteUser?.(targetUserId);
-                      }
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition"
+                    onClick={handleMute}
+                    disabled={isMuting}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-white/10 transition disabled:opacity-50"
                   >
                     <EyeOff className="w-4 h-4" />
-                    Mute for 24 hours
+                    {isMuting ? "Muting..." : "Mute for 24 hours"}
                   </button>
                 )}
               </div>

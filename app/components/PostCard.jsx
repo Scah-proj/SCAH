@@ -51,9 +51,6 @@ import {
   setDeletePostError,
 } from "../redux/features/feed/feedSlice";
 
-
-
-
 const escapeRegExp = (value) =>
   value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -107,10 +104,9 @@ const hasCurrentUserLiked = (post, currentUserId) => {
 
 export default function PostCard({ post }) {
   const [currentMedia, setCurrentMedia] = useState(0);
-useEffect(() => {
-  setCurrentMedia(0);
-}, [post._id]);
-
+  useEffect(() => {
+    setCurrentMedia(0);
+  }, [post._id]);
 
   if (!post) {
     return <p className="text-center text-gray-500">Loading post...</p>;
@@ -141,9 +137,6 @@ useEffect(() => {
     currentUserId && authorId && String(currentUserId) === String(authorId)
   );
 
-  // A post fetched from the API is "deleted" if the backend's soft-delete
-  // flag says so. Different endpoints may surface this under different
-  // field names, so check the common variants.
   const isDeleted = Boolean(
     post.is_active === false ||
     post.isDeleted === true ||
@@ -175,9 +168,6 @@ useEffect(() => {
   };
 
   const [showComments, setShowComments] = useState(false);
-  // Run the comments query on mount (not only when comments are toggled open)
-  // so the comment count is available immediately on the postcard. We still
-  // avoid fetching for deleted posts or when there is no post id.
   const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsQuery(postId, {
     skip: !postId || isDeleted,
   });
@@ -219,7 +209,6 @@ useEffect(() => {
   const [reposted, setReposted] = useState(initialReposted);
   const [saved, setSaved] = useState(!!(post.hasSaved || post.saved || post.isSaved));
   
-  
   const [isCopied, setIsCopied] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
 
@@ -231,9 +220,6 @@ useEffect(() => {
     setReposted(initialReposted);
   }, [initialCommentCount, initialLiked, initialLikesCount, initialRepostsCount, initialReposted, postId]);
 
-  // Name to fall back to when author data is missing/unpopulated on a
-  // deleted post. Since only the post's own owner can delete it, it's
-  // safe to assume the logged-in user is the author in that case.
   const currentUserName =
     currentUser?.name ||
     `${currentUser?.firstName || ""} ${currentUser?.lastName || ""}`.trim() ||
@@ -247,8 +233,6 @@ useEffect(() => {
       const fullName = `${post.author.firstName || ""} ${post.author.lastName || ""}`.trim();
       if (fullName) return fullName;
     }
-    // Only trust the current-user fallback when the post is confirmed
-    // deleted (and therefore, given delete permissions, owned by them).
     if (isDeleted && currentUserName) {
       return currentUserName;
     }
@@ -350,7 +334,6 @@ useEffect(() => {
             firstName: user.firstName,
             lastName: user.lastName,
             name: fullName,
-            
             picture: user.picture || user.avatar || null,
             avatar: user.picture || user.avatar || null,
           }
@@ -368,7 +351,6 @@ useEffect(() => {
     localCommentCount
   );
 
-  // Copy Link Handler
   const handleCopyLink = async (e) => {
     if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
 
@@ -383,11 +365,6 @@ useEffect(() => {
     }
   };
 
-  // Delete Post Handler — a native window.confirm() blocks the whole page
-  // and looks jarring next to the rest of the UI, so the confirmation step
-  // is a toast with inline action buttons instead. react-hot-toast doesn't
-  // have sonner's built-in action/cancel options, so the confirmation is
-  // rendered as custom JSX inside the toast, dismissed via toast.dismiss.
   const handleDeletePost = (e) => {
     if (e && typeof e.stopPropagation === "function") e.stopPropagation();
     if (!postId) return;
@@ -411,13 +388,13 @@ useEffect(() => {
                 try {
                   await deletePost(postId).unwrap();
                   dispatch(setDeletePostSuccess(true));
-                  toast.success("Post deleted");
+                  toast.success("Post deleted", { duration: 3000 });
                 } catch (err) {
                   const message =
                     err?.data?.message || err?.message || "Failed to delete post";
                   console.error("Failed to delete post:", err);
                   dispatch(setDeletePostError(message));
-                  toast.error(message);
+                  toast.error(message, { duration: 3000 });
                 } finally {
                   dispatch(setDeletingPost(false));
                 }
@@ -429,7 +406,7 @@ useEffect(() => {
           </div>
         </div>
       ),
-      { duration: Infinity }
+      { id: `delete-confirm-${postId}` }
     );
   };
 
@@ -620,7 +597,6 @@ useEffect(() => {
             </div>
           </div>
 
-          {/* "..." menu hidden entirely once the post is deleted */}
           {!isDeleted && (
             <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
@@ -628,13 +604,6 @@ useEffect(() => {
                   <MoreHorizontalIcon />
                 </Button>
               </DropdownMenuTrigger>
-              {/* stopPropagation here, not just on the trigger: Radix
-                  portals this content elsewhere in the DOM, but React still
-                  bubbles the synthetic click event up the *component* tree
-                  (this element is still a JSX child of the card's outer
-                  onClick={handleOpenPost} div). Without this, clicking any
-                  item inside the menu — Save, Copy link, Delete, etc. — was
-                  also triggering navigation to the post page. */}
               <DropdownMenuContent
                 className="w-40"
                 align="end"
@@ -658,7 +627,6 @@ useEffect(() => {
                     {isCopied ? "Copied!" : "Copy link to post"}
                   </DropdownMenuItem>
 
-                  {/* SHOW DELETE ONLY FOR POST OWNER */}
                   {isOwner && (
                     <DropdownMenuItem
                       onSelect={(e) => {
@@ -701,75 +669,71 @@ useEffect(() => {
         )}
 
         {/* Post Media */}
-
-{post.media?.length > 0 && (
-  <div className="relative">
-    {/* Carousel */}
-    <div
-      className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
-      onScroll={(e) => {
-        const index = Math.round(
-          e.currentTarget.scrollLeft / e.currentTarget.clientWidth
-        );
-        setCurrentMedia(index);
-      }}
-    >
-      {post.media.map((media, index) => (
-        <div
-          key={index}
-          className="relative w-full aspect-square shrink-0 snap-center bg-gray-100"
-        >
-          {media.mimetype?.startsWith("image/") ? (
-            <Image
-              src={media.url}
-              alt={`Post ${index + 1}`}
-              fill
-              className="object-cover"
-            />
-          ) : media.mimetype?.startsWith("video/") ? (
-            <video
-              src={media.url}
-              controls
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <a
-              href={media.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-full items-center justify-center"
+        {post.media?.length > 0 && (
+          <div className="relative">
+            <div
+              className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
+              onScroll={(e) => {
+                const index = Math.round(
+                  e.currentTarget.scrollLeft / e.currentTarget.clientWidth
+                );
+                setCurrentMedia(index);
+              }}
             >
-              Open attachment
-            </a>
-          )}
-        </div>
-      ))}
-    </div>
+              {post.media.map((media, index) => (
+                <div
+                  key={index}
+                  className="relative w-full aspect-square shrink-0 snap-center bg-gray-100"
+                >
+                  {media.mimetype?.startsWith("image/") ? (
+                    <Image
+                      src={media.url}
+                      alt={`Post ${index + 1}`}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : media.mimetype?.startsWith("video/") ? (
+                    <video
+                      src={media.url}
+                      controls
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <a
+                      href={media.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex h-full items-center justify-center"
+                    >
+                      Open attachment
+                    </a>
+                  )}
+                </div>
+              ))}
+            </div>
 
-    {/* Counter */}
-    {post.media.length > 1 && (
-      <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-        {currentMedia + 1}/{post.media.length}
-      </div>
-    )}
+            {post.media.length > 1 && (
+              <div className="absolute top-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                {currentMedia + 1}/{post.media.length}
+              </div>
+            )}
 
-    {/* Dots */}
-    {post.media.length > 1 && (
-      <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
-        {post.media.map((_, index) => (
-          <div
-            key={index}
-            className={`h-2 w-2 rounded-full transition ${
-              index === currentMedia
-                ? "bg-white"
-                : "bg-white/40"
-            }`}
-          />
-        ))}
-      </div>
-    )}
-  </div>
-)}
+            {post.media.length > 1 && (
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1">
+                {post.media.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-2 w-2 rounded-full transition ${
+                      index === currentMedia
+                        ? "bg-white"
+                        : "bg-white/40"
+                    }`}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Actions */}
         {!isDeleted && (
@@ -797,15 +761,15 @@ useEffect(() => {
 
               {/* Comment */}
               <div className="flex items-center">
-               <button
-                className="flex space-y-1 mr-1 cursor-pointer"
-                onClick={() => setShowComments((prev) => !prev)}
-              >
-                <MessageCircle
-                  size={22}
-                  className="text-gray-600 hover:text-teal-600"
-                />
-              </button>
+                <button
+                  className="flex space-y-1 mr-1 cursor-pointer"
+                  onClick={() => setShowComments((prev) => !prev)}
+                >
+                  <MessageCircle
+                    size={22}
+                    className="text-gray-600 hover:text-teal-600"
+                  />
+                </button>
                 <span>{displayedCommentCount > 0 && <span>{displayedCommentCount}</span>}</span>
               </div>
 
@@ -823,7 +787,6 @@ useEffect(() => {
                 </button>
                 <span>{reposts > 0 && <span>{reposts}</span>}</span>
               </div>
-
             </div>
 
             {/* Save */}
