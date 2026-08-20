@@ -29,7 +29,7 @@ const Page = () => {
     };
 
     return (
-        <div className="space-y-10 max-w-4xl px-4 md:px-6 py-12 mx-auto">
+        <div className="max-w-2xl mx-auto px-4 py-8 pb-48 space-y-8">
             <div className="space-y-3">
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900">
                     Settings
@@ -72,7 +72,7 @@ const Page = () => {
                         </div>
                     ))}
                 </div>
-                <div className="font-semibold flex flex-col space-y-2">
+                <div className="font-semibold flex flex-col space-y-4 ">
                     <p className="text-teal-700 cursor-pointer">Add account</p>
                     <button
                         type="button"

@@ -1,10 +1,19 @@
 "use client";
+import Link from "next/link";
+import { MdArrowBack } from "react-icons/md";
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-white text-[#171b18]">
 
       <main className="max-w-[760px] mx-auto px-5 md:px-8 py-12 md:py-20">
+         <Link
+                  href="/userfeed/settings"
+                  className="flex items-center text-gray-600 hover:text-gray-900 mb-8 transition-colors"
+                >
+                  <MdArrowBack />
+                  <span className="ml-2 text-sm font-medium">Back to Settings</span>
+                </Link>
 
         <header className="mb-12">
 
