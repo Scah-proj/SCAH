@@ -4,6 +4,8 @@ import PostCard from "../../../components/PostCard";
 import StoryComponent from "../../storyComponent/page";
 import { useGetHomeFeedQuery } from "../../../redux/api/feedApi";
 import { Loader } from "lucide-react";
+import EndOfFeed from "../../../components/EndOfFeed";
+import NothingToSee from "../../../components/NothingToSee";
 
 export default function FeedComponent() {
   const {
@@ -105,24 +107,26 @@ export default function FeedComponent() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="relative max-w-2xl mx-auto px-4 py-8 pb-48 space-y-8">
       <div>
         <StoryComponent />
       </div>
 
       <div className="relative space-y-6">
         {formattedPosts.length > 0 ? (
-          formattedPosts.map((post) => (
+          <>
+         
+          {formattedPosts.map((post) => (
             <PostCard
               key={post.id}
               post={post}
             />
-          ))
+          ))}
+          <EndOfFeed />
+           </>
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500">
-              Nothing to see yet.
-            </p>
+            <NothingToSee />
           </div>
         )}
       </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { MdArrowBack, MdClose, MdPersonAdd } from "react-icons/md";
 import { User, Loader, FolderOpen } from "lucide-react";
-
+import NothingToSee from "../../components/NothingToSee";
 import ProfileInfo from "../profileInfo";
 import ProfileGallery from "../profileGallery";
 import ExperienceSection from "../../components/Experience";
@@ -407,13 +407,14 @@ export default function Profile({
               <FolderOpen className="w-8 h-8" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-gray-900">No Posts Available</h3>
-              <p className="text-sm text-gray-500">
-                {isOwnProfile
+              <NothingToSee
+                title="No Posts Available"
+                description={isOwnProfile
                   ? "You haven't uploaded any posts yet."
                   : "This profile does not have any published posts yet."}
-              </p>
+              />
             </div>
+           
             <button
               onClick={() => setShowNoDataModal(false)}
               className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-medium text-sm rounded-lg transition-colors shadow-sm"

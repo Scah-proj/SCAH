@@ -62,9 +62,10 @@ const Page = () => {
       <NotificationPills active={active} setActive={setActive} />
 
       {filtered.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          No notifications yet.
-        </div>
+        <NothingToSee
+                        title="No Notification Yet"
+                        description="Notifications will appear here when you receive them."
+                      />
       ) : (
         <div className="space-y-8">
           <NotificationByGroup

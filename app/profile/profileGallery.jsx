@@ -8,6 +8,7 @@ import {
 } from "../../components/ui/tabs";
 import Link from "next/link";
 import PostGrid from "../components/PostGrid";
+import NothingToSee from "../components/NothingToSee";
 
 export default function ProfileGallery({
   posts = [],
@@ -39,9 +40,10 @@ export default function ProfileGallery({
                   Failed to load posts
                 </div>
               ) : posts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No posts yet
-                </div>
+                <NothingToSee
+                                title="No Posts Yet"
+                                description=""
+                              />
               ) : (
                 <>
                   <div className="max-w-2xl grid grid-cols-3 gap-2">
@@ -69,9 +71,10 @@ export default function ProfileGallery({
                   Failed to load media
                 </div>
               ) : mediaPosts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No media yet
-                </div>
+                <NothingToSee
+                                title="No Media Available"
+                                description=" "
+                              />
               ) : (
                 <>
                   <div className="max-w-2xl grid grid-cols-3 gap-2">

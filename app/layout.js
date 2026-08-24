@@ -20,10 +20,46 @@ const lora = Lora({
 
 
 export const metadata = {
-  title: "SCAH",
-  description: "Next generation scouting",
+  metadataBase: new URL("https://scah.club"),
+
+  title: {
+    default: "SCAH — Next Generation Scouting",
+    template: "%s | SCAH",
+  },
+
+  description:
+    "SCAH is a next-generation scouting platform connecting athletes, scouts, coaches, and sports communities.",
+
+    keywords: [
+    "SCAH",
+    "sports scouting",
+    "athletes",
+    "football scouting",
+    "sports network",
+  ],
+authors: [{ name: "SCAH" }],
+
+  creator: "SCAH",
+
   icons: {
     icon: "/run.png",
+  },
+
+  openGraph: {
+    title: "SCAH — Next Generation Scouting",
+    description:
+      "Connect, discover, and showcase talent with SCAH.",
+    url: "https://scah.club",
+    siteName: "SCAH",
+    type: "website",
+    images: [
+      {
+        url: "/yattr.png",
+        width: 1200,
+        height: 630,
+        alt: "SCAH — Next Generation Scouting",
+      },
+    ],
   },
 };
 

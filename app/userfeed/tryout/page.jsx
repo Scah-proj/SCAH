@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import Select from "react-select";
 import { Loader } from "lucide-react";
-
+import NothingToSee from "../../components/NothingToSee";
 import Trials from "../../components/trials";
 import TryoutSearch from "../../components/Search/SearchTryout";
 import { Button } from "../../../components/ui/button";
@@ -257,9 +257,10 @@ const Page = () => {
             />
           ))
         ) : (
-          <p className="col-span-2 text-center text-gray-500">
-            No tryouts found.
-          </p>
+          <NothingToSee
+                          title="No Tryouts Available"
+                          description=""
+                        />
         )}
       </div>
     </div>
