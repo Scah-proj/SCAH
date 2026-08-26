@@ -6,6 +6,8 @@ import { useParams } from "next/navigation";
 import { MdArrowBack } from "react-icons/md";
 import { ExternalLink, Check, X, Loader } from "lucide-react";
 import toast from "react-hot-toast";
+import { Loader2 } from "lucide-react";
+
 
 import {
   useGetTryoutApplicantsQuery,

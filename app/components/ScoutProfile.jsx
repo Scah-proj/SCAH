@@ -78,35 +78,41 @@ export default function ScoutProfile({ profile }) {
   };
 
   return (
-    <div className="flex items-center justify-between py-4 rounded-lg">
-      <div className="flex items-center space-x-3">
-        <div className="w-12 h-12 overflow-hidden rounded-full border bg-gray-200">
-          <Image
-            src={photo}
-            alt={name}
-            width={48}
-            height={48}
-            className="w-full h-full object-cover"
-          />
-        </div>
-
-        <div>
-          <h3 className="text-sm font-semibold">
-            {name}
-          </h3>
-
-          <p className="text-xs text-gray-500">
-            {subtitle}
-          </p>
-        </div>
+    <div className="@container border border-gray-200 rounded-xl bg-white p-3 my-4">
+    <div className="flex flex-col gap-3 @md:flex-row @md:items-center @md:justify-between">
+    <div className="flex items-center gap-3 min-w-0 flex-1">
+      <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border shrink-0 flex items-center justify-center">
+        {photo ? (
+                    <Image
+                      src={photo}
+                      alt={name}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <User className="w-6 h-6 text-gray-500" />
+                  )}
       </div>
 
-      <button
-        onClick={handleViewProfile}
-        className="border rounded-sm px-3 py-1 text-xs font-semibold text-teal-600"
+      <div className="min-w-0">
+       <p className="text-sm font-semibold leading-tight break-words">
+            {name}
+          </p>
+
+        <p className="text-xs text-gray-500">
+          {subtitle}
+        </p>
+      </div>
+    </div>
+
+    <button
+      onClick={handleViewProfile}
+      className="w-full @md:w-auto shrink-0 border border-teal-600 bg-white text-teal-600 rounded-full px-3 py-2 text-xs font-semibold flex items-center justify-center gap-1 hover:bg-teal-50 transition"
       >
-        View Profile
-      </button>
+      View Profile
+    </button>
+    </div>
     </div>
   );
 }

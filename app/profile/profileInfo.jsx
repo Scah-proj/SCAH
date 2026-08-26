@@ -20,22 +20,31 @@ import {
   useGetCoverPhotoQuery,
 } from "../redux/api/uploadApi";
 
-export default function ProfileInfo({ profile, isOwnProfile, followers, following }) {
+export default function ProfileInfo({
+  profile,
+  isOwnProfile,
+  followers,
+  following,
+}) {
   const router = useRouter();
 
   const [bio] = useState("");
   const [coverPhotoPreview, setCoverPhotoPreview] = useState(null);
   const [profilePicPreview, setProfilePicPreview] = useState(null);
-  const objectUrlRef = useRef(null); // tracks the blob URL so we can revoke it
 
-  // Resolves ID for both own profile and other users (supports _id, id, and userId)
+  // NEW: Controls which image is currently being viewed
+  const [viewingImage, setViewingImage] = useState(null);
+
+  const objectUrlRef = useRef(null);
+
+  // Resolves ID for both own profile and other users
   const profileId = profile?._id || profile?.id || profile?.userId;
 
   const displayName =
     profile?.name ||
     `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim();
 
-  // Route resolution pointing to followers and following.
+  // Route resolution pointing to followers and following
   const followersHref = isOwnProfile
     ? "/profile/followers"
     : `/profile/followers?userId=${profileId}`;
@@ -63,7 +72,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
     skip: !isOwnProfile,
   });
 
-  // Someone else's cover photo — fetched by profileId when it's not my profile
+  // Someone else's cover photo
   const { data: otherCoverPhotoData } = useGetCoverPhotoQuery(profileId, {
     skip: isOwnProfile || !profileId,
   });
@@ -71,16 +80,22 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
   const [uploadCoverPhoto, { isLoading: isUploadingCover }] =
     useUploadCoverPhotoMutation();
 
-  // Resolution order: local uploaded preview -> backend fetched cover (mine or theirs) -> profile prop -> default asset
+  // Resolution order:
+  // local uploaded preview -> backend fetched cover -> profile prop -> default
   const fetchedCoverPhoto = isOwnProfile
     ? myCoverPhotoData?.data?.coverPhoto
     : otherCoverPhotoData?.data?.coverPhoto;
 
   const coverPhotoSrc =
-    coverPhotoPreview || fetchedCoverPhoto || profile?.coverPhoto || "/defaultCover.png";
+    coverPhotoPreview ||
+    fetchedCoverPhoto ||
+    profile?.coverPhoto ||
+    "/defaultCover.png";
 
   const profilePicSrc =
-    profilePicPreview || profile?.profilePicture || "/defaultImage.jpg";
+    profilePicPreview ||
+    profile?.profilePicture ||
+    "/defaultImage.jpg";
 
   const isFollowing =
     connectionStatus?.data?.isFollowing ??
@@ -89,7 +104,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
 
   const isActionLoading = isFollowLoading || isUnfollowLoading;
 
-  // Revoke any local blob URL on unmount to avoid memory leaks
+  // Revoke local blob URL on unmount
   useEffect(() => {
     return () => {
       if (objectUrlRef.current) {
@@ -97,6 +112,27 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
       }
     };
   }, []);
+
+  // NEW: Close image viewer with Escape key
+  useEffect(() => {
+    if (!viewingImage) return;
+
+    const handleEscape = (e) => {
+      if (e.key === "Escape") {
+        setViewingImage(null);
+      }
+    };
+
+    document.addEventListener("keydown", handleEscape);
+
+    // Prevent background page from scrolling while viewer is open
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [viewingImage]);
 
   const handleFollowToggle = async () => {
     if (!profileId || isActionLoading) return;
@@ -107,9 +143,13 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
       } else {
         await followUser(profileId).unwrap();
       }
+
       refetch();
     } catch (err) {
-      console.error(isFollowing ? "Unfollow failed:" : "Follow failed:", err);
+      console.error(
+        isFollowing ? "Unfollow failed:" : "Follow failed:",
+        err
+      );
     }
   };
 
@@ -128,7 +168,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
       router.refresh();
     } catch (err) {
       console.error("Profile picture upload failed:", err);
-      setProfilePicPreview(null); // revert to the real photo on failure
+      setProfilePicPreview(null);
     }
   };
 
@@ -136,7 +176,7 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Clean up any previous blob URL before creating a new one
+    // Clean up previous blob URL
     if (objectUrlRef.current) {
       URL.revokeObjectURL(objectUrlRef.current);
     }
@@ -146,14 +186,13 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
     setCoverPhotoPreview(localUrl);
 
     const formData = new FormData();
-    // Standard key 'coverPhoto'; if your server expects 'file', change 'coverPhoto' below
+
     formData.append("coverPhoto", file);
 
     try {
       const res = await uploadCoverPhoto(formData).unwrap();
 
-      // Swap the local blob preview for the real hosted URL once upload succeeds,
-      // then revoke the blob URL since it's no longer needed
+      // Swap local blob preview for real hosted URL
       if (res?.data?.coverPhoto) {
         URL.revokeObjectURL(localUrl);
         objectUrlRef.current = null;
@@ -164,7 +203,6 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
     } catch (err) {
       console.error("Cover photo upload failed:", err);
 
-      // Revert: drop the broken local preview and clean up the blob URL
       URL.revokeObjectURL(localUrl);
       objectUrlRef.current = null;
       setCoverPhotoPreview(null);
@@ -176,181 +214,245 @@ export default function ProfileInfo({ profile, isOwnProfile, followers, followin
   };
 
   return (
-    <div className="mb-6">
-      <div className="grid md:col-30-70 max-md:col-25-auto gap-x-6 items-center max-md:px-4 max-md:py-2">
-        <div className="relative">
+    <>
+      <div className="mb-6">
+        <div className="grid md:col-30-70 max-md:col-25-auto gap-x-6 items-center max-md:px-4 max-md:py-2">
           <div className="relative">
-            <Image
-              src={coverPhotoSrc}
-              alt="Cover Photo"
-              width={1200}
-              height={300}
-              className="w-full h-40 md:h-60 object-cover"
-            />
-            {isOwnProfile && (
-              <Label className="absolute right-[2%] bottom-2 border bg-white rounded-full cursor-pointer hover:bg-gray-100">
-                {isUploadingCover ? (
-                  <span className="px-2 py-1 text-xs">...</span>
-                ) : (
-                  <MdEdit size={16} className="m-2" />
-                )}
-
-                <input
-                  type="file"
-                  name="editCoverPhoto"
-                  id="editCoverPhoto"
-                  accept="image/*"
-                  disabled={isUploadingCover}
-                  className="hidden"
-                  onChange={handleCoverPhotoUpload}
-                />
-              </Label>
-            )}
-          </div>
-
-          <div className="relative">
-            <Image
-              src={profilePicSrc}
-              alt="Profile Picture"
-              width={250}
-              height={250}
-              className="w-20 !h-20 md:w-48 md:!h-48 object-cover rounded-full absolute bottom-[-60px] left-4 border-4 border-white"
-            />
-
-            {isOwnProfile && (
-              <Label className="absolute bottom-[-55px] left-[70px] md:left-[165px] bg-white border rounded-full p-2 cursor-pointer hover:bg-gray-100 shadow">
-                {isUploading ? (
-                  <span className="px-2 py-1 text-xs">...</span>
-                ) : (
-                  <MdEdit size={16} className="m-2" />
-                )}
-
-                <input
-                  type="file"
-                  name="editProfilePic"
-                  id="editProfilePic"
-                  accept="image/*"
-                  disabled={isUploading}
-                  className="hidden"
-                  onChange={handleProfilePicUpload}
-                />
-              </Label>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6">
-        <div className="mt-16 flex flex-col md:flex-row md:justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <p className="font-bold text-2xl text-black break-all">
-              {displayName}
-            </p>
-
-            <p className="font-medium text-sm text-black">
-              {profile?.club}
-            </p>
-
-            <p className="text-xs text-black">
-              {profile?.location?.state}, {profile?.location?.country}
-            </p>
-            {profile?.bio ? (
-              <p className="text-sm text-gray-700 max-w-full md:max-w-md mt-1">
-                "{profile.bio}""
-              </p>
-            ) : (
-              isOwnProfile && (
-                <button
-                  onClick={handleEdit}
-                  className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-transparent w-full sm:w-auto py-2.5 text-sm font-medium text-gray-500 transition"
-                >
-                  Add Bio
-                  <MdEdit size={16} />
-                </button>
-              )
-            )}
-          </div>
-        </div>
-
-        <div className="mt-6 flex items-start justify-between gap-4 flex-wrap">
-          {/* Left */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* {profile?.bio ? (
-              <p className="text-sm text-gray-600 max-w-full md:max-w-md">
-                {profile.bio}
-              </p>
-            ) : (
-              isOwnProfile && (
-                <button
-                  onClick={handleEdit}
-                  className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-transparent w-full sm:w-auto px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition"
-                >
-                  <MdEdit size={16} />
-                  Add Bio
-                </button>
-              )
-            )} */}
-
-            {isOwnProfile ? (
-              <Link href="/profile/editProfile">
-                <button className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 w-full sm:w-auto text-sm font-medium text-white hover:bg-teal-700 transition">
-                  Edit Profile
-                  <MdEdit size={16} />
-                </button>
-              </Link>
-            ) : (
+            {/* =========================
+                COVER PHOTO
+            ========================== */}
+            <div className="relative">
+              {/* Image itself opens viewer */}
               <button
-                onClick={handleFollowToggle}
-                disabled={isActionLoading}
-                className={`rounded-lg px-5 py-2.5 w-full sm:w-auto text-sm font-medium border transition ${
-  isFollowing
-    ? "bg-white border-teal-600 text-teal-600 hover:bg-teal-50"
-    : "bg-teal-600 border-teal-600 text-white hover:bg-teal-700"
-} ${
-  isActionLoading
-    ? "opacity-70 cursor-not-allowed"
-    : ""
-}`}
+                type="button"
+                onClick={() => setViewingImage("cover")}
+                className="block w-full cursor-pointer"
+                aria-label="View cover photo"
               >
-                {isActionLoading
-                  ? isFollowing
-                    ? "Unfollowing..."
-                    : "Following..."
-                  : isFollowing
-                  ? "Following"
-                  : "Follow"}
+                <Image
+                  src={coverPhotoSrc}
+                  alt="Cover Photo"
+                  width={1200}
+                  height={300}
+                  className="w-full h-40 md:h-60 object-cover"
+                />
               </button>
-            )}
+
+              {/* Edit button stays separate */}
+              {isOwnProfile && (
+                <Label className="absolute right-[2%] bottom-2 border bg-white rounded-full cursor-pointer hover:bg-gray-100">
+                  {isUploadingCover ? (
+                    <span className="px-2 py-1 text-xs">...</span>
+                  ) : (
+                    <MdEdit size={16} className="m-2" />
+                  )}
+
+                  <input
+                    type="file"
+                    name="editCoverPhoto"
+                    id="editCoverPhoto"
+                    accept="image/*"
+                    disabled={isUploadingCover}
+                    className="hidden"
+                    onChange={handleCoverPhotoUpload}
+                  />
+                </Label>
+              )}
+            </div>
+
+            {/* =========================
+                PROFILE PHOTO
+            ========================== */}
+            <div className="relative">
+              {/* Image itself opens viewer */}
+              <button
+                type="button"
+                onClick={() => setViewingImage("profile")}
+                className="absolute bottom-[-60px] left-4 cursor-pointer rounded-full"
+                aria-label="View profile picture"
+              >
+                <Image
+                  src={profilePicSrc}
+                  alt="Profile Picture"
+                  width={250}
+                  height={250}
+                  className="w-20 !h-20 md:w-48 md:!h-48 object-cover rounded-full border-4 border-white"
+                />
+              </button>
+
+              {/* Edit button stays separate */}
+              {isOwnProfile && (
+                <Label className="absolute bottom-[-55px] left-[70px] md:left-[165px] bg-white border rounded-full p-2 cursor-pointer hover:bg-gray-100 shadow">
+                  {isUploading ? (
+                    <span className="px-2 py-1 text-xs">...</span>
+                  ) : (
+                    <MdEdit size={16} className="m-2" />
+                  )}
+
+                  <input
+                    type="file"
+                    name="editProfilePic"
+                    id="editProfilePic"
+                    accept="image/*"
+                    disabled={isUploading}
+                    className="hidden"
+                    onChange={handleProfilePicUpload}
+                  />
+                </Label>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* =========================
+            PROFILE DETAILS
+        ========================== */}
+        <div className="px-6">
+          <div className="mt-16 flex flex-col md:flex-row md:justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <p className="font-bold text-2xl text-black break-all">
+                {displayName}
+              </p>
+
+              <p className="font-medium text-sm text-black">
+                {profile?.club}
+              </p>
+
+              <p className="text-xs text-black">
+                {profile?.location?.state}, {profile?.location?.country}
+              </p>
+
+              {profile?.bio ? (
+                <p className="text-sm text-gray-700 max-w-full md:max-w-md mt-1">
+                  "{profile.bio}"
+                </p>
+              ) : (
+                isOwnProfile && (
+                  <button
+                    onClick={handleEdit}
+                    className="inline-flex items-center gap-2 cursor-pointer rounded-lg bg-transparent w-full sm:w-auto py-2.5 text-sm font-medium text-gray-500 transition"
+                  >
+                    Add Bio
+                    <MdEdit size={16} />
+                  </button>
+                )
+              )}
+            </div>
           </div>
 
-          {/* Right */}
-          <div className="flex items-center gap-6 md:gap-10">
-            <Link
-              href={followersHref}
-              className="text-center group cursor-pointer"
-            >
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
-                {followers}
-              </h3>
-              <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
-                Followers
-              </p>
-            </Link>
+          <div className="mt-6 flex items-start justify-between gap-4 flex-wrap">
+            {/* Left */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {isOwnProfile ? (
+                <Link href="/profile/editProfile">
+                  <button className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-5 py-2.5 w-full sm:w-auto text-sm font-medium text-white hover:bg-teal-700 transition">
+                    Edit Profile
+                    <MdEdit size={16} />
+                  </button>
+                </Link>
+              ) : (
+                <button
+                  onClick={handleFollowToggle}
+                  disabled={isActionLoading}
+                  className={`rounded-lg px-5 py-2.5 w-full sm:w-auto text-sm font-medium border transition ${
+                    isFollowing
+                      ? "bg-white border-teal-600 text-teal-600 hover:bg-teal-50"
+                      : "bg-teal-600 border-teal-600 text-white hover:bg-teal-700"
+                  } ${
+                    isActionLoading
+                      ? "opacity-70 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {isActionLoading
+                    ? isFollowing
+                      ? "Unfollowing..."
+                      : "Following..."
+                    : isFollowing
+                    ? "Following"
+                    : "Follow"}
+                </button>
+              )}
+            </div>
 
-            <Link
-              href={followingHref}
-              className="text-center group cursor-pointer"
-            >
-              <h3 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
-                {following}
-              </h3>
-              <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
-                Following
-              </p>
-            </Link>
+            {/* Right */}
+            <div className="flex items-center gap-6 md:gap-10">
+              <Link
+                href={followersHref}
+                className="text-center group cursor-pointer"
+              >
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
+                  {followers}
+                </h3>
+
+                <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
+                  Followers
+                </p>
+              </Link>
+
+              <Link
+                href={followingHref}
+                className="text-center group cursor-pointer"
+              >
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 group-hover:text-teal-600 transition-colors">
+                  {following}
+                </h3>
+
+                <p className="text-xs uppercase tracking-wide text-gray-500 group-hover:text-teal-600 transition-colors">
+                  Following
+                </p>
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* =====================================================
+          FULLSCREEN IMAGE VIEWER
+      ====================================================== */}
+      {viewingImage && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setViewingImage(null)}
+        >
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={() => setViewingImage(null)}
+            className="absolute top-4 right-4 md:top-6 md:right-6 z-[10000] w-10 h-10 flex items-center justify-center rounded-full bg-black/50 text-white text-3xl hover:bg-black/70 transition cursor-pointer"
+            aria-label="Close image viewer"
+          >
+            ×
+          </button>
+
+          {/* Image container */}
+          <div
+            className="relative w-full max-w-6xl max-h-[90vh] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={
+                viewingImage === "cover"
+                  ? coverPhotoSrc
+                  : profilePicSrc
+              }
+              alt={
+                viewingImage === "cover"
+                  ? "Cover Photo"
+                  : "Profile Picture"
+              }
+              width={1600}
+              height={1000}
+              className={
+  viewingImage === "profile"
+    ? "w-[min(80vw,500px)] h-[min(80vw,500px)] md:w-[500px] md:h-[500px] object-cover rounded-full"
+    : "max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg"
+}
+              priority
+            />
+          </div>
+        </div>
+      )}
+    </>
   );
 }

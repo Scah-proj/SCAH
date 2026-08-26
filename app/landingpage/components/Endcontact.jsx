@@ -41,9 +41,8 @@ const Endcontact = () => {
           <h4 className="font-semibold text-lg">Legal</h4>
           <ul className="space-y-1 text-sm">
             <li><a href="#" className="hover:underline">Terms and conditions</a></li>
-            <li><a href="#" className="hover:underline">Protection of personal data</a></li>
-            <li><a href="#" className="hover:underline">Processing of personal data</a></li>
-            <li><a href="#" className="hover:underline">Cookies policy</a></li>
+            <li><a href="#" className="hover:underline">Scah Cookie Policy</a></li>
+            <li><a href="#" className="hover:underline">Privacy policy</a></li>
           </ul>
         </motion.div>
 
@@ -87,13 +86,13 @@ const Endcontact = () => {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.5 }}
         >
-          <a href="#" className="text-gray-300 hover:text-gray-600"><FaFacebookF size={20} /></a>
-          <a href="https://www.instagram.com/scah.club?igsh=MW1qd2w0bzE3a3ZiMw%3D%3D&utm_source=qr" className="text-gray-300 hover:text-gray-600"><FaInstagram size={20} /></a>
-          <a href="#" className="text-gray-300 hover:text-gray-600"><FaLinkedinIn size={20} /></a>
-          <a href="https://x.com/scahclub?s=21" className="text-gray-300 hover:text-gray-600"><FaXTwitter size={20} /></a>
+          {/* <a href="#" className="text-gray-300 hover:text-gray-600"><FaFacebookF size={20} /></a> */}
+          <a href="https://www.instagram.com/scah.club" className="text-gray-300 hover:text-gray-600"><FaInstagram size={20} /></a>
+          <a href="https://www.linkedin.com/company/scah-club" className="text-gray-300 hover:text-gray-600"><FaLinkedinIn size={20} /></a>
+          <a href="https://x.com/Scahclub" className="text-gray-300 hover:text-gray-600"><FaXTwitter size={20} /></a>
           
         </motion.div>
-        <p className="text-md pr-0 sm:pr-30 text-gray-300">SCAH ©2025</p>
+        <p className="text-md pr-0 sm:pr-30 text-gray-300">SCAH ©2026</p>
 
        
       </div>

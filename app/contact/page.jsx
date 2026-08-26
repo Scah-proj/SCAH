@@ -65,7 +65,7 @@ const Page = () => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
             >
-              Connect with us for partnerships, sales, support, and safeguarding inquiries.
+              Connect with us for partnerships, support, and safeguarding inquiries.
             </motion.p>
 
             <motion.p

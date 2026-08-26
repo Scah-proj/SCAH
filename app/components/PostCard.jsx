@@ -531,28 +531,40 @@ export default function PostCard({ post }) {
     }
   };
 
-  const handleCommentAdded = async (content) => {
-    if (!postId || isDeleted) return;
-    try {
-      const res = await addComment({ postId, content }).unwrap();
-      const nextCount =
-        res?.data?.commentsCount ??
-        res?.data?.commentCount ??
-        res?.data?.count ??
-        res?.commentsCount ??
-        res?.commentCount;
+  const handleCommentAdded = async ({ text, parentCommentId = null }) => {
+  if (!postId || isDeleted) return;
 
-      setCommentCount((current) =>
-        Number.isFinite(Number(nextCount))
-          ? Math.max(Number(nextCount), current + 1)
-          : current + 1
-      );
-      return res; 
-    } catch (err) {
-      console.error("Failed to post comment:", err);
-      throw err;
-    }
-  };
+  try {
+    const res = await addComment({
+      postId,
+      content: text,
+    }).unwrap();
+
+    const nextCount =
+      res?.data?.commentsCount ??
+      res?.data?.commentCount ??
+      res?.data?.count ??
+      res?.commentsCount ??
+      res?.commentCount;
+
+    setCommentCount((current) =>
+      Number.isFinite(Number(nextCount))
+        ? Math.max(Number(nextCount), current + 1)
+        : current + 1
+    );
+
+    return res;
+  } catch (err) {
+    console.error("Failed to post comment:", {
+      status: err?.status,
+      data: err?.data,
+      error: err?.error,
+      message: err?.message,
+    });
+
+    throw err;
+  }
+};
 
   return (
     <div className="max-w-2xl mx-auto mb-6">

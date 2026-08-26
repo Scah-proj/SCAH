@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { Loader } from "lucide-react";
-
+import NothingToSee from "../../components/NothingToSee";
 import NotificationPills from "./Categories";
 import NotificationByGroup from "./NotificationByGroup";
 import { groupNotifications } from "../../../lib/groupedNotification";

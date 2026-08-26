@@ -127,6 +127,13 @@ const Page = () => {
   if (status === "success") {
     return (
       <div className="p-10 text-center max-w-xl mx-auto">
+        <Link
+                    href={`/userfeed/tryout/application/${id}`}
+                    className="flex items-center text-gray-500 hover:text-black mb-4"
+                  >
+                    <MdArrowBack />
+                    <span className="ml-2">Back to Tryout</span>
+                  </Link>
         <h2 className="text-2xl font-semibold text-teal-700 mb-3">
           Application Submitted 🎉
         </h2>
@@ -278,7 +285,7 @@ const Page = () => {
                       <DialogTrigger asChild>
                         <Button className="w-full bg-teal-600">Apply Now</Button>
                       </DialogTrigger>
-                      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+                      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden flex flex-col max-h-[90vh]">
                         <DialogHeader>
                           <div className="p-6">
                             <DialogTitle className="text-xl font-semibold">
@@ -289,8 +296,8 @@ const Page = () => {
                             </DialogDescription>
                           </div>
                         </DialogHeader>
-                        <div className="max-h-[70vh] overflow-y-auto no-scrollbar px-6">
-                          <form className="space-y-6" onSubmit={handleSubmit}>
+                        <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar px-6">
+                          <form className="space-y-6" id="tryout-application-form" onSubmit={handleSubmit}>
                             <div className="space-y-4">
                               <h3 className="text-sm font-semibold uppercase text-gray-500 tracking-wide">
                                 Personal Information
@@ -400,26 +407,27 @@ const Page = () => {
                             )}
                           </form>
                         </div>
-                        <div className="p-4 border-t border-gray-200">
-                          <p className="text-xs text-gray-500 py-2">
-                            By submitting this application, you agree to our terms and conditions.
-                          </p>
-                          <Button
-                            type="button"
-                            onClick={handleSubmit}
-                            disabled={isApplying}
-                            className="w-full bg-teal-600 flex items-center justify-center gap-2"
-                          >
-                            {isApplying ? (
-                              <>
-                                <Loader className="h-4 w-4 animate-spin" />
-                                <span>Submitting...</span>
-                              </>
-                            ) : (
-                              "Submit Application"
-                            )}
-                          </Button>
-                        </div>
+                        <div className="shrink-0 p-4 border-t border-gray-200 bg-white">
+  <p className="text-xs text-gray-500 py-2">
+    By submitting this application, you agree to our terms and conditions.
+  </p>
+
+  <Button
+    type="submit"
+    form="tryout-application-form"
+    disabled={isApplying}
+    className="w-full bg-teal-600 flex items-center justify-center gap-2"
+  >
+    {isApplying ? (
+      <>
+        <Loader className="h-4 w-4 animate-spin" />
+        <span>Submitting...</span>
+      </>
+    ) : (
+      "Submit Application"
+    )}
+  </Button>
+</div>
                       </DialogContent>
                     </Dialog>
                   )}

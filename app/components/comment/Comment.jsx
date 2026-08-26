@@ -4,7 +4,7 @@ import { time } from "../../../components/timeAgo"
 import { useState } from "react";
 import Link from "next/link";
 
-export default function Comment({ comment }) {
+export default function Comment({ comment, onReply  }) {
   const [likes, setLikes] = useState(comment.likes ?? 0);
     const [liked, setLiked] = useState(false);
 
@@ -49,9 +49,51 @@ export default function Comment({ comment }) {
         <div>
           {comment.text}
         </div>
-        <div className="text-xs text-gray-500 flex gap-3">
-          <button>Reply</button>
+       <div className="text-xs text-gray-500 flex gap-4 mt-2">
+  <button
+    type="button"
+    onClick={() => onReply(comment)}
+    className="hover:text-teal-600 cursor-pointer font-medium"
+  >
+    Reply
+  </button>
+
+  {comment.replies?.length > 0 && (
+    <span>{comment.replies.length} replies</span>
+  )}
+</div>
+
+{/* Replies */}
+{comment.replies?.length > 0 && (
+  <div className="mt-3 ml-8 border-l border-gray-200 pl-4 space-y-3">
+    {comment.replies.map((reply) => (
+      <div key={reply.id} className="flex gap-2">
+        <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
+          {reply.user?.picture ? (
+            <Image
+              src={reply.user.picture}
+              alt={reply.author}
+              width={32}
+              height={32}
+              className="object-cover"
+            />
+          ) : (
+            <User className="w-4 h-4 text-gray-500" />
+          )}
         </div>
+
+        <div>
+          <p className="text-xs flex gap-2">
+            <span className="font-medium">{reply.author}</span>
+            <span>{time(reply.createdAt)}</span>
+          </p>
+
+          <p className="text-sm">{reply.text}</p>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
       </div>
     </div>
     <div className="text-center text-xs text-gray-500 flex flex-col items-center gap-1">

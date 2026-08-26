@@ -49,7 +49,7 @@ const Body = () => {
       </div>
 
       {/* First Row - 2 items */}
-      <div className="w-full sm:w-[1500px] mx-auto mt-10 grid grid-cols-1 sm:grid-cols-2 gap-8">
+      <div className="w-full max-w-7xl mx-auto mt-10 grid grid-cols-1 sm:grid-cols-2 gap-8">
         {features.slice(0, 2).map((feature, index) => (
           <div
             key={index}
@@ -72,7 +72,7 @@ const Body = () => {
       </div>
 
       {/* Second Row - 3 items */}
-      <div className="w-full sm:w-[1500px] mx-auto mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+      <div className="w-full max-w-7xl mx-auto mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {features.slice(2).map((feature, index) => (
           <div
             key={index + 2}
