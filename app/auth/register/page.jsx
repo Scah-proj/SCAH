@@ -78,7 +78,8 @@ const Page = () => {
       token: credentialResponse.credential,
     }).unwrap();
 
-    console.log("Google signup response:", response);
+console.log("🔥 GOOGLE SIGNUP RESPONSE:", JSON.stringify(response, null, 2));
+
 
     const token = response?.data?.token;
 

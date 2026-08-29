@@ -78,27 +78,22 @@ export default function CookieConsent() {
     saveConsent(preferences);
   };
 
+    useEffect(() => {
+    const openCookieSettings = () => {
+      setShowBanner(false);
+      setShowSettings(true);
+    };
+
+    window.addEventListener("open-cookie-settings", openCookieSettings);
+
+    return () => {
+      window.removeEventListener("open-cookie-settings", openCookieSettings);
+    };
+  }, []);
+
   if (!showBanner && !showSettings) {
     return null;
   }
-  useEffect(() => {
-  const openCookieSettings = () => {
-    setShowBanner(false);
-    setShowSettings(true);
-  };
-
-  window.addEventListener(
-    "open-cookie-settings",
-    openCookieSettings
-  );
-
-  return () => {
-    window.removeEventListener(
-      "open-cookie-settings",
-      openCookieSettings
-    );
-  };
-}, []);
 
   return (
     <>
