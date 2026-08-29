@@ -102,8 +102,8 @@ const hasCurrentUserLiked = (post, currentUserId) => {
   );
 };
 
-export default function PostCard({ post }) {
-  const [currentMedia, setCurrentMedia] = useState(0);
+export default function PostCard({ post, initialShowComments = false }) {
+    const [currentMedia, setCurrentMedia] = useState(0);
   useEffect(() => {
     setCurrentMedia(0);
   }, [post._id]);
@@ -167,7 +167,7 @@ export default function PostCard({ post }) {
     }
   };
 
-  const [showComments, setShowComments] = useState(false);
+const [showComments, setShowComments] = useState(initialShowComments);
   const { data: commentsData, isLoading: isLoadingComments } = useGetCommentsQuery(postId, {
     skip: !postId || isDeleted,
   });

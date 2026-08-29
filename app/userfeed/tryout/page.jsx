@@ -118,31 +118,59 @@ const Page = () => {
         <div className="px-4 space-y-6">
           <TryoutSearch query={query} setQuery={setQuery} />
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-20">
             <div className="flex flex-wrap items-center gap-4">
               <h3 className="text-sm font-semibold text-gray-600 tracking-wide">
                 FILTERS
               </h3>
 
-              <div className="w-48">
-                <Select
-                  options={sportOptions}
-                  value={sportOptions.find(
-                    (item) => item.value === filters.sport
-                  )}
-                  isDisabled
-                />
-              </div>
+             <div className="w-48">
+  <Select
+    options={sportOptions}
+    value={sportOptions.find(
+      (item) => item.value === filters.sport
+    )}
+    onChange={(option) =>
+      setFilters((prev) => ({
+        ...prev,
+        sport: option?.value || "all",
+      }))
+    }
+    menuPortalTarget={
+      typeof document !== "undefined" ? document.body : null
+    }
+    styles={{
+      menuPortal: (base) => ({
+        ...base,
+        zIndex: 99999,
+      }),
+    }}
+  />
+</div>
 
-              <div className="w-48">
-                <Select
-                  options={levelOptions}
-                  value={levelOptions.find(
-                    (item) => item.value === filters.level
-                  )}
-                  isDisabled
-                />
-              </div>
+             <div className="w-48">
+  <Select
+    options={levelOptions}
+    value={levelOptions.find(
+      (item) => item.value === filters.level
+    )}
+    onChange={(option) =>
+      setFilters((prev) => ({
+        ...prev,
+        level: option?.value || "all",
+      }))
+    }
+    menuPortalTarget={
+      typeof document !== "undefined" ? document.body : null
+    }
+    styles={{
+      menuPortal: (base) => ({
+        ...base,
+        zIndex: 99999,
+      }),
+    }}
+  />
+</div>
             </div>
 
             {user?.role === "Scout" && (

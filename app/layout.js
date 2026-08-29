@@ -1,6 +1,7 @@
 import { Archivo_Black, Lora} from "next/font/google";
 import { Toaster } from "react-hot-toast"; // 1. Import Toaster
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import CookieConsent from "./components/CookieConsent";
 import "./globals.css";
 import Providers from "./redux/provider";
 
@@ -78,6 +79,7 @@ export default function RootLayout({ children }) {
           <Providers>
             <Toaster position="top-right" /> 
             {children}
+            <CookieConsent />
           </Providers>
         </GoogleOAuthProvider>
       </body>

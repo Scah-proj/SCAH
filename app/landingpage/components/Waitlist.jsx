@@ -90,7 +90,7 @@ const Waitlist = () => {
                 />
 
                 <button
-                  
+                  onClick={handleSubscribe}
                   disabled={loading}
                   className="bg-teal-800 text-white w-full py-3 rounded-lg shadow-md hover:bg-teal-700 transition-all duration-200"
                 >

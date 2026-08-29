@@ -147,7 +147,7 @@ export default function SinglePost() {
             </button>
           </div>
         ) : (
-          <PostCard post={post} />
+          <PostCard post={post} initialShowComments={true} />
         )}
       </div>
     </div>

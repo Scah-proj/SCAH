@@ -72,7 +72,7 @@ const Page = () => {
       {/* ⬇️ Lazy-loaded Part Section */}
       <div ref={partRef} className="relative z-30 ">
         <Suspense fallback={<div className="text-white p-6 text-center">Loading content...</div>}>
-          <Commune />
+          {/* <Commune /> */}
           <Endcontact />
         </Suspense>
       </div>

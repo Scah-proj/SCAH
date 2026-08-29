@@ -131,22 +131,7 @@ export default function Trials({ trial }) {
   return (
     <div className="mb-4">
       <div className="relative bg-white border border-gray-200 rounded-xl p-3.5 shadow-sm hover:shadow-md transition">
-        {/* Bookmark */}
-        <button
-          onClick={handleSaveClick}
-          disabled={isSaving}
-          aria-label={saved ? "Remove from saved" : "Save tryout"}
-          className="absolute top-3 right-3 z-10 p-1.5 rounded-full bg-white/80 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Bookmark
-            size={18}
-            className={`transition ${
-              saved
-                ? "fill-teal-600 text-teal-600"
-                : "text-gray-500 hover:text-gray-900"
-            }`}
-          />
-        </button>
+          <div className="flex justify-between items-start">
 
         {/* Sport */}
         <div className="flex">
@@ -157,6 +142,25 @@ export default function Trials({ trial }) {
             <span className="mx-1">{trial?.sport}</span>
           </span>
         </div>
+
+                {/* Bookmark */}
+
+        <button
+          onClick={handleSaveClick}
+          disabled={isSaving}
+          aria-label={saved ? "Remove from saved" : "Save tryout"}
+          className="p-1.5 rounded-full bg-white/80 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Bookmark
+            size={18}
+            className={`transition ${
+              saved
+                ? "fill-teal-600 text-teal-600"
+                : "text-gray-500 hover:text-gray-900"
+            }`}
+          />
+        </button>
+</div>
 
         <div className="space-y-2">
           <div className="flex items-center gap-2">

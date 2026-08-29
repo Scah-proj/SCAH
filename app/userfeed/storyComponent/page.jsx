@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Loader } from "lucide-react";
-
+import { User } from "lucide-react";
 import StoryAvatar from "./StoryAvatar";
 import ViewStory from "./ViewStory";
 import CreateStory from "./CreateStory";
@@ -160,7 +160,7 @@ export default function StoryComponent() {
     myProfile?.profile?.media?.profilePicture ||
     myProfile?.profilePicture ||
     myProfile?.avatar ||
-    "/default-avatar.png";
+    <User className="h-6 w-6 text-gray-400" />;
 
   const myUsername =
     `${myProfile?.firstName || ""} ${myProfile?.lastName || ""}`.trim() ||
@@ -193,58 +193,40 @@ export default function StoryComponent() {
           hasStory={hasMyStories}
           hasUnseenStories={false}
           avatar={myProfilePicture}
-          // Most recent own story — if it's a text-only post, StoryAvatar
-          // shows its background color as the thumbnail instead of the
-          // profile picture.
-          latestStory={myStoriesList?.[0]}
-          onClick={() => {
-            if (hasMyStories) {
-              setShowMyStory(true);
-            } else {
-              setOpenCreateStory(true);
-            }
-          }}
+          
         />
 
         {/* Other Users' Feed Avatars */}
-        {otherUsers.map((user, index) => {
-          const userId = getUserId(user);
-          const latestStory = user.stories?.[0];
-          const isLatestTextStory =
-            String(latestStory?.media?.type || latestStory?.type || "").toLowerCase() ===
-            "text";
+       {otherUsers.map((user, index) => {
+  const userId = getUserId(user);
 
-          // Already viewed if either: the backend already has `myId` in
-          // every story's views (survives refresh), or this session's
-          // local click-through already marked it (immediate feedback
-          // before the next refetch lands).
-          const alreadyViewed =
-            Boolean(viewedUsers[userId]) ||
-            hasFullyViewedAllStories(user.stories, myId);
+  const alreadyViewed =
+    Boolean(viewedUsers[userId]) ||
+    hasFullyViewedAllStories(user.stories, myId);
 
-          return (
-            <StoryAvatar
-              key={userId || index}
-              avatar={
-                // Don't fall back to a story's media URL when the latest
-                // story is text-only (there's no media file to show) —
-                // StoryAvatar will render the background color instead.
-                user.profilePicture ||
-                user.picture ||
-                (!isLatestTextStory ? latestStory?.media?.url : null) ||
-                "/default-avatar.png"
-              }
-              owner={false}
-              hasStory={user.stories?.length > 0}
-              hasUnseenStories={!alreadyViewed}
-              latestStory={latestStory}
-              onClick={() => {
-                setActiveUserId(userId);
-                setViewedUsers((prev) => ({ ...prev, [userId]: true }));
-              }}
-            />
-          );
-        })}
+  return (
+    <StoryAvatar
+      key={userId || index}
+      avatar={
+        user.profilePicture ||
+        user.picture ||
+        user.user?.profilePicture ||
+        user.user?.picture ||
+        <User className="h-6 w-6 text-gray-400" />
+      }
+      owner={false}
+      hasStory={user.stories?.length > 0}
+      hasUnseenStories={!alreadyViewed}
+      onClick={() => {
+        setActiveUserId(userId);
+        setViewedUsers((prev) => ({
+          ...prev,
+          [userId]: true,
+        }));
+      }}
+    />
+  );
+})}
 
         {/* 1. VIEW OWN STORY (Explicitly passes isOwner={true}) */}
         {showMyStory && hasMyStories && (

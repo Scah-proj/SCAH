@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import Image from "next/image";
 import { AiOutlinePlus } from "react-icons/ai";
@@ -11,41 +12,22 @@ export default function StoryAvatar({
   hasStory,
   hasUnseenStories,
   owner,
-  latestStory, // the most recent story for this user, used to detect a text-only post
 }) {
   const [hasError, setHasError] = useState(false);
-
-  const isTextStory =
-    String(latestStory?.media?.type || latestStory?.type || "").toLowerCase() ===
-    "text";
-
-  const textBackgroundColor = latestStory?.media?.backgroundColor || "#000000";
 
   return (
     <div className="flex shrink-0 p-2">
       <button
         onClick={onClick}
         className={`relative p-[2px] rounded-full ${
-          hasStory
-            ? hasUnseenStories
-              ? "bg-gradient-to-tr from-teal-500 to-blue-500"
-              : "bg-gray-300"
+          hasStory && hasUnseenStories
+            ? "bg-gradient-to-tr from-teal-500 to-blue-500"
             : "bg-gray-300"
         }`}
       >
-        <div
-          className="w-12 h-12 rounded-full overflow-hidden border flex items-center justify-center"
-          style={
-            isTextStory
-              ? { backgroundColor: textBackgroundColor }
-              : undefined
-          }
-        >
-          {isTextStory ? (
-            // Text-only story: no image to show, the background color
-            // itself is the preview.
-            <span className="sr-only">Text story</span>
-          ) : avatar && !hasError ? (
+        {/* ALWAYS show profile picture */}
+        <div className="w-12 h-12 rounded-full overflow-hidden border bg-gray-200 flex items-center justify-center">
+          {avatar && !hasError ? (
             <Image
               src={avatar}
               alt="Profile"
@@ -55,12 +37,11 @@ export default function StoryAvatar({
               onError={() => setHasError(true)}
             />
           ) : (
-            <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-              <User className="w-6 h-6 text-gray-400" />
-            </div>
+            <User className="w-6 h-6 text-gray-400" />
           )}
         </div>
 
+        {/* Add story button */}
         {owner && (
           <span
             onClick={(e) => {

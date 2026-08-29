@@ -40,9 +40,9 @@ const Endcontact = () => {
         >
           <h4 className="font-semibold text-lg">Legal</h4>
           <ul className="space-y-1 text-sm">
-            <li><a href="#" className="hover:underline">Terms and conditions</a></li>
-            <li><a href="#" className="hover:underline">Scah Cookie Policy</a></li>
-            <li><a href="#" className="hover:underline">Privacy policy</a></li>
+            <li><a href="/legal/terms" className="hover:underline">Terms and conditions</a></li>
+            <li><a href="/legal/cookie" className="hover:underline">Scah Cookie Policy</a></li>
+            <li><a href="/legal/privacy" className="hover:underline">Privacy policy</a></li>
           </ul>
         </motion.div>
 

@@ -3,8 +3,10 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useGoogleAuthMutation } from "../../redux/api/authApi";
+import { setCredentials } from "../../redux/features/auth/authSlice";
 import { useDispatch } from "react-redux";
-import { handleGoogleSuccess } from "../googleAuth";
+// import { handleGoogleSuccess } from "../googleAuth";
 import { GoogleLogin } from "@react-oauth/google";
 import { Eye, EyeOff } from "lucide-react"; 
 import { useRegisterMutation } from "../../redux/api/authApi";
@@ -23,6 +25,7 @@ const Page = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [register, { isLoading }] = useRegisterMutation();
   const dispatch = useDispatch();
+  const [googleAuth] = useGoogleAuthMutation();
   const router = useRouter();
 
   const handleChange = (e) => {
@@ -65,6 +68,50 @@ const Page = () => {
       );
     }
   };
+  const handleGoogleAuth = async (credentialResponse) => {
+  if (!credentialResponse?.credential) return;
+
+  try {
+    setErrorMsg("");
+
+    const response = await googleAuth({
+      token: credentialResponse.credential,
+    }).unwrap();
+
+    console.log("Google signup response:", response);
+
+    const token = response?.data?.token;
+
+    if (!token) {
+      throw new Error("No authentication token returned");
+    }
+
+    const user = {
+      ...(response?.data?.user || {}),
+      role: response?.data?.onboarding?.role || response?.data?.role,
+      onboarding: response?.data?.onboarding,
+      scoutProfile: response?.data?.scoutProfile,
+      athleteProfile: response?.data?.athleteProfile,
+    };
+
+    dispatch(setCredentials({ user, token }));
+
+    if (response?.data?.requiresOnboarding === true) {
+      router.push("/onboarding");
+      return;
+    }
+
+    router.push("/userfeed");
+  } catch (error) {
+    console.error("Google signup error:", error);
+
+    setErrorMsg(
+      error?.data?.message ||
+        error?.message ||
+        "Google Authentication failed. Please try again."
+    );
+  }
+};
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen">
@@ -77,7 +124,7 @@ const Page = () => {
 
   {/* Content */}
   <div className="relative z-10">
-    <Link href="/home">
+    <Link href="/">
       <Image
         src="/yattr.png"
         alt="SCAH Logo"
@@ -199,10 +246,10 @@ const Page = () => {
             <hr className="flex-grow border-gray-300" />
           </div>
 
-          <GoogleLogin 
-            onSuccess={(res) => handleGoogleSuccess(res, router, dispatch)}
-            onError={() => console.log('Login Failed')}
-          />
+         <GoogleLogin
+  onSuccess={handleGoogleAuth}
+  onError={() => setErrorMsg("Google Sign-Up failed.")}
+/>
 
           <p className="text-sm text-center text-gray-600 mt-5">
             Have an account?{" "}
