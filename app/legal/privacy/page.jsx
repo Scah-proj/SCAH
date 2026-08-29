@@ -49,8 +49,7 @@ export default function PrivacyPolicy() {
           </p>
 
           <p>
-            It should be read together with the Cookie Policy and,
-            for minors, the Child Safety &amp; Parental Consent Policy.
+            It should be read together with the Cookie Policy.
           </p>
 
         </PolicySection>

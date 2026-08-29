@@ -243,8 +243,7 @@ export default function CookiePolicy() {
 
         <footer className="mt-10 pt-6 border-t border-gray-200 text-sm text-gray-500">
           SCAH LIMITED — Cookie Policy. This page should be read alongside
-          the Privacy Policy, Terms of Service, and Child Safety &amp;
-          Parental Consent Policy.
+          the Privacy Policy, Terms of Service.
         </footer>
       </main>
     </div>

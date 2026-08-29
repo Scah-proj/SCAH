@@ -41,8 +41,7 @@ export default function TermsOfService() {
             By creating an account, browsing the Platform, or clicking "I
             Agree," you confirm that you have read, understood, and agree to be
             bound by these Terms, our Privacy Policy, our Community Guidelines,
-            and (where applicable) our Child Safety &amp; Parental Consent
-            Policy, each incorporated by reference.
+            and (where applicable) each incorporated by reference.
           </p>
 
           <p>
@@ -104,8 +103,7 @@ export default function TermsOfService() {
           <p>
             We may add, modify, or discontinue features at any time. Material
             changes affecting minors' safety will not be made without updating
-            the Child Safety &amp; Parental Consent Policy and, where required,
-            re-obtaining consent.
+            the Privacy Policy and re-obtaining consent.
           </p>
         </PolicySection>
 
@@ -122,8 +120,7 @@ export default function TermsOfService() {
           <ol className="list-[lower-alpha] pl-6 space-y-3">
             <li>
               a parent or legal guardian has completed the verifiable parental
-              consent process described in the Child Safety &amp; Parental
-              Consent Policy; and
+              consent process described.
             </li>
             <li>
               the account is flagged internally as a minor account, triggering
@@ -167,12 +164,7 @@ export default function TermsOfService() {
             use.
           </p>
 
-          <p>
-            Minor accounts are linked to a parent/guardian account. The
-            parent/guardian retains the ability to view activity summaries,
-            restrict messaging, and delete the account at any time, as further
-            described in the Child Safety &amp; Parental Consent Policy.
-          </p>
+        
 
           <p>
             One person/entity may not maintain more than one active account
@@ -316,7 +308,7 @@ export default function TermsOfService() {
             meetings not disclosed to the parent/guardian, or for images/content
             outside the scope of ordinary scouting evaluation, are strictly
             prohibited and constitute a safeguarding violation reportable under
-            Section 14 and our Child Safety &amp; Parental Consent Policy.
+            Section 14.
           </p>
 
           <p>
@@ -509,8 +501,7 @@ export default function TermsOfService() {
 
           <p>
             <strong>Entire Agreement.</strong> These Terms, the Privacy Policy,
-            Community Guidelines, Child Safety &amp; Parental Consent Policy,
-            and (where applicable) the Scout/Academy Verification Agreement
+            Community Guidelines, and (where applicable) the Scout/Academy Verification Agreement
             constitute the entire agreement between you and SCAH.
           </p>
 
