@@ -116,7 +116,7 @@ function LoginForm() {
 
       handleAuthSuccess(response);
     } catch (error) {
-      setErrorMsg(error?.data?.message || "Google Authentication failed. Please try again.");
+    setErrorMsg(error?.data?.error?.message);
     }
   };
 

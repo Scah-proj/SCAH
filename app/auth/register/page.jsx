@@ -62,13 +62,11 @@ const Page = () => {
     } catch (error) {
       console.error('Error:', error);
       setErrorMsg(
-        error?.data?.error?.message ||
-        error?.data?.message ||
-        "Something went wrong"
+        error?.data?.error?.message
       );
     }
   };
-  const handleGoogleAuth = async (credentialResponse) => {
+ const handleGoogleAuth = async (credentialResponse) => {
   if (!credentialResponse?.credential) return;
 
   try {
@@ -78,13 +76,16 @@ const Page = () => {
       token: credentialResponse.credential,
     }).unwrap();
 
-console.log("🔥 GOOGLE SIGNUP RESPONSE:", JSON.stringify(response, null, 2));
-
+    // Handle backend's logical failure even when HTTP status is 200
+    if (response?.success === false) {
+      setErrorMsg(response?.error?.message || "Google sign-up failed.");
+      return;
+    }
 
     const token = response?.data?.token;
-
     if (!token) {
-      throw new Error("No authentication token returned");
+      setErrorMsg("No authentication token returned.");
+      return;
     }
 
     const user = {
@@ -104,12 +105,10 @@ console.log("🔥 GOOGLE SIGNUP RESPONSE:", JSON.stringify(response, null, 2));
 
     router.push("/userfeed");
   } catch (error) {
-    console.error("Google signup error:", error);
-
     setErrorMsg(
-      error?.data?.message ||
-        error?.message ||
-        "Google Authentication failed. Please try again."
+      error?.data?.error?.message ||
+      error?.message ||
+      "Google sign-up failed."
     );
   }
 };

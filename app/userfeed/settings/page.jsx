@@ -6,12 +6,13 @@ import Link from "next/link";
 import { ChevronRight, AlertTriangle, X } from "lucide-react";
 import SearchSettings from "../../components/Search/SearchSettings";
 import { useRouter } from "next/navigation";
-import { useLogoutMutation } from "../../redux/api/authApi"; // Adjust relative import path as needed
-import { useDeleteAccountMutation } from "../../redux/api/settingApi"; // Adjust relative import path as needed
+import { useLogoutMutation } from "../../redux/api/authApi";
+import { useDeleteAccountMutation } from "../../redux/api/settingApi";
 
 const Page = () => {
     const router = useRouter();
     const [showDeleteToast, setShowDeleteToast] = useState(false);
+    const [deleteFeedback, setDeleteFeedback] = useState("");
 
     const [logout, { isLoading: isLoggingOut }] = useLogoutMutation();
     const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
@@ -28,12 +29,21 @@ const Page = () => {
 
     const confirmDeleteAccount = async () => {
         try {
-            await deleteAccount().unwrap();
+            // Pass the feedback along with the delete request.
+            // Adjust the payload shape to match what useDeleteAccountMutation expects.
+            await deleteAccount({ reason: deleteFeedback.trim() }).unwrap();
+            console.log("Sending delete reason:", deleteFeedback.trim());
             setShowDeleteToast(false);
+            setDeleteFeedback("");
             router.push("/");
         } catch (error) {
             console.error("Delete account failed:", error);
         }
+    };
+
+    const closeToast = () => {
+        setShowDeleteToast(false);
+        setDeleteFeedback("");
     };
 
     return (
@@ -44,14 +54,34 @@ const Page = () => {
                     <div className="p-2 bg-red-100 rounded-lg text-red-600 shrink-0">
                         <AlertTriangle size={20} />
                     </div>
-                    <div className="flex-1 space-y-1">
+                    <div className="flex-1 space-y-2">
                         <h4 className="text-sm font-semibold text-gray-900">
                             Delete account?
                         </h4>
                         <p className="text-xs text-gray-500">
-                            This action is permanent and cannot be undone. Are you sure you want to proceed?
+                            This action is permanent and cannot be undone.
                         </p>
-                        <div className="flex items-center gap-2 pt-2">
+
+                        <div className="pt-1">
+                            <label
+                                htmlFor="delete-feedback"
+                                className="text-xs font-medium text-gray-600 block mb-1"
+                            >
+                                Mind telling us why you're leaving? (optional)
+                            </label>
+                            <textarea
+                                id="delete-feedback"
+                                value={deleteFeedback}
+                                onChange={(e) => setDeleteFeedback(e.target.value)}
+                                disabled={isDeleting}
+                                rows={2}
+                                maxLength={500}
+                                placeholder="e.g. not using it enough, switching to another app, privacy concerns..."
+                                className="w-full text-xs border border-gray-200 rounded-md p-2 resize-none focus:outline-none focus:ring-2 focus:ring-red-200 disabled:opacity-50"
+                            />
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-1">
                             <button
                                 type="button"
                                 onClick={confirmDeleteAccount}
@@ -62,7 +92,7 @@ const Page = () => {
                             </button>
                             <button
                                 type="button"
-                                onClick={() => setShowDeleteToast(false)}
+                                onClick={closeToast}
                                 disabled={isDeleting}
                                 className="px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-gray-900 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                             >
@@ -72,7 +102,7 @@ const Page = () => {
                     </div>
                     <button
                         type="button"
-                        onClick={() => setShowDeleteToast(false)}
+                        onClick={closeToast}
                         className="text-gray-400 hover:text-gray-600 transition-colors"
                     >
                         <X size={16} />
@@ -86,7 +116,6 @@ const Page = () => {
                 </h1>
             </div>
             <div className="px-4 space-y-6">
-                {/* searchbar */}
                 <div>
                     <SearchSettings />
                 </div>
@@ -96,12 +125,11 @@ const Page = () => {
                             <h2 className="text-xs font-semibold text-gray-400 uppercase mb-3">
                                 {section.title}
                             </h2>
-
                             <div className="bg-white rounded-xl border">
                                 {section.items.map((item) => (
                                     <div key={item.path}>
-                                        <Link 
-                                            href={item.path} 
+                                        <Link
+                                            href={item.path}
                                             className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-md"
                                         >
                                             <div className="flex items-center gap-2">
@@ -112,7 +140,6 @@ const Page = () => {
                                         </Link>
                                     </div>
                                 ))}
-                                
                                 <div className="px-3 py-2 flex items-center justify-center">
                                     <Link href="/userfeed/settings/account" className="text-sm text-gray-800">
                                         <p>{section.more}</p>
