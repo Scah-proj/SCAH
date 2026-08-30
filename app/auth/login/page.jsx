@@ -75,11 +75,20 @@ function LoginForm() {
     // Dispatch credentials (this updates Redux, LocalStorage, and document.cookie)
     dispatch(setCredentials({ user, token }));
 
-    // Target destination fallback
-    const targetDestination = redirectTo || "/userfeed";
-
     // Crucial: Refresh router cache so Next.js reads the updated cookie before navigation
     router.refresh();
+
+    
+    const requiresOnboarding =
+      response?.data?.requiresOnboarding ?? response?.requiresOnboarding;
+
+    if (requiresOnboarding === true) {
+      router.replace("/onboarding");
+      return;
+    }
+
+    // Target destination fallback
+    const targetDestination = redirectTo || "/userfeed";
     router.replace(targetDestination);
   };
 
