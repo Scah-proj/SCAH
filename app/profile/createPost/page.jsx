@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -9,10 +9,11 @@ import {
   User,
   Smile,
   CalendarClock,
+  Play,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useCreatePostMutation } from "../../redux/api/feedApi";
 import {
   useGetMyProfileQuery,
@@ -45,7 +46,11 @@ export default function CreatePost() {
   const router = useRouter();
   const dispatch = useDispatch();
 
+  const authUser = useSelector((state) => state.auth.user);
+
   const [createPost] = useCreatePostMutation();
+  // Single call — this was being requested twice (as `profile` and
+  // `myProfile`), which just doubles the network request for the same data.
   const { data: profile } = useGetMyProfileQuery();
   const { data: allProfilesResponse } = useGetAllProfilesQuery({
     page: 1,
@@ -68,14 +73,20 @@ export default function CreatePost() {
   const [mentionQuery, setMentionQuery] = useState("");
   const [showMentionDropdown, setShowMentionDropdown] = useState(false);
 
+  // Which preview (by index) is currently expanded to play with sound/controls.
+  // Everything else in the grid stays a static, muted poster-frame thumbnail.
+  const [playingPreviewIndex, setPlayingPreviewIndex] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const profilePicture =
+  const myProfilePicture =
     profile?.profilePicture ||
     profile?.picture ||
     profile?.profile?.profilePicture ||
     profile?.profile?.media?.profilePicture ||
+    authUser?.profilePicture ||
+    authUser?.avatar ||
     null;
 
   const profileLocation =
@@ -108,6 +119,7 @@ export default function CreatePost() {
     setImages((prev) =>
       prev.filter((_, i) => i !== index)
     );
+    setPlayingPreviewIndex((prev) => (prev === index ? null : prev));
   };
 
   const closeCamera = () => {
@@ -244,13 +256,13 @@ export default function CreatePost() {
     setShowMentionDropdown(Boolean(mentionValue));
   };
 
-  const addTaggedUser = (user) => {
+  const addTaggedUser = (taggedUser) => {
     const fullName =
-      [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-      user?.name ||
-      user?.username ||
+      [taggedUser?.firstName, taggedUser?.lastName].filter(Boolean).join(" ") ||
+      taggedUser?.name ||
+      taggedUser?.username ||
       "User";
-    const userId = user?._id || user?.id;
+    const userId = taggedUser?._id || taggedUser?.id;
 
     if (userId) {
       setTaggedUsers((prev) =>
@@ -289,9 +301,9 @@ export default function CreatePost() {
      {/* User + content */}
 <div className="flex gap-3">
   <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-300 border shrink-0 flex items-center justify-center">
-    {profilePicture ? (
+    {myProfilePicture ? (
       <Image
-        src={profilePicture}
+        src={myProfilePicture}
         alt="Profile"
         width={48}
         height={48}
@@ -315,25 +327,25 @@ export default function CreatePost() {
       {showMentionDropdown && (
         <div className="absolute left-0 top-full z-20 mt-2 max-h-44 w-full overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-lg">
           {tagSuggestions.length > 0 ? (
-            tagSuggestions.map((user, index) => {
+            tagSuggestions.map((suggestedUser, index) => {
               const fullName =
-                [user?.firstName, user?.lastName]
+                [suggestedUser?.firstName, suggestedUser?.lastName]
                   .filter(Boolean)
                   .join(" ") ||
-                user?.name ||
-                user?.username ||
+                suggestedUser?.name ||
+                suggestedUser?.username ||
                 "User";
 
               const userKey =
-                user?._id ||
-                user?.id ||
+                suggestedUser?._id ||
+                suggestedUser?.id ||
                 `${fullName}-${index}`;
 
               return (
                 <button
                   key={userKey}
                   type="button"
-                  onClick={() => addTaggedUser(user)}
+                  onClick={() => addTaggedUser(suggestedUser)}
                   className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-gray-50"
                 >
                   <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
@@ -355,30 +367,75 @@ export default function CreatePost() {
 
     {/* Image previews */}
     {images.length > 0 && (
-      <div className="grid grid-cols-3 gap-2 mt-3 max-h-72 overflow-y-auto">
-        {images.map((img, index) => (
-          <div
-            key={index}
-            className="relative aspect-square w-full overflow-hidden rounded-lg"
-          >
+  <div className="grid grid-cols-3 gap-2 mt-3 max-h-72 overflow-y-auto">
+    {images.map((img, index) => {
+      const isVideo = img.file.type.startsWith("video/");
+      const isPlaying = playingPreviewIndex === index;
+
+      return (
+        <div
+          key={index}
+          className="relative aspect-square w-full overflow-hidden rounded-lg bg-black"
+        >
+          {isVideo ? (
+            isPlaying ? (
+              <video
+                src={img.preview}
+                controls
+                autoPlay
+                playsInline
+                className="h-full w-full object-cover"
+                onEnded={() => setPlayingPreviewIndex(null)}
+              />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setPlayingPreviewIndex(index)}
+                className="relative block h-full w-full"
+                aria-label="Play video preview"
+              >
+                <video
+                  src={img.preview}
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="h-full w-full object-cover"
+                  // Nudge the browser to decode and paint a real frame
+                  // instead of showing a blank black box as the thumbnail.
+                  onLoadedMetadata={(e) => {
+                    if (!e.currentTarget.currentTime) {
+                      e.currentTarget.currentTime = 0.1;
+                    }
+                  }}
+                />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                  <div className="rounded-full bg-black/60 p-2">
+                    <Play size={18} className="fill-white text-white" />
+                  </div>
+                </div>
+              </button>
+            )
+          ) : (
             <Image
               src={img.preview}
               alt="preview"
               fill
               className="object-cover"
             />
+          )}
 
-            <button
-              type="button"
-              onClick={() => removeImage(index)}
-              className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-sm text-white cursor-pointer"
-            >
-              ×
-            </button>
-          </div>
-        ))}
-      </div>
-    )}
+          <button
+            type="button"
+            onClick={() => removeImage(index)}
+            className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/40 text-sm text-white cursor-pointer"
+          >
+            ×
+          </button>
+        </div>
+      );
+    })}
+  </div>
+)}
 
     {error && (
       <p className="mt-2 text-sm text-red-500">
@@ -394,7 +451,7 @@ export default function CreatePost() {
 
         <input
           type="file"
-          accept="image/*"
+          accept="image/*, video/*"
           multiple
           hidden
           onChange={handleImageUpload}

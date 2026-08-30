@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Play } from "lucide-react";
 
 // A curated set of pleasant, high-contrast background/text pairs.
 // Feel free to tweak the hex values to match your brand palette.
@@ -44,14 +45,25 @@ export default function PostGrid({ post }) {
     );
   }
 
-  const image =
-    post.media &&
-    Array.isArray(post.media) &&
-    post.media.length > 0
-      ? post.media[0].url || post.media[0]
+  const firstMedia =
+    post.media && Array.isArray(post.media) && post.media.length > 0
+      ? post.media[0]
       : null;
 
-  const color = !image ? getColorForPost(post) : null;
+  // media items can arrive either as full objects ({ url, mimetype, ... })
+  // or as bare url strings, so normalize both before checking type.
+  const isVideo =
+    typeof firstMedia === "object" &&
+    firstMedia?.mimetype?.startsWith("video/");
+
+  const image =
+    firstMedia && !isVideo
+      ? (typeof firstMedia === "object" ? firstMedia.url : firstMedia)
+      : null;
+
+  const video = isVideo ? firstMedia.url : null;
+
+  const color = !image && !video ? getColorForPost(post) : null;
 
   return (
     <div className="max-w-2xl">
@@ -61,7 +73,27 @@ export default function PostGrid({ post }) {
       >
         <div className="bg-white border border-gray-200 shadow-sm overflow-hidden">
 
-          {image ? (
+          {video ? (
+            <div className="relative w-full aspect-square overflow-hidden bg-black">
+              <video
+                src={video}
+                muted
+                playsInline
+                preload="metadata"
+                // #t=0.1 nudges most browsers to decode and paint a frame
+                // as the poster instead of showing a blank black box.
+                className="object-cover w-full h-full"
+                onLoadedMetadata={(e) => {
+                  if (!e.currentTarget.currentTime) {
+                    e.currentTarget.currentTime = 0.1;
+                  }
+                }}
+              />
+              <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5">
+                <Play size={14} className="text-white fill-white" />
+              </div>
+            </div>
+          ) : image ? (
             <div className="w-full aspect-square overflow-hidden">
               <Image
                 src={image}

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Image from "next/image";
 import {
@@ -13,6 +13,8 @@ import {
   Check,
   ImageDown,
   Trash2,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import PostComments from "./comment/CommentSection";
 import { useCommentStore } from "../../lib/commentStore";
@@ -27,8 +29,8 @@ import {
 } from "../../components/ui/dropdown-menu";
 import { timeAgo } from "../../components/timeAgo";
 import toast from "react-hot-toast";
-import { 
-  useToggleLikePostMutation, 
+import {
+  useToggleLikePostMutation,
   useToggleSavePostMutation,
   useToggleRepostMutation,
   useAddCommentMutation,
@@ -120,7 +122,7 @@ export default function PostCard({ post, initialShowComments = false }) {
   const [toggleRepost] = useToggleRepostMutation();
   const [addComment] = useAddCommentMutation();
   const [deletePost] = useDeletePostMutation();
-  
+
   const router = useRouter();
   const currentUser = useSelector((state) => state.auth.user);
   const currentUserId = getUserId(currentUser);
@@ -208,9 +210,16 @@ const [showComments, setShowComments] = useState(initialShowComments);
   const [reposts, setReposts] = useState(initialRepostsCount);
   const [reposted, setReposted] = useState(initialReposted);
   const [saved, setSaved] = useState(!!(post.hasSaved || post.saved || post.isSaved));
-  
+
   const [isCopied, setIsCopied] = useState(false);
   const [hasAvatarError, setHasAvatarError] = useState(false);
+
+  // --- Video autoplay-on-view setup ---
+  const videoRefs = useRef([]);
+  const mediaContainerRef = useRef(null);
+  // Index of the one video slide the user has tapped to unmute, if any.
+  // Resets to muted whenever you swipe away, so each new video starts muted.
+  const [unmutedIndex, setUnmutedIndex] = useState(null);
 
   useEffect(() => {
     setLikes(initialLikesCount);
@@ -219,6 +228,65 @@ const [showComments, setShowComments] = useState(initialShowComments);
     setReposts(initialRepostsCount);
     setReposted(initialReposted);
   }, [initialCommentCount, initialLiked, initialLikesCount, initialRepostsCount, initialReposted, postId]);
+
+  // Play the video for the currently visible slide, pause every other video.
+  // Runs on manual swipe/scroll (currentMedia changes) and also re-checks
+  // when the card scrolls into/out of the viewport, so a post that's off-screen
+  // doesn't keep playing audio/video in the background.
+  useEffect(() => {
+    const videos = videoRefs.current;
+
+    videos.forEach((videoEl, index) => {
+      if (!videoEl) return;
+
+      if (index === currentMedia) {
+        // Attempt to play; browsers may reject unmuted autoplay, so we ignore
+        // the rejection (muted + playsInline below keeps this reliable).
+        const playPromise = videoEl.play();
+        if (playPromise && typeof playPromise.catch === "function") {
+          playPromise.catch(() => {});
+        }
+      } else {
+        videoEl.pause();
+      }
+    });
+
+    // Leaving a video re-mutes it, so the next slide always starts muted
+    // rather than carrying sound over to whatever you swipe to next.
+    setUnmutedIndex((prev) => (prev === currentMedia ? prev : null));
+  }, [currentMedia, postId]);
+
+  const handleToggleMute = (e, index) => {
+    e.stopPropagation();
+    setUnmutedIndex((prev) => (prev === index ? null : index));
+  };
+
+  // Pause all videos when the post card itself scrolls out of view, and
+  // resume the current slide's video when it scrolls back into view.
+  useEffect(() => {
+    const container = mediaContainerRef.current;
+    if (!container || typeof IntersectionObserver === "undefined") return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const videoEl = videoRefs.current[currentMedia];
+        if (!videoEl) return;
+
+        if (entry.isIntersecting) {
+          const playPromise = videoEl.play();
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(() => {});
+          }
+        } else {
+          videoEl.pause();
+        }
+      },
+      { threshold: 0.6 }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [currentMedia]);
 
   const currentUserName =
     currentUser?.name ||
@@ -312,7 +380,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
   const hasImage = Boolean(primaryImageMedia);
 
   const rawComments = commentsData?.data?.comments || [];
-  
+
   const commentsList = rawComments.map((comment) => {
     const user = comment?.user;
     const fullName = user
@@ -324,13 +392,13 @@ const [showComments, setShowComments] = useState(initialShowComments);
       postId: comment.post_id,
       userId: comment.user_id,
       content: comment.content,
-      text: comment.content, 
-      author: fullName,      
+      text: comment.content,
+      author: fullName,
       isActive: comment.is_active,
       createdAt: comment.created_at,
       user: user
         ? {
-            id: user._id || user.id || comment.user_id, 
+            id: user._id || user.id || comment.user_id,
             firstName: user.firstName,
             lastName: user.lastName,
             name: fullName,
@@ -342,7 +410,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
   });
 
   const commentsByPost = useCommentStore(state => state.commentsByPost);
-  
+
   const loadedCommentCount = commentsList.length;
   const localCommentCount = (commentsByPost[postId] || []).length;
   const displayedCommentCount = Math.max(
@@ -568,8 +636,8 @@ const [showComments, setShowComments] = useState(initialShowComments);
 
   return (
     <div className="max-w-2xl mx-auto mb-6">
-      <div 
-        onClick={handleOpenPost} 
+      <div
+        onClick={handleOpenPost}
         className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xl mb-2 transition hover:shadow-2xl"
       >
         {/* Header */}
@@ -598,7 +666,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
               className="cursor-pointer"
             >
               <h3 className="text-sm font-semibold text-gray-900">
-                {authorName}{authorIsVerified ? " ✓" : ""} •  
+                {authorName}{authorIsVerified ? " ✓" : ""} •
                 <span className={`text-xs mx-2 font-semibold ${isDeleted ? "text-red-500" : "text-teal-600"}`}>
                   {isDeleted ? "Deleted" : post.status || "Active"}
                 </span>
@@ -633,7 +701,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
                       Save to Camera Roll
                     </DropdownMenuItem>
                   )}
-                  
+
                   <DropdownMenuItem onSelect={handleCopyLink}>
                     {isCopied ? <Check className="text-teal-600" /> : <Copy />}
                     {isCopied ? "Copied!" : "Copy link to post"}
@@ -682,7 +750,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
 
         {/* Post Media */}
         {post.media?.length > 0 && (
-          <div className="relative">
+          <div className="relative" ref={mediaContainerRef}>
             <div
               className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
               onScroll={(e) => {
@@ -705,11 +773,33 @@ const [showComments, setShowComments] = useState(initialShowComments);
                       className="object-cover"
                     />
                   ) : media.mimetype?.startsWith("video/") ? (
-                    <video
-                      src={media.url}
-                      controls
-                      className="w-full h-full object-cover"
-                    />
+                    <div className="relative w-full h-full">
+                      <video
+                        ref={(el) => (videoRefs.current[index] = el)}
+                        src={media.url}
+                        controls
+                        muted={unmutedIndex !== index}
+                        loop
+                        playsInline
+                        preload="metadata"
+                        // autoPlay only helps the very first paint before our
+                        // effect runs; the effect above is what actually
+                        // plays/pauses this element as the user swipes.
+                        autoPlay={index === currentMedia}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={(e) => handleToggleMute(e, index)}
+                        aria-label={unmutedIndex === index ? "Mute video" : "Unmute video"}
+                        className="absolute bottom-3 right-3 bg-black/60 text-white rounded-full p-2 hover:bg-black/80 transition"
+                      >
+                        {unmutedIndex === index ? (
+                          <Volume2 size={16} />
+                        ) : (
+                          <VolumeX size={16} />
+                        )}
+                      </button>
+                    </div>
                   ) : (
                     <a
                       href={media.url}
@@ -755,7 +845,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
           >
             <div className="flex items-center gap-5">
               {/* Like */}
-              <div className="flex items-center">    
+              <div className="flex items-center">
                 <button className="flex space-y-1 mr-1 cursor-pointer" onClick={handleLikeClick}>
                   <Heart
                     size={22}
@@ -818,7 +908,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
         <div className="text-xs text-gray-500 px-4 mb-2">
           {timeAgo(post.created_at || post.createdAt)}
         </div>
-            
+
         {showComments && !isDeleted && (
           <div onClick={(e) => e.stopPropagation()}>
             <PostComments

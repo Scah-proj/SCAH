@@ -125,7 +125,8 @@ function LoginForm() {
 
       handleAuthSuccess(response);
     } catch (error) {
-    setErrorMsg(error?.data?.error?.message);
+      console.log("Google auth error:", error?.data?.error?.message);
+      setErrorMsg("Sign In failed. Please try again.");
     }
   };
 

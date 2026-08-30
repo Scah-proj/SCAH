@@ -105,12 +105,10 @@ const Page = () => {
 
     router.push("/userfeed");
   } catch (error) {
-    setErrorMsg(
-      error?.data?.error?.message ||
-      error?.message ||
-      "Google sign-up failed."
-    );
-  }
+      console.log("Google auth error:", error?.data?.error?.message);
+      setErrorMsg("Sign Up failed. Please try again.");
+    }
+  
 };
 
   return (
