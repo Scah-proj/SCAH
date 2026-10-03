@@ -40,9 +40,27 @@ export default function ProfileInfo({
   // Resolves ID for both own profile and other users
   const profileId = profile?._id || profile?.id || profile?.userId;
 
+  const profileUser =
+    profile?.user ||
+    profile?.account ||
+    (typeof profile?.userId === "object" ? profile.userId : null);
   const displayName =
     profile?.name ||
-    `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim();
+    [
+      profile?.firstName || profile?.first_name,
+      profile?.lastName || profile?.last_name,
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    profileUser?.name ||
+    [
+      profileUser?.firstName || profileUser?.first_name,
+      profileUser?.lastName || profileUser?.last_name,
+    ]
+      .filter(Boolean)
+      .join(" ") ||
+    profileUser?.username ||
+    profile?.username;
 
   // Route resolution pointing to followers and following
   const followersHref = isOwnProfile
@@ -310,9 +328,11 @@ export default function ProfileInfo({
         <div className="px-6">
           <div className="mt-16 flex flex-col md:flex-row md:justify-between gap-3">
             <div className="flex flex-col gap-1">
-              <p className="font-bold text-2xl text-black break-all">
-                {displayName}
-              </p>
+              {displayName && (
+                <p className="font-bold text-2xl text-black break-all">
+                  {displayName}
+                </p>
+              )}
 
               <p className="font-medium text-sm text-black">
                 {profile?.club}

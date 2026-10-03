@@ -1,4 +1,4 @@
-import { Archivo_Black, Lora} from "next/font/google";
+import { Archivo_Black, Lora } from "next/font/google";
 import { Toaster } from "react-hot-toast"; // 1. Import Toaster
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import CookieConsent from "./components/CookieConsent";
@@ -31,14 +31,14 @@ export const metadata = {
   description:
     "SCAH is a next-generation scouting platform connecting athletes, scouts, coaches, and sports communities.",
 
-    keywords: [
+  keywords: [
     "SCAH",
     "sports scouting",
     "athletes",
     "football scouting",
     "sports network",
   ],
-authors: [{ name: "SCAH" }],
+  authors: [{ name: "SCAH" }],
 
   creator: "SCAH",
 
@@ -64,7 +64,8 @@ authors: [{ name: "SCAH" }],
   },
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children })
+{
   return (
     <html lang="en">
       <head>
@@ -77,7 +78,7 @@ export default function RootLayout({ children }) {
       <body className={`${archivoBlack.variable} ${lora.variable} antialiased`}>
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
           <Providers>
-            <Toaster position="top-right" /> 
+            <Toaster position="top-right" />
             {children}
             <CookieConsent />
           </Providers>

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { User } from "lucide-react"
 import { feedApi } from "../../redux/api/feedApi";
@@ -9,10 +10,15 @@ import { useGetPublicProfileQuery } from "../../redux/api/profileApi";
 import { normalizeNotificationType } from "./notificationCategories";
 
 function isValidPhotoUrl(url) {
-  return typeof url === "string" && url.length > 0 && !url.toLowerCase().includes("fakepath");
+  return (
+    typeof url === "string" &&
+    url.trim().length > 0 &&
+    !url.toLowerCase().includes("fakepath")
+  );
 }
 
 const Notification = ({ notification }) => {
+  const [hasImageError, setHasImageError] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -30,11 +36,15 @@ const Notification = ({ notification }) => {
   const user = publicProfile?.user;
 
   const profilePicture =
-    (isValidPhotoUrl(profile?.profilePicture) && profile.profilePicture) ||
-    (isValidPhotoUrl(profile?.media?.profilePicture) && profile.media.profilePicture) ||
-    (isValidPhotoUrl(notification.sender?.profilePicture) && notification.sender.profilePicture) ||
-    (isValidPhotoUrl(notification.sender?.profilePic) && notification.sender.profilePic) ||
-    <User className="w-5 h-5 text-gray-400" />;
+    [
+      profile?.profilePicture,
+      profile?.media?.profilePicture,
+      user?.profilePicture,
+      user?.picture,
+      notification.sender?.profilePicture,
+      notification.sender?.profilePic,
+      notification.sender?.picture,
+    ].find(isValidPhotoUrl)?.trim() || null;
 
   const senderName =
     user?.name ||
@@ -123,13 +133,20 @@ const Notification = ({ notification }) => {
         onClick={handleAvatarClick}
         className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 border flex-shrink-0 cursor-pointer"
       >
-        <Image
-          src={profilePicture}
-          alt={senderName}
-          width={34}
-          height={34}
-          className="object-cover w-full h-full"
-        />
+        {profilePicture && !hasImageError ? (
+          <Image
+            src={profilePicture}
+            alt={senderName}
+            width={34}
+            height={34}
+            className="object-cover w-full h-full"
+            onError={() => setHasImageError(true)}
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <User className="w-5 h-5 text-gray-500" aria-hidden="true" />
+          </div>
+        )}
       </div>
 
       {/* Content */}

@@ -30,8 +30,11 @@ function inferRole(profile) {
   return undefined;
 }
 
-export default function Page({ params }) {
+export default function Page({ params, searchParams }) {
   const { id } = use(params);
+  const query = use(searchParams);
+  const feedAuthorName =
+    typeof query?.name === "string" ? query.name : null;
 
   // 1. Fetch public profile data first
   const {
@@ -44,8 +47,28 @@ export default function Page({ params }) {
 
   const isOwnProfile = Boolean(data?.isOwnProfile);
   
-  // Extract target User ID safely once data is available
-  const targetUserId = data?.user?._id || data?.profile?.userId || id;
+  const populatedProfileUser =
+    data?.user ||
+    data?.profile?.user ||
+    data?.profile?.account ||
+    data?.account ||
+    (typeof data?.profile?.userId === "object" ? data.profile.userId : null);
+  const registeredName =
+    populatedProfileUser?.name ||
+    [
+      populatedProfileUser?.firstName || populatedProfileUser?.first_name,
+      populatedProfileUser?.lastName || populatedProfileUser?.last_name,
+    ]
+      .filter(Boolean)
+      .join(" ");
+  const targetUserId =
+    populatedProfileUser?._id ||
+    populatedProfileUser?.id ||
+    populatedProfileUser?.userId ||
+    (typeof data?.profile?.userId === "string"
+      ? data.profile.userId
+      : null) ||
+    id;
 
   // 2. Fetch "My Posts" ONLY if profile is loaded AND it's strictly own profile
   const { data: myPostsData, isLoading: isLoadingMyPosts } = useGetMyPostsQuery(
@@ -87,8 +110,20 @@ export default function Page({ params }) {
 
   const profileWithRole = {
     ...data,
+    user: populatedProfileUser || data?.user,
     profile: {
       ...data?.profile,
+      name:
+        data?.profile?.name ||
+        [
+          data?.profile?.firstName || data?.profile?.first_name,
+          data?.profile?.lastName || data?.profile?.last_name,
+        ]
+          .filter(Boolean)
+          .join(" ") ||
+        registeredName ||
+        feedAuthorName ||
+        undefined,
       role: inferRole(data?.profile),
       userId: targetUserId,
     },

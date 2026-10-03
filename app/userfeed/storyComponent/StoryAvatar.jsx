@@ -14,6 +14,8 @@ export default function StoryAvatar({
   owner,
 }) {
   const [hasError, setHasError] = useState(false);
+  const avatarSrc =
+    typeof avatar === "string" && avatar.trim() ? avatar.trim() : null;
 
   return (
     <div className="flex shrink-0 p-2">
@@ -27,9 +29,9 @@ export default function StoryAvatar({
       >
         {/* ALWAYS show profile picture */}
         <div className="w-12 h-12 rounded-full overflow-hidden border bg-gray-200 flex items-center justify-center">
-          {avatar && !hasError ? (
+          {avatarSrc && !hasError ? (
             <Image
-              src={avatar}
+              src={avatarSrc || "/defaultImage.jpg"}
               alt="Profile"
               width={48}
               height={48}

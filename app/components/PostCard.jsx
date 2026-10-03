@@ -157,7 +157,11 @@ export default function PostCard({ post, initialShowComments = false }) {
     }
 
     if (authorId) {
-      router.push(`/profile/${authorId}`);
+      const nameQuery =
+        authorName && authorName !== "Unknown"
+          ? `?name=${encodeURIComponent(authorName)}`
+          : "";
+      router.push(`/profile/${authorId}${nameQuery}`);
     }
   };
 
