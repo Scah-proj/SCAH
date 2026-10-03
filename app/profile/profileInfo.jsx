@@ -228,7 +228,7 @@ export default function ProfileInfo({
   };
 
   const handleEdit = () => {
-    router.push("/profile/editBio");
+    router.push("/profile/editProfile");
   };
 
   return (

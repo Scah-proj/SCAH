@@ -23,6 +23,7 @@ import {
   updateAthleteProfile,
   updateScoutProfile,
 } from "../redux/features/auth/authSlice";
+import { isEligibleByRole, getAge } from "../../components/ageValidation";
 
 export const positionsBySport = {
   Football: [
@@ -216,7 +217,22 @@ export default function FormContainer() {
   ];
 
   const handleComplete = async (selections) => {
-    console.log('All selections:', selections);
+    console.log("All selections:", selections);
+
+  const role = selections[0]?.selection;
+  const dateOfBirth = selections[1]?.dateOfBirth;
+
+  // Age validation BEFORE submitting anything
+  if (!isEligibleByRole(role, dateOfBirth)) {
+
+    if (role === "Scout") {
+      alert(`You must be at least 18 years old to register as a Scout.`);
+    } else if (role === "Athlete") {
+      alert(`You must be at least 13 years old to register as an Athlete.`);
+    }
+
+    return;
+  }
 
     try {
       await selectRole({

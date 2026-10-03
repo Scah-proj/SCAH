@@ -12,6 +12,7 @@ import { Card } from '../../components/ui/card'
 import { Progress } from '../../components/ui/progress'
 import { Country, State, City } from 'country-state-city'
 import { positionsBySport } from './page'
+import { isEligibleByRole, getAge } from "../../components/ageValidation";
 
 
 const OptionCard = React.forwardRef(({ title, description, icon: Icon, selected, onClick }, ref) => {
@@ -53,6 +54,7 @@ const FormCard = React.forwardRef(({ options, currentStep, selections, setSelect
   const [selectedCountry, setSelectedCountry] = useState("")
   const [selectedState, setSelectedState] = useState("")
   const [selectedCity, setSelectedCity] = useState("")
+  const [dobError, setDobError] = useState("");
 
 
   const handleSelection = (option) => {
@@ -155,30 +157,60 @@ const FormCard = React.forwardRef(({ options, currentStep, selections, setSelect
                 {dropdown.title}
               </label>
 
-             {dropdown.id === "dateOfBirth" ? (
-  <DatePicker
-    selected={
-  selections[currentStep]?.dateOfBirth
-    ? new Date(selections[currentStep].dateOfBirth)
-    : null
-}
-    onChange={(date) =>
-      setSelection(
-        currentStep, {
-          ...selections[currentStep],
-       dateOfBirth: date?.toISOString().split("T")[0]
+{dropdown.id === "dateOfBirth" ? (
+  <div className="w-full">
+    <DatePicker
+      selected={
+        selections[currentStep]?.dateOfBirth
+          ? new Date(selections[currentStep].dateOfBirth)
+          : null
+      }
+      onChange={(date) => {
+        if (!date) return;
+
+        const today = new Date();
+        let age = today.getFullYear() - date.getFullYear();
+
+        const monthDiff = today.getMonth() - date.getMonth();
+
+        if (
+          monthDiff < 0 ||
+          (monthDiff === 0 && today.getDate() < date.getDate())
+        ) {
+          age--;
         }
 
-      )
-    }
-    dateFormat="yyyy-MM-dd"
-    placeholderText="Select your date of birth"
-    className="w-full border rounded-lg p-3"
-    showMonthDropdown
-    showYearDropdown
-    dropdownMode="select"
-  />
-) : dropdown.id === "position" ? (
+        const minimumAge = userType === "Scout" ? 18 : 13;
+
+        if (age < minimumAge) {
+          setDobError(
+            `You must be at least ${minimumAge} years old to continue as a ${userType}.`
+          );
+        } else {
+          setDobError("");
+        }
+
+        setSelection(currentStep, {
+          ...selections[currentStep],
+          dateOfBirth: date.toISOString().split("T")[0],
+        });
+      }}
+      dateFormat="yyyy-MM-dd"
+      placeholderText="Select your date of birth"
+      className="w-full border rounded-lg p-3"
+      wrapperClassName="w-full"
+      showMonthDropdown
+      showYearDropdown
+      dropdownMode="select"
+    />
+
+    {dobError && (
+      <p className="text-sm text-red-500 mt-1">
+        {dobError}
+      </p>
+    )}
+  </div>
+)  : dropdown.id === "position" ? (
   <select
     value={selections[currentStep]?.[dropdown.id] || ""}
     onChange={(e) =>{
@@ -379,6 +411,18 @@ const MultiStepForm = React.forwardRef(({ title, formSteps, onComplete, onSkip, 
   }
 
   const selectedUserType = selections[0]?.selection;
+  const dateOfBirth = selections[1]?.dateOfBirth;
+
+const isAgeValid = () => {
+  if (currentStep !== 1 || !dateOfBirth || !selectedUserType) return true;
+
+  const age = getAge(dateOfBirth);
+
+  if (selectedUserType === "Scout") return age >= 18;
+  if (selectedUserType === "Athlete") return age >= 13;
+
+  return true;
+};
 
   if (!formSteps || formSteps.length === 0) {
     return <p className="text-gray-500 p-8">No form steps available.</p>
@@ -548,12 +592,12 @@ console.log("Step", currentStep, "Selections", selections[currentStep], "Has sel
 
           <div className="flex justify-end mt-8">
             <Button 
-              onClick={handleContinue} 
-              disabled={!hasSelection || isCompleting}
-              className="bg-teal-600 hover:bg-teal-700 text-white cursor-pointer"
-            >
-              {isCompleting ? 'Processing...' : (isLastStep ? 'Complete' : 'Continue')}
-            </Button>
+  onClick={handleContinue} 
+  disabled={!hasSelection || !isAgeValid() || isCompleting}
+  className="bg-teal-600 hover:bg-teal-700 text-white cursor-pointer"
+>
+  {isCompleting ? 'Processing...' : (isLastStep ? 'Complete' : 'Continue')}
+</Button>
           </div>
         </Card>
       </div>
