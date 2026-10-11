@@ -1,5 +1,4 @@
-import {HomeIcon, MessageCircle, UsersIcon, CircleMinus, Search, BellPlus,ListTodo, Settings} from "lucide-react";
-import { AiOutlinePlus } from "react-icons/ai";
+import {HomeIcon, MessageCircle, Search, BellPlus, ListTodo, Settings} from "lucide-react";
 
 export const navroutes = [
     {
@@ -11,6 +10,11 @@ export const navroutes = [
         label: "Explore",
         path: "/userfeed/explore",
         icon: <Search/>,
+    },
+    {
+        label: "Chat",
+        path: "/userfeed/chat",
+        icon: <MessageCircle/>,
     },
     {
         label: "Tryouts",
@@ -43,9 +47,9 @@ export const mobileroutes = [
         icon: <Search/>,
     },
     {
-        label: "",
-        path: "",
-        icon: <CircleMinus color="white"/>,
+        label: "Chat",
+        path: "/userfeed/chat",
+        icon: <MessageCircle/>,
     },
     {
         label: "Try Outs",

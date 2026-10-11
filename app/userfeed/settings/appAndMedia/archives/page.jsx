@@ -5,7 +5,7 @@ import Image from "next/image";
 import { MdArrowBack } from "react-icons/md";
 import { Switch } from "../../../../../components/ui/switch";
 import { Archive, ImageIcon, Trash2, Loader2 } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import {
   useGetArchivedStoriesQuery,
@@ -105,10 +105,7 @@ const Page = () => {
   const handleDelete = (id, e) => {
     e.stopPropagation();
 
-    // react-hot-toast has no built-in action buttons, so the
-    // confirmation is a custom-rendered toast with Delete/Cancel
-    // buttons inside it instead of a native browser dialog.
-    toast(
+    toast.custom(
       (t) => (
         <div className="flex flex-col gap-2">
           <div>

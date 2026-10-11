@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { MdEdit } from "react-icons/md";
+import { Loader2, MessageCircle } from "lucide-react";
 import { Label } from "../../components/ui/label";
 import { useRouter } from "next/navigation";
 
@@ -11,6 +12,7 @@ import {
   useFollowUserMutation,
   useUnfollowUserMutation,
   useGetConnectionStatusQuery,
+  useGetMutualsQuery,
 } from "../redux/api/connectionApi";
 
 import { useUpdateProfileMutation } from "../redux/api/profileApi";
@@ -19,6 +21,18 @@ import {
   useGetMyCoverPhotoQuery,
   useGetCoverPhotoQuery,
 } from "../redux/api/uploadApi";
+
+const resolveUserId = (value) => {
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value);
+  }
+  if (!value || typeof value !== "object") return "";
+  const userId = value.userId;
+  if (userId && typeof userId === "object") {
+    return String(userId._id ?? userId.id ?? "");
+  }
+  return String(value._id ?? value.id ?? userId ?? "");
+};
 
 export default function ProfileInfo({
   profile,
@@ -38,7 +52,9 @@ export default function ProfileInfo({
   const objectUrlRef = useRef(null);
 
   // Resolves ID for both own profile and other users
-  const profileId = profile?._id || profile?.id || profile?.userId;
+  const profileId = resolveUserId(
+    profile?._id || profile?.id || profile?.userId,
+  );
 
   const profileUser =
     profile?.user ||
@@ -75,6 +91,9 @@ export default function ProfileInfo({
     useGetConnectionStatusQuery(profileId, {
       skip: isOwnProfile || !profileId,
     });
+  const { data: mutualsResponse } = useGetMutualsQuery(undefined, {
+    skip: isOwnProfile || !profileId,
+  });
 
   const [followUser, { isLoading: isFollowLoading }] =
     useFollowUserMutation();
@@ -119,6 +138,18 @@ export default function ProfileInfo({
     connectionStatus?.data?.isFollowing ??
     connectionStatus?.isFollowing ??
     false;
+
+  const mutuals =
+    mutualsResponse?.data?.mutuals ??
+    mutualsResponse?.mutuals ??
+    mutualsResponse?.data?.users ??
+    mutualsResponse?.users ??
+    [];
+  const isMutual = Array.isArray(mutuals) && mutuals.some((person) => {
+    const account = person?.user ?? person?.profile ?? person;
+    const mutualId = resolveUserId(account);
+    return mutualId && mutualId === profileId;
+  });
 
   const isActionLoading = isFollowLoading || isUnfollowLoading;
 
@@ -374,24 +405,42 @@ export default function ProfileInfo({
                 <button
                   onClick={handleFollowToggle}
                   disabled={isActionLoading}
-                  className={`rounded-lg px-5 py-2.5 w-full sm:w-auto text-sm font-medium border transition ${
+                  aria-busy={isActionLoading}
+                  className={`inline-flex min-w-24 items-center justify-center gap-2 rounded-lg px-5 py-2.5 w-full sm:w-auto text-sm font-medium border transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ${
                     isFollowing
                       ? "bg-white border-teal-600 text-teal-600 hover:bg-teal-50"
                       : "bg-teal-600 border-teal-600 text-white hover:bg-teal-700"
                   } ${
                     isActionLoading
-                      ? "opacity-70 cursor-not-allowed"
+                      ? "cursor-wait opacity-80"
                       : ""
                   }`}
                 >
                   {isActionLoading
-                    ? isFollowing
-                      ? "Unfollowing..."
-                      : "Following..."
+                    ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        <span>{isFollowing ? "Unfollowing..." : "Following..."}</span>
+                      </>
+                    )
                     : isFollowing
-                    ? "Following"
-                    : "Follow"}
+                      ? "Following"
+                      : "Follow"}
                 </button>
+              )}
+              {!isOwnProfile && isMutual && (
+                <Link
+                    href={`/userfeed/chat?recipientId=${encodeURIComponent(
+                      profileId,
+                    )}&name=${encodeURIComponent(
+                      displayName || "SCAH member",
+                    )}&picture=${encodeURIComponent(profilePicSrc)}`}
+                    aria-label={`Chat with ${displayName || "this person"}`}
+                    title="Chat"
+                    className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-teal-600 text-teal-700 transition hover:bg-teal-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2"
+                >
+                    <MessageCircle size={19} />
+                </Link>
               )}
             </div>
 

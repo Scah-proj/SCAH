@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import Slider from '@mui/material/Slider';
 import PlacesAutocomplete from "../../../components/PlacesAutocomplete";
 import Select from 'react-select'

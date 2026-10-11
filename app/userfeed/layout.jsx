@@ -23,6 +23,7 @@ export default function FeedLayout({ children }) {
   // the app writes to. Login dispatches into the Redux authSlice
   // (setCredentials), so we read from there instead, same as Sidenav.
   const user = useSelector((state) => state.auth.user);
+  const isChatPage = pathname.startsWith("/userfeed/chat");
 
   // Redux's `user` is only whatever was in the login/register payload —
   // it can be stale or missing a profile picture set later. Fetch the
@@ -89,12 +90,13 @@ export default function FeedLayout({ children }) {
 
         {/* MAIN CONTENT */}
         <main
-          className="
+          className={`
             flex-1
-            lg:ml-[20%] lg:mr-[20%]
+            lg:ml-[20%]
+            ${isChatPage ? "lg:mr-0" : "lg:mr-[20%]"}
             pt-16 lg:pt-0
             h-dvh overflow-y-auto no-scrollbar
-          "
+          `}
         >
           {children}
         </main>
@@ -103,7 +105,7 @@ export default function FeedLayout({ children }) {
             Tailwind silently drops, leaving this element with no width at
             all. Fixed to w-1/5 (20%), matching the 20% margin main reserves
             on each side. */}
-        <aside className="hidden lg:block w-1/5 fixed right-0 top-0 h-dvh overflow-y-auto pt-16 p-4">
+        <aside className={`${isChatPage ? "hidden" : "hidden lg:block"} w-1/5 fixed right-0 top-0 h-dvh overflow-y-auto pt-16 p-4`}>
           <Suggestions />
         </aside>
       </div>
@@ -138,7 +140,7 @@ export default function FeedLayout({ children }) {
       </div>
 
       {/* Create post FAB */}
-      <button
+      {!isChatPage && <button
         aria-label="Create post"
         className="
           fixed bottom-10 left-1/2 -translate-x-1/2 lg:right-6 lg:left-auto
@@ -153,7 +155,7 @@ export default function FeedLayout({ children }) {
         onClick={handleAddPost}
       >
         <AiOutlinePlus color="white" size={26} />
-      </button>
+      </button>}
     </div>
   );
 }

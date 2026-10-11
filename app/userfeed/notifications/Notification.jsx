@@ -126,7 +126,7 @@ const Notification = ({ notification }) => {
   return (
     <div
       onClick={handleClick}
-      className="relative flex gap-4 p-4 mb-4 bg-white hover:bg-gray-50 shadow-xl transition hover:shadow-2xl cursor-pointer rounded-xl"
+       className="relative flex gap-4 p-4 mb-4 bg-white hover:bg-gray-50 shadow-xl transition hover:shadow-2xl cursor-pointer rounded-xl"
     >
       {/* Avatar — always routes to the sender's profile */}
       <div

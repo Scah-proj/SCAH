@@ -2,7 +2,7 @@
 import { RadioGroup, RadioGroupItem } from "../../../../../components/ui/radio-group";
 import Link from "next/link";
 import { MdArrowBack } from "react-icons/md";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import {
   useGetPrivacySettingsQuery,
   useUpdatePrivacySettingsMutation,

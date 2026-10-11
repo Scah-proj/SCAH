@@ -1,19 +1,13 @@
-import { Archivo_Black, Lora } from "next/font/google";
-import { Toaster } from "react-hot-toast"; // 1. Import Toaster
+import { Lato } from "next/font/google";
+import { Toaster } from "sonner";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import CookieConsent from "./components/CookieConsent";
 import "./globals.css";
 import Providers from "./redux/provider";
 
 
-const archivoBlack = Archivo_Black({
-  weight: "400",
-  variable: "--font-heading",
-  subsets: ["latin"],
-  display: "swap",
-});
-const lora = Lora({
-  weight: "400",
+const lato = Lato({
+  weight: ["400", "700"],
   variable: "--font-body",
   subsets: ["latin"],
   display: "swap",
@@ -75,10 +69,10 @@ export default function RootLayout({ children })
           defer
         ></script>
       </head>
-      <body className={`${archivoBlack.variable} ${lora.variable} antialiased`}>
+      <body className={`${lato.variable} antialiased`}>
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
           <Providers>
-            <Toaster position="top-right" />
+            <Toaster position="top-right" richColors />
             {children}
             <CookieConsent />
           </Providers>

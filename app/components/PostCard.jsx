@@ -28,7 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
 import { timeAgo } from "../../components/timeAgo";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import {
   useToggleLikePostMutation,
   useToggleSavePostMutation,
@@ -441,7 +441,7 @@ const [showComments, setShowComments] = useState(initialShowComments);
     if (e && typeof e.stopPropagation === "function") e.stopPropagation();
     if (!postId) return;
 
-    toast(
+    toast.custom(
       (t) => (
         <div className="flex flex-col gap-2">
           <p className="text-sm font-medium text-gray-900">Delete this post?</p>

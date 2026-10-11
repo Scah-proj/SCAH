@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import toast from "react-hot-toast"; // Added this import
+import { toast } from "sonner";
 import { MdArrowBack } from "react-icons/md";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../../components/ui/calendar";
