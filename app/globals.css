@@ -119,9 +119,32 @@
     @apply border-border outline-ring/50;
   }
 
+  html {
+    width: 100%;
+    min-width: 320px;
+    overflow-x: clip;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-body) !important;
+    width: 100%;
+    min-width: 320px;
+    overflow-x: clip;
+  }
+
+  img,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  input,
+  select,
+  textarea,
+  button {
+    max-width: 100%;
   }
 
   h1,

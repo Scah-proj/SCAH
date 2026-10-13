@@ -94,7 +94,7 @@ export default function FeedLayout({ children }) {
             flex-1
             lg:ml-[20%]
             ${isChatPage ? "lg:mr-0" : "lg:mr-[20%]"}
-            pt-16 lg:pt-0
+            pt-16 ${isChatPage ? "pb-0" : "pb-24"} lg:pt-0 lg:pb-0
             h-dvh overflow-y-auto no-scrollbar
           `}
         >
@@ -143,7 +143,7 @@ export default function FeedLayout({ children }) {
       {!isChatPage && <button
         aria-label="Create post"
         className="
-          fixed bottom-10 left-1/2 -translate-x-1/2 lg:right-6 lg:left-auto
+          fixed bottom-[5.25rem] left-1/2 -translate-x-1/2 lg:bottom-10 lg:right-6 lg:left-auto
           z-50
           w-16 h-16 rounded-full
           bg-teal-700 text-white

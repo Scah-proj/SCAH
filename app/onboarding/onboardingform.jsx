@@ -516,8 +516,8 @@ console.log("Step", currentStep, "Selections", selections[currentStep], "Has sel
       className={cn('flex flex-col items-center', className)}
       {...otherProps}
     >
-      <div className="w-full max-w-5xl p-2 min-h-screen h-screen">
-        <Card className="w-full mx-auto p-6 shadow-lg p-2 md:p-6 h-full">
+      <div className="w-full max-w-5xl p-2 min-h-dvh">
+        <Card className="w-full mx-auto p-2 md:p-6 shadow-lg min-h-[calc(100dvh-1rem)]">
           <div className="mb-8 p-4 md:p-0">
             <div className="flex items-center justify-between mb-4">
               <div className="w-20">
