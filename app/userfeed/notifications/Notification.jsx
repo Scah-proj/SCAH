@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { User } from "lucide-react"
+import { toast } from "sonner";
 import { feedApi } from "../../redux/api/feedApi";
+import { useReadNotificationMutation } from "../../redux/api/connectionApi";
 import { useGetPublicProfileQuery } from "../../redux/api/profileApi";
 import { normalizeNotificationType } from "./notificationCategories";
 
@@ -21,6 +23,7 @@ const Notification = ({ notification }) => {
   const [hasImageError, setHasImageError] = useState(false);
   const router = useRouter();
   const dispatch = useDispatch();
+  const [readNotification] = useReadNotificationMutation();
 
   const senderId =
     notification.sender?._id ||
@@ -54,13 +57,39 @@ const Notification = ({ notification }) => {
   
   const handleAvatarClick = (e) => {
     e.stopPropagation();
+    markAsRead();
     if (senderId) {
       router.push(`/profile/${senderId}`);
     }
   };
 
+  const markAsRead = () => {
+    const notificationId = notification._id || notification.id;
+    if (notification.read || !notificationId) return;
+
+    readNotification(notificationId)
+      .unwrap()
+      .catch((error) => {
+        console.error("Unable to mark notification as read.", error);
+        toast.error("Could not mark this notification as read.");
+      });
+  };
+
   const handleClick = () => {
+    markAsRead();
     const normalizedType = normalizeNotificationType(notification.type);
+
+    if (/chat|message/.test(normalizedType)) {
+      const recipientId =
+        typeof senderId === "object"
+          ? senderId?._id || senderId?.id
+          : senderId;
+      const chatUrl = recipientId
+        ? `/userfeed/chat?recipientId=${encodeURIComponent(recipientId)}`
+        : "/userfeed/chat";
+      router.push(chatUrl);
+      return;
+    }
 
     // Post notifications
     if (

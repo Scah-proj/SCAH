@@ -162,6 +162,21 @@ export const settingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Settings"],
     }),
+
+    // Admin moderation
+    banAccount: builder.mutation({
+      query: ({ userId, reason, days }) => ({
+        url: `/api/settings/ban/${encodeURIComponent(userId)}`,
+        method: "POST",
+        body: { reason, ...(days ? { days } : {}) },
+      }),
+    }),
+    unbanAccount: builder.mutation({
+      query: (userId) => ({
+        url: `/api/settings/unban/${encodeURIComponent(userId)}`,
+        method: "POST",
+      }),
+    }),
   }),
 
   overrideExisting: process.env.NODE_ENV === "development",
@@ -183,4 +198,6 @@ export const {
   useRevokeAllOtherSessionsMutation,
   useDeactivateAccountMutation,
   useDeleteAccountMutation,
+  useBanAccountMutation,
+  useUnbanAccountMutation,
 } = settingsApi;

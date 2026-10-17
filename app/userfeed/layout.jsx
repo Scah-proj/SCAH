@@ -29,6 +29,9 @@ export default function FeedLayout({ children }) {
   // it can be stale or missing a profile picture set later. Fetch the
   // actual profile (same as Sidenav does) and prefer that.
   const { data: profile } = useGetMyProfileQuery();
+  const unreadNotificationCount = useSelector(
+    (state) => state.connection.unreadNotificationCount
+  );
 
   const profileHref = user?._id || user?.id ? `/profile/${user._id || user.id}` : "/profile";
   const avatarSrc =
@@ -76,8 +79,22 @@ export default function FeedLayout({ children }) {
         </Link>
 
         <div className="flex items-center gap-4">
-          <Link href="/userfeed/notifications" aria-label="Notifications">
-            <BellPlus size={24} className="text-gray-500 hover:text-teal-600 transition" />
+          <Link
+            href="/userfeed/notifications"
+            aria-label={
+              unreadNotificationCount > 0
+                ? `Notifications, ${unreadNotificationCount} unread`
+                : "Notifications"
+            }
+          >
+            <span className="relative inline-flex">
+              <BellPlus size={24} className="text-gray-500 hover:text-teal-600 transition" />
+              {unreadNotificationCount > 0 && (
+                <span className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                  {unreadNotificationCount > 99 ? "99+" : unreadNotificationCount}
+                </span>
+              )}
+            </span>
           </Link>
         </div>
       </div>

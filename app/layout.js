@@ -2,6 +2,7 @@ import { Lato } from "next/font/google";
 import { Toaster } from "sonner";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import CookieConsent from "./components/CookieConsent";
+import NotificationRealtime from "./components/NotificationRealtime";
 import "./globals.css";
 import Providers from "./redux/provider";
 
@@ -73,6 +74,7 @@ export default function RootLayout({ children })
         <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
           <Providers>
             <Toaster position="top-right" richColors />
+            <NotificationRealtime />
             {children}
             <CookieConsent />
           </Providers>

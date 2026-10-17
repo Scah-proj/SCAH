@@ -111,6 +111,15 @@ export const connectionApi = baseApi.injectEndpoints({
       providesTags: ["Notification"],
     }),
 
+    // Mark a notification as read
+    readNotification: builder.mutation({
+      query: (notificationId) => ({
+        url: `/api/connections/notifications/${encodeURIComponent(notificationId)}/read`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Notification"],
+    }),
+
     // Mark All Notifications as Read
     readAllNotifications: builder.mutation({
       query: () => ({
@@ -201,6 +210,7 @@ export const {
   useGetMyFollowingQuery,
   useGetNotificationsQuery,
   useGetUnreadNotificationCountQuery,
+  useReadNotificationMutation,
   useReadAllNotificationsMutation,
   useDeleteAllNotificationsMutation,
   useGetNotificationSettingsQuery,

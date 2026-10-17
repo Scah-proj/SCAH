@@ -155,6 +155,16 @@ export const profileApi = baseApi.injectEndpoints({
       }),
       transformResponse: unwrap,
     }),
+
+    // Report another user
+    createUserReport: builder.mutation({
+      query: (data) => ({
+        url: `/api/settings/report/${encodeURIComponent(data.userId)}`,
+        method: "POST",
+        body: { reason: data.reason, ...(data.details ? { details: data.details } : {}) },
+      }),
+      transformResponse: unwrap,
+    }),
   }),
 
   overrideExisting: false,
@@ -173,4 +183,5 @@ export const {
   useGetScoutsQuery,
   useGetAllProfilesQuery,
   useLazySearchUsersQuery,
+  useCreateUserReportMutation,
 } = profileApi;

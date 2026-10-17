@@ -20,6 +20,9 @@ const Sidenav = ({ onClose }) => {
   const [hasError, setHasError] = useState(false);
 
   const user = useSelector((state) => state.auth.user);
+  const unreadNotificationCount = useSelector(
+    (state) => state.connection.unreadNotificationCount
+  );
 
   // Fetch full profile
   const { data: profile } = useGetMyProfileQuery();
@@ -153,8 +156,16 @@ const Sidenav = ({ onClose }) => {
                       {route.icon}
                     </span>
 
-                    <h2 className="text-sm">
+                    <h2 className="flex flex-1 items-center justify-between text-sm">
                       {route.label}
+                      {route.path === "/userfeed/notifications" &&
+                        unreadNotificationCount > 0 && (
+                          <span className="ml-2 rounded-full bg-red-500 px-2 py-0.5 text-xs font-semibold text-white">
+                            {unreadNotificationCount > 99
+                              ? "99+"
+                              : unreadNotificationCount}
+                          </span>
+                        )}
                     </h2>
                   </Link>
                 </li>

@@ -4,7 +4,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { MdEdit } from "react-icons/md";
-import { Loader2, MessageCircle } from "lucide-react";
+import { Loader2, MessageCircle, MoreHorizontal, Flag } from "lucide-react";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../components/ui/dropdown-menu";
 import { Label } from "../../components/ui/label";
 import { useRouter } from "next/navigation";
 
@@ -15,7 +22,7 @@ import {
   useGetMutualsQuery,
 } from "../redux/api/connectionApi";
 
-import { useUpdateProfileMutation } from "../redux/api/profileApi";
+import { useCreateUserReportMutation, useUpdateProfileMutation } from "../redux/api/profileApi";
 import {
   useUploadCoverPhotoMutation,
   useGetMyCoverPhotoQuery,
@@ -34,6 +41,17 @@ const resolveUserId = (value) => {
   return String(value._id ?? value.id ?? userId ?? "");
 };
 
+const REPORT_REASONS = [
+  ["spam", "Spam"],
+  ["harassment", "Harassment"],
+  ["hate_speech", "Hate speech"],
+  ["impersonation", "Impersonation"],
+  ["inappropriate_content", "Inappropriate content"],
+  ["scam_or_fraud", "Scam or fraud"],
+  ["underage", "Underage user"],
+  ["other", "Other"],
+];
+
 export default function ProfileInfo({
   profile,
   isOwnProfile,
@@ -48,6 +66,9 @@ export default function ProfileInfo({
 
   // NEW: Controls which image is currently being viewed
   const [viewingImage, setViewingImage] = useState(null);
+  const [showReportForm, setShowReportForm] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
 
   const objectUrlRef = useRef(null);
 
@@ -103,6 +124,8 @@ export default function ProfileInfo({
 
   const [updateProfile, { isLoading: isUploading }] =
     useUpdateProfileMutation();
+  const [createUserReport, { isLoading: isSubmittingReport }] =
+    useCreateUserReportMutation();
 
   // My own cover photo
   const { data: myCoverPhotoData } = useGetMyCoverPhotoQuery(undefined, {
@@ -262,6 +285,29 @@ export default function ProfileInfo({
     router.push("/profile/editProfile");
   };
 
+  const handleReportSubmit = async (event) => {
+    event.preventDefault();
+    if (!profileId || !reportReason || isSubmittingReport) return;
+
+    try {
+      await createUserReport({
+        userId: profileId,
+        reason: reportReason,
+        details: reportDetails.trim(),
+      }).unwrap();
+      toast.success("Your report was submitted for review.");
+      setShowReportForm(false);
+      setReportReason("");
+      setReportDetails("");
+    } catch (error) {
+      const errorCode = error?.data?.error?.code || error?.data?.code || error?.data?.error;
+      const message = errorCode === "ALREADY_REPORTED"
+        ? "You already have a pending report for this account."
+        : error?.data?.error?.message || error?.data?.message || "Could not submit your report. Please try again.";
+      toast.error(message);
+    }
+  };
+
   return (
     <>
       <div className="mb-6">
@@ -359,11 +405,36 @@ export default function ProfileInfo({
         <div className="px-6">
           <div className="mt-16 flex flex-col md:flex-row md:justify-between gap-3">
             <div className="flex flex-col gap-1">
-              {displayName && (
+              <div className="flex items-start justify-between gap-4">
+                {displayName && (
                 <p className="font-bold text-2xl text-black break-all">
                   {displayName}
                 </p>
-              )}
+                )}
+                {!isOwnProfile && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        aria-label={`More options for ${displayName || "this user"}`}
+                        title="More options"
+                        className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-600 transition hover:bg-gray-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600"
+                      >
+                        <MoreHorizontal size={21} />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-44 bg-white">
+                      <DropdownMenuItem
+                        className="text-red-600 focus:text-red-700"
+                        onSelect={() => setShowReportForm(true)}
+                      >
+                        <Flag size={16} />
+                        Report user
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+              </div>
 
               <p className="font-medium text-sm text-black">
                 {profile?.club}
@@ -475,6 +546,49 @@ export default function ProfileInfo({
           </div>
         </div>
       </div>
+
+      {showReportForm && (
+        <div
+          className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !isSubmittingReport) setShowReportForm(false);
+          }}
+        >
+          <form
+            onSubmit={handleReportSubmit}
+            className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+            aria-labelledby="report-user-title"
+          >
+            <h2 id="report-user-title" className="text-lg font-semibold text-gray-900">Report user</h2>
+            <p className="mt-1 text-sm text-gray-600">Tell us why you are reporting this profile.</p>
+            <label htmlFor="report-reason" className="mt-5 block text-sm font-medium text-gray-800">Reason</label>
+            <select
+              id="report-reason"
+              required
+              value={reportReason}
+              onChange={(event) => setReportReason(event.target.value)}
+              className="mt-1 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+            >
+              <option value="" disabled>Select a reason</option>
+              {REPORT_REASONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+            </select>
+            <label htmlFor="report-details" className="mt-4 block text-sm font-medium text-gray-800">Additional details (optional)</label>
+            <textarea
+              id="report-details"
+              value={reportDetails}
+              onChange={(event) => setReportDetails(event.target.value)}
+              maxLength={1000}
+              rows={4}
+              placeholder="Add any helpful context"
+              className="mt-1 w-full resize-y rounded-md border border-gray-300 px-3 py-2 text-sm"
+            />
+            <div className="mt-5 flex justify-end gap-3">
+              <button type="button" disabled={isSubmittingReport} onClick={() => setShowReportForm(false)} className="rounded-md border px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Cancel</button>
+              <button type="submit" disabled={!reportReason || isSubmittingReport} className="rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-60">{isSubmittingReport ? "Submitting…" : "Submit report"}</button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* =====================================================
           FULLSCREEN IMAGE VIEWER
