@@ -58,15 +58,35 @@ const chatEmojis = [
   { emoji: "💯", label: "Hundred points" },
 ];
 
+const isBackendDisabled = () => {
+  if (typeof process !== "undefined" && process.env.NEXT_PUBLIC_DISABLE_BACKEND === "true") {
+    return true;
+  }
+  if (typeof process !== "undefined" && !process.env.NEXT_PUBLIC_API_URL) {
+    return true;
+  }
+  return false;
+};
+
 const apiBaseUrl = () => {
   const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!baseUrl) throw new Error("The API URL is not configured.");
+  if (!baseUrl) return "";
   return baseUrl.replace(/\/+$/, "");
 };
 
 const unwrap = (response) => response?.data ?? response;
 
 async function requestChat(path, token, { method = "GET", body } = {}) {
+  if (isBackendDisabled()) {
+    if (path === "" || path === "/") {
+      return { conversations: [] };
+    }
+    if (path.includes("/messages")) {
+      return { messages: [] };
+    }
+    return { success: true };
+  }
+
   const isFormData = typeof FormData !== "undefined" && body instanceof FormData;
   const response = await fetch(`${apiBaseUrl()}/api/chat${path}`, {
     method,
@@ -480,6 +500,11 @@ export default function ChatPage() {
     let isMounted = true;
 
     loadConversations();
+
+    if (isBackendDisabled()) {
+      setSocketConnected(false);
+      return () => {};
+    }
 
     if (!token) return () => {};
 

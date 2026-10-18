@@ -1,6 +1,20 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+const isBackendDisabled = () => {
+  if (typeof process !== "undefined" && process.env.NEXT_PUBLIC_DISABLE_BACKEND === "true") {
+    return true;
+  }
+  if (typeof process !== "undefined" && !process.env.NEXT_PUBLIC_API_URL) {
+    return true;
+  }
+  return false;
+};
+
 async function request(endpoint, method, data, token = null) {
+  if (isBackendDisabled()) {
+    return { success: true, message: "Action succeeded (Mock Mode)" };
+  }
+
   const authToken =
     token ??
     (typeof window !== "undefined"
@@ -41,6 +55,10 @@ export const getRequest = (endpoint, token) =>
 
 
 export async function uploadProfilePicture(file, token) {
+  if (isBackendDisabled()) {
+    return { success: true, url: "/fan.webp", message: "Profile picture uploaded (Mock Mode)" };
+  }
+
   const formData = new FormData();
   formData.append("profilePicture", file);
 
@@ -66,6 +84,10 @@ export async function uploadProfilePicture(file, token) {
 }
 
 export async function createPost(postData) {
+  if (isBackendDisabled()) {
+    return { success: true, message: "Post created successfully (Mock Mode)" };
+  }
+
   const token = localStorage.getItem("token");
 
   const formData = new FormData();

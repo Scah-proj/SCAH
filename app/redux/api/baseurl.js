@@ -5,6 +5,7 @@ import {
   showOfflineToast,
   initNetworkListeners,
 } from "./networkGuard";
+import { isBackendDisabled, resolveMockResponse } from "./mockDataRouter";
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
@@ -40,6 +41,11 @@ const isPublicAuthRequest = (args) => {
 };
 
 const baseQueryWithAuthHandling = async (args, api, extraOptions) => {
+  // If backend is disabled, serve mock responses without hitting network or throwing errors.
+  if (isBackendDisabled()) {
+    return await resolveMockResponse(args);
+  }
+
   // Attach online/offline listeners once (idempotent).
   initNetworkListeners();
 

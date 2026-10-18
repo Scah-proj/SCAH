@@ -20,6 +20,15 @@ const Waitlist = () => {
 
     setLoading(true);
     try {
+      if (process.env.NEXT_PUBLIC_DISABLE_BACKEND === "true" || !process.env.NEXT_PUBLIC_API_URL) {
+        await new Promise((r) => setTimeout(r, 400));
+        setMessage("✅ You’re Subscribed (Mock Mode)");
+        setEmail("");
+        setRole("");
+        setLoading(false);
+        return;
+      }
+
       const res = await fetch(process.env.NEXT_PUBLIC_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
