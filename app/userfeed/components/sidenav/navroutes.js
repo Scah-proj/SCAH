@@ -1,4 +1,4 @@
-import {HomeIcon, MessageCircle, Search, BellPlus, ListTodo, Settings} from "lucide-react";
+import {HomeIcon, MessageCircle, Search, BellPlus, ListTodo, Settings, Radio} from "lucide-react";
 
 export const navroutes = [
     {
@@ -10,6 +10,11 @@ export const navroutes = [
         label: "Explore",
         path: "/userfeed/explore",
         icon: <Search/>,
+    },
+    {
+        label: "Live",
+        path: "/userfeed/live",
+        icon: <Radio className="text-rose-500 animate-pulse" />,
     },
     {
         label: "Chat",
@@ -39,12 +44,15 @@ export const mobileroutes = [
         path: "/userfeed",
         icon: <HomeIcon/>,
     },
-    
-    
     {
         label: "Explore",
         path: "/userfeed/explore",
         icon: <Search/>,
+    },
+    {
+        label: "Live",
+        path: "/userfeed/live",
+        icon: <Radio className="text-rose-500" />,
     },
     {
         label: "Chat",
@@ -56,7 +64,6 @@ export const mobileroutes = [
         path: "/userfeed/tryout",
         icon: <ListTodo/>,
     },
-    
     {
         label: "Settings",
         path: "/userfeed/settings",

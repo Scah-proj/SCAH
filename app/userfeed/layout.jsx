@@ -13,9 +13,11 @@ import { useSelector } from "react-redux";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { useGetMyProfileQuery } from "../redux/api/profileApi"; // adjust path if it doesn't resolve — match whatever depth Sidenav/CreatePost use for "redux/api/profileApi" from this file's actual location
+import CreateMenuModal from "../components/CreateMenuModal";
 
 export default function FeedLayout({ children }) {
   const [nav, setNav] = useState(false);
+  const [isCreateMenuOpen, setIsCreateMenuOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
@@ -41,7 +43,7 @@ export default function FeedLayout({ children }) {
     null;
 
   const handleAddPost = () => {
-    router.push("/profile/createPost");
+    setIsCreateMenuOpen(true);
   };
 
   return (
@@ -156,6 +158,12 @@ export default function FeedLayout({ children }) {
       >
         <AiOutlinePlus color="white" size={26} />
       </button>}
+
+      {/* Quick Create Menu Modal */}
+      <CreateMenuModal
+        isOpen={isCreateMenuOpen}
+        onClose={() => setIsCreateMenuOpen(false)}
+      />
     </div>
   );
 }

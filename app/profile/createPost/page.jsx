@@ -10,6 +10,7 @@ import {
   Smile,
   CalendarClock,
   Play,
+  Radio,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -278,8 +279,32 @@ export default function CreatePost() {
     setMentionQuery("");
   };
 
+  const handleSwitchToLive = () => {
+    const titleParam = content.trim() ? `?title=${encodeURIComponent(content.trim())}` : "";
+    router.push(`/userfeed/live/broadcast${titleParam}`);
+  };
+
   return (
-<div className="mx-auto w-full min-h-screen bg-white p-4 md:max-w-md md:rounded-xl md:shadow-xl md:mt-10 flex flex-col">      {/* Top bar */}
+    <div className="mx-auto w-full min-h-screen bg-white p-4 md:max-w-md md:rounded-xl md:shadow-xl md:mt-10 flex flex-col">
+      {/* Creation Mode Segmented Toggle */}
+      <div className="flex bg-gray-100 p-1 rounded-xl mb-4 text-xs font-semibold">
+        <button
+          type="button"
+          className="flex-1 py-1.5 rounded-lg bg-white shadow-sm text-gray-900 font-bold"
+        >
+          Post
+        </button>
+        <button
+          type="button"
+          onClick={handleSwitchToLive}
+          className="flex-1 py-1.5 rounded-lg text-gray-500 hover:text-rose-600 transition flex items-center justify-center gap-1.5 cursor-pointer"
+        >
+          <Radio size={14} className="text-rose-500 animate-pulse" />
+          <span>Go Live</span>
+        </button>
+      </div>
+
+      {/* Top bar */}
       <div className="flex justify-between items-center mb-4">
         <Link href="/userfeed" className="text-gray-500">
           Cancel
@@ -466,6 +491,17 @@ export default function CreatePost() {
         aria-label="Open camera"
       >
         <Camera size={22} />
+      </button>
+
+      {/* Go Live Button */}
+      <button
+        type="button"
+        onClick={handleSwitchToLive}
+        className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold border border-rose-200 transition cursor-pointer"
+        aria-label="Switch to Live Stream"
+      >
+        <Radio size={14} className="animate-pulse" />
+        <span>Go Live</span>
       </button>
     </div>
 
