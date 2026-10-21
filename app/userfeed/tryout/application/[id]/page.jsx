@@ -10,6 +10,7 @@ import {
 import { MdArrowBack } from "react-icons/md";
 import { Loader } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "../../../../../components/ui/button";
 import {
   Dialog,
@@ -58,11 +59,8 @@ const Page = () => {
 
   const getErrorMessage = (err) => {
     const backendError = err?.data?.error;
-    if (backendError?.message) {
-      return backendError.code
-        ? `${backendError.message} (${backendError.code})`
-        : backendError.message;
-    }
+    if (typeof backendError === "string") return backendError;
+    if (backendError?.message) return backendError.message;
     if (err?.data?.message) return err.data.message;
     if (err?.status === "FETCH_ERROR")
       return "Could not reach the server. Check your connection.";
@@ -76,7 +74,7 @@ const Page = () => {
     e.preventDefault();
     setSubmitError(null);
     try {
-      await applyToTryout({
+      const result = await applyToTryout({
         id,
         data: {
           firstName: formData.firstName,
@@ -91,10 +89,17 @@ const Page = () => {
           notes: formData.notes,
         },
       }).unwrap();
+      const message =
+        result?.data?.message ||
+        result?.message ||
+        "Application submitted successfully.";
+      toast.success(message);
       setStatus("success");
     } catch (err) {
       console.error("applyToTryout failed:", err);
-      setSubmitError(getErrorMessage(err));
+      const message = getErrorMessage(err);
+      setSubmitError(message);
+      toast.error(message);
     }
   };
 
@@ -126,19 +131,12 @@ const Page = () => {
 
   if (status === "success") {
     return (
-      <div className="p-10 text-center max-w-xl mx-auto">
-        <Link
-                    href={`/userfeed/tryout/application/${id}`}
-                    className="flex items-center text-gray-500 hover:text-black mb-4"
-                  >
-                    <MdArrowBack />
-                    <span className="ml-2">Back to Tryout</span>
-                  </Link>
-        <h2 className="text-2xl font-semibold text-teal-700 mb-3">
-          Application Submitted 🎉
-        </h2>
+      <div className="mx-auto max-w-4xl px-4 py-12 text-center md:px-8">
+        <h1 className="mb-3 text-2xl font-semibold text-teal-700">
+          Application submitted
+        </h1>
         <p className="text-gray-600">
-          The scout will review your profile and contact you soon.
+          Your application has been submitted successfully.
         </p>
       </div>
     );
