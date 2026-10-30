@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { logout } from "../features/auth/authSlice"; // adjust path if your authSlice lives elsewhere
+import { toast } from "sonner";
 import {
   isNetworkAvailable,
   showOfflineToast,
@@ -56,6 +57,15 @@ const baseQueryWithAuthHandling = async (args, api, extraOptions) => {
   }
 
   const result = await rawBaseQuery(args, api, extraOptions);
+
+  if (
+    result.error?.status === 403 &&
+    result.error?.data?.error?.code === "ACCOUNT_BANNED"
+  ) {
+    toast.error(
+      result.error.data.error.message || "Your account has been banned."
+    );
+  }
 
   if (result.error?.status === 401 && !isPublicAuthRequest(args)) {
     api.dispatch(logout());

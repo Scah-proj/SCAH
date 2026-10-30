@@ -110,6 +110,14 @@ function LoginForm() {
       const response = await login(formData).unwrap();
       handleAuthSuccess(response);
     } catch (error) {
+      const apiError = error?.data?.error;
+
+      if (error?.status === 403 && apiError?.code === "ACCOUNT_BANNED") {
+        setFieldErrors({ email: "", password: "" });
+        setErrorMsg(apiError.message || "Your account has been banned.");
+        return;
+      }
+
       showInvalidCredentials(error?.data?.message || "Invalid email or password");
     }
   };
